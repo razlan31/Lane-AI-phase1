@@ -1,0 +1,20 @@
+name: Verify-Repo-Sanity
+on:
+  push:
+    branches: [ main ]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Show Node/NPM and top files
+        run: |
+          echo "=== START VERIFY ==="
+          node -v || echo "node not installed"
+          npm -v || echo "npm not installed"
+          echo "=== LIST TOP LEVEL ==="
+          ls -la | sed -n '1,200p'
+          echo "=== LIST SRC PREVIEW ==="
+          ls -la src || echo "no src dir"
+          echo "=== END VERIFY ==="
