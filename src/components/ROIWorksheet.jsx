@@ -1,107 +1,72 @@
-// src/components/ROIWorksheet.jsx
-import React, { useState } from 'react';
-import { computeROI } from '../../packages/core/calc_engine/roi.js';
-import { supabase } from '../lib/supabaseClient';
+import React, { useState } from "react";
+import { computeROI } from "../../packages/core/calc_engine/roi";
+import { supabase } from "../lib/supabaseClient";
 
-export default function ROIWorksheet({ ventureId, userId }) {
-  const [inputs, setInputs] = useState({
-    monthlyRevenueIncrease: 0,
-    monthlyCostChange: 0,
-    months: 12,
-    initialInvestment: 0
-  });
+export default function ROIWorksheet() {
+  const [initial, setInitial] = useState("");
+  const [monthly, setMonthly] = useState("");
+  const [months, setMonths] = useState("");
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  function onChange(e) {
-    const { name, value } = e.target;
-    setInputs(prev => ({ ...prev, [name]: Number(value) }));
-  }
+  async function handleCalculate() {
+    const roi = computeROI({
+      initialInvestment: Number(initial),
+      monthlyGain: Number(monthly),
+      months: Number(months),
+    });
+    setResult(roi);
 
-  async function runAndSave() {
-    setError(null);
-    setLoading(true);
+    setSaving(true);
     try {
-      // Deterministic calc (single source)
-      const out = computeROI(inputs);
-      setResult(out);
-
-      // Save to worksheets table
-      const payload = {
-        venture_id: ventureId || null,
-        user_id: userId || null,
-        type: 'roi',
-        inputs,
-        outputs: out
-      };
-
-      const { error: insertErr } = await supabase.from('worksheets').insert([payload]);
-      if (insertErr) throw insertErr;
-
-      // Emit timeline event
-      await supabase.from('timeline_events').insert([{
-        venture_id: ventureId || null,
-        kind: 'insight',
-        title: 'ROI run',
-        body: `ROI run saved.`,
-        payload: { inputs, outputs: out }
-      }]);
-
-    } catch (err) {
-      console.error(err);
-      setError(err.message || 'Error saving result');
+      const { error } = await supabase.from("worksheets").insert([
+        {
+          user_id: "demo-user",
+          type: "roi",
+          inputs: { initial, monthly, months },
+          outputs: roi,
+        },
+      ]);
+      if (error) console.error("Supabase insert error:", error.message);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 760, padding: 18, background: 'var(--card, #0b1220)', borderRadius: 10 }}>
-      <h3>ROI Worksheet</h3>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <label>
-          Monthly revenue increase
-          <input name="monthlyRevenueIncrease" type="number" value={inputs.monthlyRevenueIncrease} onChange={onChange} />
-        </label>
-
-        <label>
-          Monthly cost change
-          <input name="monthlyCostChange" type="number" value={inputs.monthlyCostChange} onChange={onChange} />
-        </label>
-
-        <label>
-          Months
-          <input name="months" type="number" value={inputs.months} onChange={onChange} />
-        </label>
-
-        <label>
-          Initial investment
-          <input name="initialInvestment" type="number" value={inputs.initialInvestment} onChange={onChange} />
-        </label>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-2">ROI Worksheet</h2>
+      <div className="grid gap-2 mb-4">
+        <input
+          className="border p-2 rounded"
+          placeholder="Initial Investment"
+          value={initial}
+          onChange={(e) => setInitial(e.target.value)}
+        />
+        <input
+          className="border p-2 rounded"
+          placeholder="Monthly Gain"
+          value={monthly}
+          onChange={(e) => setMonthly(e.target.value)}
+        />
+        <input
+          className="border p-2 rounded"
+          placeholder="Months"
+          value={months}
+          onChange={(e) => setMonths(e.target.value)}
+        />
       </div>
-
-      <div style={{ marginTop: 12 }}>
-        <button onClick={runAndSave} disabled={loading} style={{ padding: '8px 12px' }}>
-          {loading ? 'Running...' : 'Run & Save'}
-        </button>
-        <button onClick={() => { setResult(null); setError(null); }} style={{ marginLeft: 8 }}>Reset</button>
-      </div>
-
-      {error && <div style={{ color: 'salmon', marginTop: 12 }}>{error}</div>}
-
+      <button
+        onClick={handleCalculate}
+        disabled={saving}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        {saving ? "Saving..." : "Calculate ROI"}
+      </button>
       {result && (
-        <div style={{ marginTop: 14 }}>
-          <h4>Result</h4>
-          <div><strong>Total gain:</strong> {result.totalGain}</div>
-          <div><strong>Net:</strong> {result.net}</div>
-          <div><strong>ROI %:</strong> {result.roiPct === null ? '—' : result.roiPct.toFixed(1)}</div>
-          <div><strong>Payback month:</strong> {result.paybackMonth ?? 'N/A'}</div>
-          <details style={{ marginTop: 8 }}>
-            <summary>Monthly balances</summary>
-            <pre style={{ maxHeight: 200, overflow: 'auto' }}>{JSON.stringify(result.monthlyBalances, null, 2)}</pre>
-          </details>
+        <div className="mt-4 border p-2 rounded bg-gray-50">
+          <div>Final Value: {result.finalValue}</div>
+          <div>ROI %: {result.roiPercent}</div>
         </div>
       )}
     </div>
