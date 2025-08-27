@@ -1,0 +1,7 @@
+node_modules
+artifacts
+dist
+.vite
+.DS_Store
+.env
+src/api/config.js
