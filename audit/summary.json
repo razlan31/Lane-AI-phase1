@@ -1,0 +1,116 @@
+{
+  "audit_summary": {
+    "specification_documents": {
+      "master_plan_v3": "NOT_FOUND",
+      "experience_flow_v2": "NOT_FOUND",
+      "impact": "Cannot perform complete spec compliance audit"
+    },
+    "build_status": {
+      "status": "FAILED",
+      "error": "useAlerts export missing from AlertStrip.jsx",
+      "blocker": true
+    },
+    "component_status_counts": {
+      "OK": 18,
+      "PARTIAL": 4, 
+      "MISSING": 8,
+      "INCORRECT": 1
+    },
+    "top_10_action_items": [
+      {
+        "priority": "P0",
+        "title": "Fix build failure - useAlerts export",
+        "file": "src/components/notifications/AlertStrip.jsx",
+        "credits": 0.1,
+        "blocker": true
+      },
+      {
+        "priority": "P1", 
+        "title": "Implement CSV import flow",
+        "file": "src/components/WorksheetRenderer.jsx",
+        "credits": 3,
+        "backend_required": true
+      },
+      {
+        "priority": "P1",
+        "title": "Complete export functionality", 
+        "file": "src/components/WorksheetRenderer.jsx",
+        "credits": 2,
+        "backend_required": false
+      },
+      {
+        "priority": "P1",
+        "title": "Fix mobile responsive layout",
+        "file": "src/pages/HQDashboard.jsx",
+        "credits": 3,
+        "backend_required": false
+      },
+      {
+        "priority": "P2", 
+        "title": "Complete Explain overlay integration",
+        "file": "src/components/overlays/ExplainOverlay.jsx", 
+        "credits": 2,
+        "backend_required": true
+      },
+      {
+        "priority": "P2",
+        "title": "Enhance Worksheet Supabase integration",
+        "file": "src/components/WorksheetRenderer.jsx",
+        "credits": 4,
+        "backend_required": true
+      },
+      {
+        "priority": "P2",
+        "title": "Add advanced formula editor",
+        "file": "src/components/WorksheetRenderer.jsx", 
+        "credits": 5,
+        "backend_required": false
+      },
+      {
+        "priority": "P2",
+        "title": "Authentication system",
+        "file": "NEW - auth components",
+        "credits": 6,
+        "backend_required": true
+      },
+      {
+        "priority": "P3",
+        "title": "Real-time collaboration",
+        "file": "Multiple components",
+        "credits": 10,
+        "backend_required": true
+      },
+      {
+        "priority": "P0", 
+        "title": "Fix Progress component import path",
+        "file": "src/pages/OnboardingFlow.jsx",
+        "credits": 0.1,
+        "backend_required": false
+      }
+    ],
+    "cost_estimates": {
+      "total_credits_min": 36,
+      "total_credits_max": 57,
+      "p0_blockers": 0.2,
+      "p1_high_priority": 10,
+      "p2_medium_priority": 15,
+      "quick_wins": 2,
+      "large_changes": 25
+    },
+    "backend_dependencies": [
+      "CSV processing endpoint",
+      "AI explanation API", 
+      "Worksheet persistence (Supabase)",
+      "User authentication",
+      "Real-time sync infrastructure",
+      "Export generation"
+    ],
+    "completion_status": "INCOMPLETE",
+    "missing_items": [
+      "Master Plan v3 specification document",
+      "ExperienceFlow v2 specification document", 
+      "Screenshot map (blocked by build failure)",
+      "Mobile responsive testing (blocked by build failure)"
+    ]
+  }
+}
