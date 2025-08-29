@@ -130,4 +130,8 @@ export const useAlerts = () => {
   };
 };
 
+// Named export for import { AlertStrip }
+export { AlertStrip };
+
+// Default export for import AlertStrip 
 export default AlertStrip;
