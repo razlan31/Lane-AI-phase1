@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Check, ArrowRight, Building, User, Users, Lightbulb } from 'lucide-react';
 
 const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
@@ -221,6 +221,10 @@ const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create First Venture</DialogTitle>
+          <DialogDescription>Set up your first business venture to get started</DialogDescription>
+        </DialogHeader>
         {/* Progress Bar */}
         <div className="flex gap-2 mb-6">
           {steps.map((_, index) => (

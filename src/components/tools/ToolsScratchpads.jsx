@@ -12,7 +12,7 @@ import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
 import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/dialog';
 
 const ToolsScratchpads = ({ 
   onPromoteToWorkspace,
@@ -103,6 +103,9 @@ const ToolsScratchpads = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Promote to Workspace</DialogTitle>
+          <DialogDescription>
+            Move this scratchpad to a venture workspace where it will become a permanent worksheet.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -300,7 +303,10 @@ const ToolsScratchpads = ({
         <Dialog open={!!selectedWorksheet} onOpenChange={() => setSelectedWorksheet(null)}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
             <DialogHeader>
-              <DialogTitle>{selectedWorksheet.name}</DialogTitle>
+              <DialogTitle>{selectedWorksheet?.name}</DialogTitle>
+              <DialogDescription>
+                Edit your scratchpad worksheet. Changes are automatically saved.
+              </DialogDescription>
             </DialogHeader>
             <WorksheetRenderer 
               worksheetId={selectedWorksheet.id}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { MessageCircle, Send, Paperclip, Pin, MoreHorizontal, Command } from 'lucide-react';
 
 const AIChatShell = ({ isOpen, onToggle, initialContext = null }) => {
@@ -73,6 +73,10 @@ const AIChatShell = ({ isOpen, onToggle, initialContext = null }) => {
       {/* Chat Dialog */}
       <Dialog open={isOpen} onOpenChange={onToggle}>
         <DialogContent className="max-w-4xl h-[600px] p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>AI Chat Interface</DialogTitle>
+            <DialogDescription>Chat with AI assistant</DialogDescription>
+          </DialogHeader>
           <div className="flex h-full">
             {/* Sidebar - Threads */}
             <div className="w-64 border-r border-border bg-muted/30 p-4">
@@ -210,6 +214,10 @@ const CommandBar = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Command Bar</DialogTitle>
+          <DialogDescription>Quick actions and commands</DialogDescription>
+        </DialogHeader>
         <div className="border-b border-border p-4">
           <div className="flex items-center gap-2">
             <Command className="h-4 w-4 text-muted-foreground" />

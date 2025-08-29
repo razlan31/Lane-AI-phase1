@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { AlertTriangle, CheckCircle, ArrowRight, X } from 'lucide-react';
 
 const PromotionGate = ({ 
@@ -62,6 +62,12 @@ const PromotionGate = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Promote {itemType}</DialogTitle>
+          <DialogDescription>
+            Confirm promotion from {currentState} to {targetState}
+          </DialogDescription>
+        </DialogHeader>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-warning" />

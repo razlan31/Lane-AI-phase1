@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Compass, List, Clock, X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 
 const FounderModeOverlay = ({ isOpen, onClose }) => {
@@ -16,6 +16,10 @@ const FounderModeOverlay = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[80vh] p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Founder Mode Dashboard</DialogTitle>
+          <DialogDescription>Advanced founder analytics and insights</DialogDescription>
+        </DialogHeader>
         <DialogHeader className="p-6 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <Compass className="h-5 w-5 text-primary" />
