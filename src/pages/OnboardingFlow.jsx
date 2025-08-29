@@ -368,7 +368,7 @@ const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <div className="space-y-4">
-            <ProgressBar value={progress} className="w-full" />
+            <Progress value={progress} className="w-full" />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Step {currentStep + 1} of {totalSteps}</span>
               <span>{Math.round(progress)}% complete</span>
@@ -384,14 +384,6 @@ const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
   );
 };
 
-// Local ProgressBar component (renamed to avoid conflict)
-const ProgressBar = ({ value, className }) => (
-  <div className={cn("w-full bg-secondary rounded-full h-2", className)}>
-    <div 
-      className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
-      style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-    />
-  </div>
-);
+// Note: Now using proper Progress component from ui/progress.jsx
 
 export default OnboardingFlow;

@@ -8,6 +8,7 @@ import { AIChatShell, CommandBar } from './components/chat/AIChat';
 import AlertStrip, { useAlerts } from './components/notifications/AlertStrip';
 import OnboardingFlow from './pages/OnboardingFlow';
 import FounderModeOverlay from './components/overlays/FounderMode';
+import UpgradeModal from './components/modals/UpgradeModal';
 import { AutosaveStatus, useAutosaveNotifications } from './components/notifications/AutosaveNotifications';
 import DisplaySettings from './components/settings/DisplaySettings';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
@@ -27,6 +28,8 @@ function App() {
   const [showCommandBar, setShowCommandBar] = useState(false);
   const [showFounderMode, setShowFounderMode] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeTargetFeature, setUpgradeTargetFeature] = useState(null);
 
   // Mock ventures data
   const ventures = [
@@ -37,7 +40,7 @@ function App() {
   const { alerts, addAlert, removeAlert } = useAlerts();
   const { saveStatus, lastSaved } = useAutosaveNotifications();
 
-  // Global shortcuts
+  // Global shortcuts and upgrade modal listener
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -45,8 +48,19 @@ function App() {
         setShowCommandBar(true);
       }
     };
+    
+    const handleUpgradeModal = (e) => {
+      setUpgradeTargetFeature(e.detail.feature);
+      setShowUpgradeModal(true);
+    };
+    
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('showUpgradeModal', handleUpgradeModal);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('showUpgradeModal', handleUpgradeModal);
+    };
   }, []);
 
   const handleModeChange = (mode) => {
@@ -189,6 +203,11 @@ function App() {
           <CommandBar isOpen={showCommandBar} onClose={() => setShowCommandBar(false)} />
           <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
           <OnboardingFlow isOpen={showOnboarding} onComplete={() => setShowOnboarding(false)} onClose={() => setShowOnboarding(false)} />
+          <UpgradeModal 
+            isOpen={showUpgradeModal} 
+            onClose={() => setShowUpgradeModal(false)} 
+            targetFeature={upgradeTargetFeature} 
+          />
         </div>
       </TooltipProvider>
     </DisplaySettingsProvider>

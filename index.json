@@ -1,0 +1,62 @@
+{
+  "project": "LaneAI",
+  "version": "1.0.0",
+  "phase": "Phase-1 Frontend",
+  "routes": {
+    "/": "HQ Dashboard (default)",
+    "/hq": "HQ Dashboard",
+    "/venture/:id": "Venture Hub",
+    "/personal": "Personal Dashboard", 
+    "/tools": "Tools & Scratchpads",
+    "/reports": "Global Reports",
+    "/settings": "Settings",
+    "/activity": "Activity Log",
+    "/admin": "Admin Dashboard (dev only)"
+  },
+  "modes": [
+    "goal",
+    "workspace", 
+    "stream",
+    "playground"
+  ],
+  "components": {
+    "pages": [
+      "src/pages/HQDashboard.jsx",
+      "src/pages/OnboardingFlow.jsx"
+    ],
+    "layout": [
+      "src/components/navigation/TopBar.jsx",
+      "src/components/navigation/Sidebar.jsx"
+    ],
+    "primitives": [
+      "src/components/primitives/KpiCard.jsx",
+      "src/components/primitives/QuickActionsDock.jsx",
+      "src/components/primitives/LockWrapper.jsx"
+    ],
+    "modals": [
+      "src/components/modals/UpgradeModal.jsx",
+      "src/components/modals/PromotionGate.jsx"
+    ],
+    "worksheets": [
+      "src/components/WorksheetRenderer.jsx"
+    ]
+  },
+  "paywalledFeatures": [
+    "unlimited_ventures",
+    "advanced_worksheets", 
+    "ai_chat",
+    "reports",
+    "founder_mode",
+    "formula_editor",
+    "export_all",
+    "collaboration"
+  ],
+  "pricingPlans": [
+    "free",
+    "founders", 
+    "pro",
+    "enterprise"
+  ],
+  "buildStatus": "✅ Build successful",
+  "lastUpdated": "2025-01-15"
+}
