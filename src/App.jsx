@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
-import HQDashboard from './components/dashboards/HQDashboard';
+import HQDashboard from './pages/HQDashboard';
 import VentureDashboard from './components/dashboards/VentureDashboard';
 import PricingPage from './components/billing/PricingPage';
 import BillingTab from './components/billing/BillingTab';
 import { AIChatShell, CommandBar } from './components/chat/AIChat';
 import AlertStrip, { useAlerts } from './components/notifications/AlertStrip';
-import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
+import OnboardingFlow from './pages/OnboardingFlow';
 import FounderModeOverlay from './components/overlays/FounderMode';
 import { AutosaveStatus, useAutosaveNotifications } from './components/notifications/AutosaveNotifications';
 import DisplaySettings from './components/settings/DisplaySettings';
