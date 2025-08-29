@@ -3,6 +3,7 @@ import KpiCard from '../components/primitives/KpiCard';
 import { AlertStrip } from '../components/notifications/AlertStrip';
 import PortfolioTiles from '../components/portfolio/PortfolioTiles';
 import QuickActionsDock from '../components/primitives/QuickActionsDock';
+import HQEmptyState from '../components/states/HQEmptyState';
 import { DollarSign, TrendingUp, Clock, Users, Zap, Target } from 'lucide-react';
 
 const HQDashboard = ({ ventures = [] }) => {
@@ -143,6 +144,39 @@ const HQDashboard = ({ ventures = [] }) => {
     console.log('Create new venture');
   };
 
+  // Show empty state if no ventures exist
+  if (!ventures || ventures.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-40">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-foreground">Mission Control</h1>
+                <p className="text-sm text-muted-foreground mt-1">Your business command center</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Empty State */}
+        <main className="container mx-auto px-6 py-12">
+          <HQEmptyState />
+        </main>
+
+        {/* Quick Actions Dock */}
+        <QuickActionsDock
+          onAddData={handleQuickActions.onAddData}
+          onSignals={handleQuickActions.onSignals}
+          onRunFlow={handleQuickActions.onRunFlow}
+          onExport={handleQuickActions.onExport}
+          onChat={handleQuickActions.onChat}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -157,7 +191,7 @@ const HQDashboard = ({ ventures = [] }) => {
         </div>
       </header>
 
-      {/* Top Strip - KPI Cards */}
+      {/* Top Strip - KPI Cards (Only show when user has ventures) */}
       <section className="border-b border-border bg-card/50">
         <div className="container mx-auto px-6 py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -181,11 +215,11 @@ const HQDashboard = ({ ventures = [] }) => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-6 space-y-8">
         {/* Alerts Strip */}
-        {ventures.length > 0 && alerts.length > 0 ? (
+        {alerts.length > 0 ? (
           <section>
             <AlertStrip alerts={alerts} onDismiss={(id) => console.log('Dismiss alert:', id)} />
           </section>
-        ) : ventures.length > 0 && (
+        ) : (
           <section>
             <div className="text-center py-4 text-sm text-muted-foreground">
               No alerts — you're all set ✓
@@ -235,19 +269,17 @@ const HQDashboard = ({ ventures = [] }) => {
         </section>
 
         {/* Portfolio Tiles */}
-        {ventures.length > 0 && (
-          <section>
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-foreground mb-2">Portfolio</h2>
-              <p className="text-sm text-muted-foreground">Your ventures at a glance</p>
-            </div>
-            <PortfolioTiles 
-              ventures={mockVentureDetails}
-              onVentureClick={handleVentureClick}
-              onCreateVenture={handleCreateVenture}
-            />
-          </section>
-        )}
+        <section>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground mb-2">Portfolio</h2>
+            <p className="text-sm text-muted-foreground">Your ventures at a glance</p>
+          </div>
+          <PortfolioTiles 
+            ventures={mockVentureDetails}
+            onVentureClick={handleVentureClick}
+            onCreateVenture={handleCreateVenture}
+          />
+        </section>
       </main>
 
       {/* Quick Actions Dock */}

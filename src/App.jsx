@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './pages/HQDashboard';
 import VentureDashboard from './components/dashboards/VentureDashboard';
+import VentureWorkspace from './components/workspaces/VentureWorkspace';
+import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import PricingPage from './components/billing/PricingPage';
 import BillingTab from './components/billing/BillingTab';
 import { AIChatShell, CommandBar } from './components/chat/AIChat';
@@ -212,9 +214,9 @@ function App() {
     // Workspace mode views
     switch (currentView) {
       case 'venture-1':
-        return <VentureDashboard ventureId={1} ventureName="Coffee Kiosk" />;
+        return <VentureWorkspace ventureId={1} ventureName="Coffee Kiosk" />;
       case 'venture-2':
-        return <VentureDashboard ventureId={2} ventureName="Tech Startup" />;
+        return <VentureWorkspace ventureId={2} ventureName="Tech Startup" />;
       case 'personal':
         return (
           <div className="p-6">
@@ -223,22 +225,7 @@ function App() {
           </div>
         );
       case 'tools':
-        return (
-          <div className="p-6 space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold mb-4">Tools & Scratchpads</h1>
-              <p className="text-muted-foreground">Custom worksheets and templates</p>
-            </div>
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setShowTemplatesGallery(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Browse Templates
-              </button>
-            </div>
-          </div>
-        );
+        return <ToolsScratchpads ventures={ventures} />;
       case 'reports':
         return (
           <div className="p-6">
