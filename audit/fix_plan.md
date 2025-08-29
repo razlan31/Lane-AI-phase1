@@ -1,212 +1,356 @@
 # LaneAI Fix Plan - Prioritized Action Items
 
-## Immediate Blockers (P0)
+## Immediate Blockers (P0) - Must Fix First
 
-### 1. Fix Build Failure - useAlerts Export
+### 1. Fix HMR Reload Failure for AlertStrip
 **Priority:** P0 (CRITICAL)
 **File:** `src/components/notifications/AlertStrip.jsx`
-**Lines:** 32-35 (after AlertStrip component)
-**Exact Change:**
+**Issue:** Hot Module Reload failing, affecting development workflow
+**Root Cause:** Likely syntax error or import issue in AlertStrip component
+
+**Exact Fix Required:**
 ```javascript
-// Add this after line 32 (after AlertStrip component closes):
-export const useAlerts = () => {
-  const [alerts, setAlerts] = React.useState([]);
-  
-  const addAlert = (alert) => {
-    const newAlert = { id: Date.now() + Math.random(), level: 'info', ...alert };
-    setAlerts(prev => [...prev, newAlert]);
-  };
-  
-  const removeAlert = (alertId) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-  };
-  
-  const clearAlerts = () => setAlerts([]);
-  
-  return { alerts, addAlert, removeAlert, clearAlerts };
-};
+// Check for syntax errors in AlertStrip.jsx
+// Verify all imports are correct
+// Ensure exports match import statements in App.jsx
 ```
-**Test:** `npm run build` should succeed
-**Credits:** Low (0.1) - Simple export addition
-**Time:** 5 minutes
+
+**Acceptance Test:** 
+- `npm run dev` with no HMR errors in console
+- Hot reload works when editing AlertStrip component
+
+**Credits:** Low (0.5) - Debug and syntax fix
+**Time:** 1-2 hours
 **Risk:** Low
 
 ---
 
-## High Priority Fixes (P1)
+## High Priority Features (P1) - Core Functionality
 
-### 2. Implement CSV Import Flow
-**Priority:** P1
+### 2. Implement Real Backend Integration
+**Priority:** P1 (HIGH)
+**Files:** All components using Supabase stubs
+**Issue:** No real data persistence - all calls are stubs
+
+**Backend Required:** `BACKEND: US`
+**Frontend Changes Needed:**
+```javascript
+// Replace all stub calls with real Supabase integration
+// Files to update:
+// - src/components/WorksheetRenderer.jsx (lines 156-163)
+// - src/pages/HQDashboard.jsx (KPI data loading)
+// - src/components/portfolio/PortfolioTiles.jsx (venture data)
+```
+
+**Endpoints Needed:**
+- `GET /worksheets` - Fetch user worksheets
+- `POST /worksheets` - Save worksheet data
+- `PUT /worksheets/:id` - Update worksheet
+- `GET /ventures` - Fetch user ventures
+- `GET /kpis` - Fetch dashboard KPI data
+
+**Acceptance Test:** 
+- Create worksheet → data persists after page refresh
+- KPI values come from real database
+- Multiple users see their own data
+
+**Credits:** High (5-6) - Major backend integration
+**Time:** 1-2 weeks
+**Risk:** High
+
+### 3. Implement CSV Import/Export Functionality
+**Priority:** P1 (HIGH)
 **Files to Create:**
 - `src/components/modals/CsvUploadModal.jsx`
 - `src/components/modals/CsvMappingModal.jsx`
-**Integration:** `src/components/WorksheetRenderer.jsx` lines 180-200
-**Change Required:**
+- `src/lib/csvUtils.js`
+
+**Files to Update:**
+- `src/components/WorksheetRenderer.jsx` (lines 180-200)
+
+**Exact Changes:**
 ```javascript
-// Add import buttons and handlers
+// Add to WorksheetRenderer.jsx
+const [showCsvUpload, setShowCsvUpload] = useState(false);
+
 const handleCsvImport = () => setShowCsvUpload(true);
-// Replace stub with actual modal component
-{showCsvUpload && <CsvUploadModal onClose={() => setShowCsvUpload(false)} />}
+
+const handleCsvExport = () => {
+  const csvData = generateCsvFromWorksheet(worksheet, values);
+  downloadFile(csvData, `${worksheet.title}.csv`, 'text/csv');
+};
+
+// Add to render:
+{showCsvUpload && (
+  <CsvUploadModal 
+    onClose={() => setShowCsvUpload(false)}
+    onImport={(data) => handleCsvImport(data)}
+  />
+)}
 ```
-**Backend Required:** `BACKEND: US` - CSV parsing endpoint
-**Test:** Upload CSV → map columns → create worksheet
-**Credits:** Medium (2-3) - New modal components
-**Time:** 1-2 days
+
+**Backend Required:** `BACKEND: US` - CSV processing endpoint
+**Acceptance Test:**
+- Upload CSV → map columns → create worksheet with data
+- Export worksheet → download CSV file
+
+**Credits:** Medium-High (3-4) - New modal components + file handling
+**Time:** 3-5 days  
 **Risk:** Medium
 
-### 3. Complete Export Functionality  
-**Priority:** P1
-**File:** `src/components/WorksheetRenderer.jsx` lines 156-163
-**Change Required:**
-```javascript
-// Replace stub with actual export
-const handleExport = () => {
-  const csvData = generateCsvFromWorksheet(worksheet, values);
-  downloadCsv(csvData, `${worksheet.title}.csv`);
-};
-```
-**Files to Create:** `src/lib/exportUtils.js`
-**Test:** Export button → CSV download
-**Credits:** Low-Medium (1-2) - Utility functions
-**Time:** 1 day  
-**Risk:** Low
+### 4. Add Authentication System
+**Priority:** P1 (HIGH)
+**Files to Create:**
+- `src/components/auth/LoginForm.jsx`
+- `src/components/auth/SignupForm.jsx`  
+- `src/hooks/useAuth.jsx`
+- `src/contexts/AuthContext.jsx`
 
-### 4. Fix Mobile Responsive Layout
-**Priority:** P1 (after build fix)
-**Files:** 
-- `src/pages/HQDashboard.jsx` lines 200-250 (grid layouts)
-- `src/components/primitives/KpiCard.jsx` (card sizing)
-**Changes:** Add responsive breakpoints to grid layouts
-**Test:** Test on mobile viewport sizes
-**Credits:** Medium (2-3) - Layout adjustments
-**Time:** 1 day
-**Risk:** Low
+**Files to Update:**
+- `src/App.jsx` - Add auth routing and protection
+
+**Exact Changes:**
+```javascript
+// Add to App.jsx
+const [user, setUser] = useState(null);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  // Check auth state on load
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setUser(session?.user ?? null);
+    setLoading(false);
+  });
+}, []);
+
+// Protect routes
+if (loading) return <LoadingSpinner />;
+if (!user) return <AuthFlow onAuth={setUser} />;
+```
+
+**Backend Required:** `BACKEND: US` - Supabase auth configuration
+**Acceptance Test:**
+- User can sign up with email/password
+- User can log in and see their data
+- User sessions persist across browser refresh
+
+**Credits:** High (4-5) - Complete auth flow
+**Time:** 1 week
+**Risk:** Medium
 
 ---
 
-## Medium Priority (P2) 
+## Medium Priority (P2) - Enhanced Features
 
-### 5. Complete Explain Overlay Integration
+### 5. Complete AI Chat Integration  
 **Priority:** P2
-**File:** `src/components/overlays/ExplainOverlay.jsx`
-**Change:** Connect to AI chat shell with proper context
-**Backend Required:** `BACKEND: US` - AI explanation endpoint
-**Credits:** Medium (2) - Component integration
-**Time:** 1 day
+**File:** `src/components/chat/AIChat.jsx`
+**Issue:** AI calls return placeholder responses only
+
+**Changes Required:**
+```javascript
+// Replace aiClientStub with real AI integration
+const handleSend = async () => {
+  const response = await aiClient.chat({
+    message: inputValue,
+    context: getCurrentContext(),
+    worksheetData: activeWorksheet
+  });
+  // Handle real AI response
+};
+```
+
+**Backend Required:** `BACKEND: US` - AI chat endpoint
+**Credits:** Medium (2-3) - API integration
+**Time:** 2-3 days
 **Risk:** Medium
 
-### 6. Enhance Worksheet Supabase Integration
+### 6. Add Real Worksheet Calculations
 **Priority:** P2  
-**File:** `src/components/WorksheetRenderer.jsx` lines 22-70
-**Change:** Replace mock configs with real Supabase queries
-**Backend Required:** `BACKEND: US` - Worksheet schema + APIs
-**Credits:** High (3-4) - Data integration
-**Time:** 2-3 days
-**Risk:** High
+**File:** `src/components/WorksheetRenderer.jsx` (lines 116-140)
+**Issue:** `calculateOutputs()` returns mock data
 
-### 7. Add Advanced Formula Editor
+**Changes Required:**
+```javascript
+const calculateOutputs = () => {
+  const outputs = {};
+  worksheet.outputs.forEach(output => {
+    try {
+      // Real formula evaluation based on inputs
+      outputs[output.id] = evaluateFormula(output.formula, values);
+    } catch (error) {
+      outputs[output.id] = { error: 'Formula error', value: 0 };
+    }
+  });
+  return outputs;
+};
+```
+
+**Credits:** Medium (2) - Formula evaluation logic
+**Time:** 2-3 days
+**Risk:** Low-Medium
+
+### 7. Fix Mobile Responsiveness
 **Priority:** P2
-**File:** `src/components/WorksheetRenderer.jsx`
-**Change:** Add Pro-gated formula editing UI
-**Files to Create:** `src/components/worksheet/FormulaEditor.jsx`
-**Credits:** High (4-5) - Complex UI component
-**Time:** 3-4 days
-**Risk:** High
+**Files:** 
+- `src/pages/HQDashboard.jsx` (grid layouts)
+- `src/components/primitives/KpiCard.jsx`
+- All modal components
+
+**Changes Required:**
+```javascript
+// Update grid classes for mobile
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+// Add mobile-specific modal sizing
+<DialogContent className="max-w-[95vw] md:max-w-4xl">
+```
+
+**Acceptance Test:** Test on mobile viewport - all features accessible
+**Credits:** Medium (2-3) - Layout responsive updates
+**Time:** 2-3 days
+**Risk:** Low
 
 ---
 
 ## Quick Wins (<1 Credit Each)
 
-### 8. Fix Progress Component Import
-**File:** `src/pages/OnboardingFlow.jsx` line 6
-**Change:** Update import path to use new ProgressBar component
-**Credits:** 0.1
-**Time:** 2 minutes
-
-### 9. Add Missing Button Labels
-**Files:** Various button components
-**Change:** Ensure all buttons have proper text/aria-labels
+### 8. Fix Onboarding Redirect Flow
+**File:** `src/pages/OnboardingFlow.jsx` (lines 125-130)
+**Issue:** Ensure proper redirect to HQ after completion
+**Change:** Verify `onComplete()` prop properly routes to HQ
 **Credits:** 0.2
 **Time:** 30 minutes
 
-### 10. Update Modal Titles
-**Files:** Modal components
-**Change:** Ensure consistent title formatting
-**Credits:** 0.1
-**Time:** 15 minutes
+### 9. Add Loading States
+**Files:** All components with async operations
+**Change:** Add loading spinners during data operations
+**Credits:** 0.5
+**Time:** 2 hours
+
+### 10. Improve Error Handling
+**Files:** API call components
+**Change:** Add try/catch blocks and error state UI
+**Credits:** 0.5
+**Time:** 2 hours
 
 ---
 
-## Larger Changes (>3 Credits)
+## Advanced Features (P3) - Future Enhancements
 
-### 11. Authentication System
-**Priority:** P2
-**Files to Create:**
-- `src/components/auth/LoginForm.jsx`
-- `src/components/auth/SignupForm.jsx`
-- `src/hooks/useAuth.jsx`
-**Backend Required:** `BACKEND: US` - Supabase auth setup
-**Credits:** High (5-6) - Complete auth flow
-**Time:** 1 week
-**Risk:** High
+### 11. Advanced Formula Editor
+**Priority:** P3
+**File:** `src/components/WorksheetRenderer.jsx`
+**Description:** Pro-tier formula editing interface
+**Credits:** High (4-5)
+**Time:** 1-2 weeks
 
 ### 12. Real-time Collaboration
+**Priority:** P3  
+**Files:** Multiple components
+**Description:** Multi-user editing and sync
+**Backend Required:** `BACKEND: US` - WebSocket infrastructure
+**Credits:** Very High (8-10)
+**Time:** 3-4 weeks
+
+### 13. Advanced Analytics Dashboard
 **Priority:** P3
-**Files:** Multiple component updates for multi-user
-**Backend Required:** `BACKEND: US` - WebSocket infrastructure  
-**Credits:** Very High (8-10) - Major feature
+**Description:** Detailed venture analytics and insights
+**Credits:** High (6-7)
 **Time:** 2-3 weeks
-**Risk:** Very High
 
 ---
 
-## Cost Summary
+## Cost Summary & Timeline
 
-### Total Estimated Credits:
-- **P0 Fixes:** 0.1 credits
-- **P1 Fixes:** 8-12 credits  
-- **P2 Fixes:** 12-18 credits
-- **Quick Wins:** 1-2 credits
-- **Large Changes:** 15-25 credits
-- **Grand Total:** 36-57 credits
+### Total Estimated Credits by Priority:
+- **P0 Fixes:** 0.5 credits
+- **P1 Core Features:** 12-15 credits  
+- **P2 Enhancements:** 8-10 credits
+- **Quick Wins:** 2-3 credits
+- **P3 Advanced:** 18-25 credits
+- **Grand Total:** 40-53 credits
 
-### Time Estimates:
-- **Week 1:** Fix blockers + CSV import (P0-P1)
-- **Week 2:** Mobile responsive + exports (P1)  
-- **Week 3-4:** Explain overlay + advanced features (P2)
-- **Month 2+:** Authentication + collaboration (P3)
+### Implementation Timeline:
+- **Week 1:** Fix P0 blocker + start CSV import (3 credits)
+- **Week 2:** Complete CSV + start auth system (4 credits) 
+- **Week 3:** Finish auth + backend integration (6 credits)
+- **Week 4:** AI chat + worksheet calculations (4 credits)
+- **Month 2:** Mobile responsive + P2 features (8 credits)
+- **Month 3+:** Advanced features as needed (18+ credits)
+
+---
+
+## Backend Dependencies
+
+**Items requiring backend implementation:**
+
+1. **Authentication System**
+   - Supabase auth configuration
+   - User session management
+   - Row-level security policies
+
+2. **Data Persistence**
+   - Worksheet CRUD operations
+   - Venture management APIs  
+   - KPI data endpoints
+
+3. **CSV Processing**
+   - File upload handling
+   - CSV parsing and validation
+   - Data mapping services
+
+4. **AI Integration**
+   - Chat completion endpoints
+   - Context-aware responses
+   - Worksheet analysis
+
+5. **Export Services**
+   - PDF generation
+   - Advanced CSV exports
+   - Report compilation
+
+6. **Real-time Features**
+   - WebSocket connections
+   - Collaboration sync
+   - Live updates
 
 ---
 
 ## Risk Assessment
 
 ### Low Risk (Safe to implement):
-- Build fixes
-- Export utilities  
-- Mobile responsive
+- Fix HMR issues
+- Mobile responsiveness  
+- Loading states
+- Error handling
 - UI polish
 
-### Medium Risk (Needs testing):
-- CSV import modals
-- Explain overlay integration
-- Modal flows
+### Medium Risk (Needs careful testing):
+- CSV import/export modals
+- Authentication integration
+- AI chat connection
+- Formula calculations
 
-### High Risk (Major changes):
-- Supabase integration
-- Authentication system
-- Formula editor
-- Real-time features
+### High Risk (Major architectural changes):
+- Backend integration
+- Real-time collaboration
+- Advanced formula editor
+- Multi-tenant data isolation
 
 ---
 
-## Backend Dependencies
+## Success Metrics
 
-Items marked `BACKEND: US` require server-side implementation:
-1. **CSV processing endpoint** - Parse/validate uploaded files
-2. **AI explanation API** - Generate contextual help text
-3. **Worksheet persistence** - Supabase schema + CRUD operations  
-4. **User authentication** - Supabase auth configuration
-5. **Real-time sync** - WebSocket or polling for collaboration
-6. **Export generation** - Server-side PDF/advanced CSV creation
+**Phase 1 Complete When:**
+- ✅ No build/HMR errors
+- ✅ Users can create and save worksheets with real data
+- ✅ CSV import/export working end-to-end
+- ✅ Authentication system functional
+- ✅ Mobile responsive design verified
+- ✅ AI chat provides real responses
 
-Frontend will call these via client stubs that are already stubbed in the codebase.
+**Quality Gates:**
+- All P0 and P1 items resolved
+- No console errors in production build
+- Mobile viewport testing passed
+- User acceptance testing completed
