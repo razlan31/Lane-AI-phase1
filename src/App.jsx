@@ -15,7 +15,8 @@ import { AutosaveStatus, useAutosaveNotifications } from './components/notificat
 import DisplaySettings from './components/settings/DisplaySettings';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import TopBar from './components/navigation/TopBar';
-import Sidebar from './components/navigation/Sidebar';
+import SidebarRestructured from './components/navigation/SidebarRestructured';
+import BuildModal from './components/modals/BuildModal';
 import GoalChatMode from './components/modes/GoalChatMode';
 import StreamMode from './components/modes/StreamMode';
 import PlaygroundMode from './components/modes/PlaygroundMode';
@@ -28,8 +29,7 @@ import CsvMappingModal from './components/csv/CsvMappingModal';
 import TemplatesGallery from './components/templates/TemplatesGallery';
 
 function App() {
-  const [currentMode, setCurrentMode] = useState('workspace');
-  const [currentView, setCurrentView] = useState('hq');
+  const [currentView, setCurrentView] = useState('hq'); // Always start at HQ after onboarding
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showCommandBar, setShowCommandBar] = useState(false);
@@ -37,6 +37,9 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeTargetFeature, setUpgradeTargetFeature] = useState(null);
+  
+  // New Build Modal state
+  const [showBuildModal, setShowBuildModal] = useState(false);
   
   // Flow state
   const [isOnboarded, setIsOnboarded] = useState(false);
@@ -77,9 +80,12 @@ function App() {
       const onboarded = await userProfile.isOnboarded();
       setIsOnboarded(onboarded);
       
-      // Show onboarding for new users
+      // Show onboarding ONLY for new users, NEVER again after completion
       if (!onboarded) {
         setShowOnboarding(true);
+        setCurrentView('onboarding'); // Dedicated onboarding view
+      } else {
+        setCurrentView('hq'); // Always land on HQ after onboarding
       }
     };
 
@@ -106,24 +112,12 @@ function App() {
     };
   }, []);
 
-  const handleModeChange = (mode) => {
-    setCurrentMode(mode);
-    // Set appropriate default view for each mode
-    if (mode === 'goal') {
-      setShowGoalChat(true);
-    } else if (mode === 'workspace') {
-      setCurrentView('hq');
-    } else if (mode === 'stream') {
-      setCurrentView('stream');
-    } else if (mode === 'playground') {
-      setCurrentView('playground');
-    }
-  };
-
+  // Handle onboarding completion - set flag and redirect to HQ
   const handleOnboardingComplete = async (profileData) => {
     await userProfile.completeOnboarding(profileData);
     setIsOnboarded(true);
     setShowOnboarding(false);
+    setCurrentView('hq'); // Always go to HQ after onboarding
     
     // Create a starter venture if onboarding includes it
     if (profileData.createStarterVenture) {
@@ -134,9 +128,55 @@ function App() {
       };
       setVentures([newVenture]);
     }
+    
+    // Add welcome message
+    addAlert({
+      type: 'success',
+      message: 'Welcome to LaneAI! Your workspace is ready.',
+      duration: 5000
+    });
   };
 
-  // Build flow handlers
+  // Build Modal Handlers
+  const handleBuildClick = () => {
+    setShowBuildModal(true);
+  };
+
+  const handleCreateVenture = (ventureData) => {
+    console.log('Creating venture:', ventureData);
+    // Add new venture to the list
+    const newVenture = {
+      id: ventures.length + 1,
+      name: ventureData.name || `New Venture ${ventures.length + 1}`,
+      description: ventureData.description || "Created via chat build",
+      ...ventureData
+    };
+    setVentures([...ventures, newVenture]);
+    setCurrentView(`venture-${newVenture.id}`);
+  };
+
+  const handleSelectTemplate = (template) => {
+    console.log('Selected template:', template);
+    handleCreateVenture({ 
+      name: template.name, 
+      description: `Created from ${template.name} template` 
+    });
+  };
+
+  const handlePromoteFromPlayground = (canvasData) => {
+    console.log('Promoting from playground:', canvasData);
+    handleCreateVenture({ 
+      name: 'Playground Venture', 
+      description: 'Created from playground canvas' 
+    });
+  };
+
+  // CSV Upload handlers
+  const handleCsvUpload = () => {
+    setShowBuildModal(false); // Close build modal first
+    setShowCsvUpload(true);
+  };
+
   const handleStartChat = () => {
     setShowGoalChat(true);
   };
@@ -221,17 +261,32 @@ function App() {
     console.log('Promoted playground to workspace:', canvasBlocks);
   };
 
-  const renderCurrentView = () => {
-    // Mode-specific views
-    if (currentMode === 'stream') {
-      return <StreamMode />;
-    }
-    if (currentMode === 'playground') {
-      return <PlaygroundMode onPromoteToWorkspace={handlePromoteToWorkspace} />;
+  // Render main content based on current view
+  const renderMainContent = () => {
+    // Handle onboarding separately - never mix with other views
+    if (!isOnboarded && showOnboarding) {
+      return (
+        <OnboardingFlow 
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingComplete}
+        />
+      );
     }
 
-    // Workspace mode views
+    // Main app views - only show after onboarding is complete
     switch (currentView) {
+      case 'hq':
+        // Show empty state if no ventures, otherwise show HQ dashboard
+        if (ventures.length === 0) {
+          return (
+            <HQEmptyState 
+              onStartChat={handleStartChat}
+              onImportCSV={handleImportCSV}
+              onOpenPlayground={handleOpenPlayground}
+            />
+          );
+        }
+        return <HQDashboard ventures={ventures} />;
       case 'venture-1':
         return <VentureWorkspace ventureId={1} ventureName="Coffee Kiosk" />;
       case 'venture-2':
@@ -252,6 +307,8 @@ function App() {
             <p className="text-muted-foreground">Global reports across all ventures</p>
           </div>
         );
+      case 'stream':
+        return <StreamMode />;
       case 'settings':
         return (
           <div className="p-6">
@@ -272,22 +329,25 @@ function App() {
         return <ActivityLog />;
       case 'admin':
         return <AdminUsageDashboard />;
-      case 'hq':
       default:
-        // Show empty state if no ventures, otherwise show HQ dashboard
-        if (ventures.length === 0) {
-          return (
-            <HQEmptyState 
-              onStartChat={handleStartChat}
-              onImportCSV={handleImportCSV}
-              onOpenPlayground={handleOpenPlayground}
-            />
-          );
-        }
         return <HQDashboard ventures={ventures} />;
     }
   };
 
+  // Don't render main app UI during onboarding - keep it clean and focused
+  if (!isOnboarded && showOnboarding) {
+    return (
+      <DisplaySettingsProvider>
+        <TooltipProvider>
+          <div className="min-h-screen bg-background">
+            {renderMainContent()}
+          </div>
+        </TooltipProvider>
+      </DisplaySettingsProvider>
+    );
+  }
+
+  // Main App Layout - only show after onboarding complete
   return (
     <DisplaySettingsProvider>
       <TooltipProvider>
@@ -302,24 +362,33 @@ function App() {
           />
 
           <div className="flex w-full">
-            {/* Sidebar */}
-            <Sidebar
-              currentMode={currentMode}
-              onModeChange={handleModeChange}
+            {/* Restructured Sidebar */}
+            <SidebarRestructured
               currentView={currentView}
               onViewChange={setCurrentView}
               ventures={ventures}
               isCollapsed={sidebarCollapsed}
               onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onBuildClick={handleBuildClick}
             />
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
               <div className="p-6">
-                {renderCurrentView()}
+                {renderMainContent()}
               </div>
             </main>
           </div>
+
+          {/* Build Modal - 3 tabs for different build approaches */}
+          <BuildModal
+            isOpen={showBuildModal}
+            onClose={() => setShowBuildModal(false)}
+            onCreateVenture={handleCreateVenture}
+            onImportCsv={handleCsvUpload}
+            onSelectTemplate={handleSelectTemplate}
+            onPromoteFromPlayground={handlePromoteFromPlayground}
+          />
 
           {/* AutoSave Status */}
           <div className="fixed bottom-4 right-4 z-50">
@@ -332,11 +401,6 @@ function App() {
           <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
           
           {/* Flow Components */}
-          <OnboardingFlow 
-            isOpen={showOnboarding} 
-            onComplete={handleOnboardingComplete} 
-            onClose={() => setShowOnboarding(false)} 
-          />
           <GoalChatMode 
             isOpen={showGoalChat}
             onCreateVenture={handleGoalChatComplete}
