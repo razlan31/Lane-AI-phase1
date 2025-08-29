@@ -1,135 +1,98 @@
 import React from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
-import KpiCard from './components/primitives/KpiCard';
-import DataTable from './components/primitives/DataTable';
-import TabContainer from './components/primitives/TabContainer';
-import QuickActionsDock from './components/primitives/QuickActionsDock';
-import LockUnlockWrapper from './components/primitives/LockUnlockWrapper';
-import { Activity, TrendingUp, DollarSign, Target } from 'lucide-react';
+import HQDashboard from './components/dashboards/HQDashboard';
+import VentureDashboard from './components/dashboards/VentureDashboard';
+import PricingPage from './components/billing/PricingPage';
+import BillingTab from './components/billing/BillingTab';
 
 function App() {
-  // Sample data for demonstrating primitives
-  const sampleKpis = [
-    {
-      title: "Monthly Revenue",
-      value: 45000,
-      trend: 12.5,
-      trendDirection: "up",
-      state: "live",
-      unit: "currency"
-    },
-    {
-      title: "Burn Rate",
-      value: 8500,
-      trend: -5.2,
-      trendDirection: "down",
-      state: "warning",
-      unit: "currency"
-    },
-    {
-      title: "Runway",
-      value: 18,
-      state: "draft",
-      unit: "number"
-    },
-    {
-      title: "Growth Rate",
-      value: 15.8,
-      trend: 3.2,
-      trendDirection: "up",
-      state: "live",
-      unit: "percentage"
-    }
-  ];
+  const [currentView, setCurrentView] = React.useState('hq'); // 'hq' | 'venture' | 'pricing' | 'billing'
 
-  const sampleTableData = [
-    { expense: "Marketing", amount: 5000, category: "Growth", status: "Active" },
-    { expense: "Engineering", amount: 15000, category: "Core", status: "Active" },
-    { expense: "Office Rent", amount: 3000, category: "Operations", status: "Active" }
-  ];
-
-  const tableColumns = [
-    { key: 'expense', header: 'Expense', editable: true },
-    { key: 'amount', header: 'Amount', editable: true, type: 'number', render: (val) => `$${val?.toLocaleString()}` },
-    { key: 'category', header: 'Category', editable: true },
-    { key: 'status', header: 'Status' }
-  ];
-
-  const tabs = [
-    {
-      value: 'overview',
-      label: 'Overview',
-      icon: Activity,
-      content: (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {sampleKpis.map((kpi, index) => (
-            <KpiCard key={index} {...kpi} />
-          ))}
-        </div>
-      )
-    },
-    {
-      value: 'expenses',
-      label: 'Expenses',
-      icon: DollarSign,
-      badge: 3,
-      content: (
-        <DataTable 
-          data={sampleTableData}
-          columns={tableColumns}
-          editable={true}
-          mode="draft"
-          onSave={(rowIndex, data) => console.log('Save:', rowIndex, data)}
-        />
-      )
-    },
-    {
-      value: 'forecasts',
-      label: 'Forecasts',
-      icon: TrendingUp,
-      content: (
-        <LockUnlockWrapper feature="advanced_worksheets" requiredTier="pro">
-          <div className="p-8 border border-dashed border-border rounded-lg text-center">
-            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Advanced Forecasting</h3>
-            <p className="text-muted-foreground">
-              Build sophisticated financial models with scenario planning and Monte Carlo simulations.
-            </p>
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'venture':
+        return <VentureDashboard ventureId={1} ventureName="Coffee Kiosk" />;
+      case 'pricing':
+        return <PricingPage />;
+      case 'billing':
+        return (
+          <div className="min-h-screen bg-background">
+            <header className="border-b border-border">
+              <div className="container mx-auto px-6 py-4">
+                <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+                <p className="text-sm text-muted-foreground mt-1">Manage your account and billing</p>
+              </div>
+            </header>
+            <main className="container mx-auto px-6 py-8">
+              <BillingTab />
+            </main>
           </div>
-        </LockUnlockWrapper>
-      )
+        );
+      case 'hq':
+      default:
+        return <HQDashboard />;
     }
-  ];
-
-  const handleQuickAction = (action) => {
-    console.log(`Quick action: ${action}`);
   };
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto p-6 pb-24">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">LaneAI</h1>
-            <p className="text-muted-foreground">
-              Phase 1 - Core Primitives & Billing Foundation
-            </p>
+      {/* Navigation Bar for Demo */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <h1 className="text-xl font-bold text-foreground">LaneAI</h1>
+              <span className="text-xs text-muted-foreground">Phase 2 Demo</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentView('hq')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  currentView === 'hq' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                HQ Dashboard
+              </button>
+              <button
+                onClick={() => setCurrentView('venture')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  currentView === 'venture' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Venture
+              </button>
+              <button
+                onClick={() => setCurrentView('pricing')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  currentView === 'pricing' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pricing
+              </button>
+              <button
+                onClick={() => setCurrentView('billing')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  currentView === 'billing' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Billing
+              </button>
+            </div>
           </div>
-
-          <TabContainer 
-            tabs={tabs}
-            defaultValue="overview"
-            className="space-y-6"
-          />
         </div>
+      </nav>
 
-        <QuickActionsDock
-          onAddData={() => handleQuickAction('add-data')}
-          onSignals={() => handleQuickAction('signals')}
-          onRunFlow={() => handleQuickAction('run-flow')}
-          onExport={() => handleQuickAction('export')}
-          onChat={() => handleQuickAction('chat')}
-        />
+      {/* Main Content */}
+      <div className="pt-16">
+        {renderCurrentView()}
       </div>
     </TooltipProvider>
   );
