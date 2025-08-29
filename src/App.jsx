@@ -46,8 +46,27 @@ function App() {
   const [showTemplatesGallery, setShowTemplatesGallery] = useState(false);
   const [csvData, setCsvData] = useState(null);
 
-  // Mock ventures data - empty for demonstration of empty state
-  const [ventures, setVentures] = useState([]);
+  // Mock ventures data - add sample ventures to demonstrate the workspace structure
+  const [ventures, setVentures] = useState([
+    { 
+      id: 1, 
+      name: "Coffee Kiosk", 
+      description: "Local coffee shop business",
+      runway: 8, 
+      cashflow: -2400, 
+      revenue: 8500, 
+      burnRate: 3200 
+    },
+    { 
+      id: 2, 
+      name: "Tech Startup", 
+      description: "SaaS platform for small businesses",
+      runway: 15, 
+      cashflow: 1200, 
+      revenue: 12000, 
+      burnRate: 5500 
+    }
+  ]);
 
   const { alerts, addAlert, removeAlert } = useAlerts();
   const { saveStatus, lastSaved } = useAutosaveNotifications();
