@@ -1,12 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './components/dashboards/HQDashboard';
 import VentureDashboard from './components/dashboards/VentureDashboard';
 import PricingPage from './components/billing/PricingPage';
 import BillingTab from './components/billing/BillingTab';
+import { AIChatShell, CommandBar } from './components/chat/AIChat';
+import AlertStrip, { useAlerts } from './components/notifications/AlertStrip';
+import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
+import FounderModeOverlay from './components/overlays/FounderMode';
+import { AutosaveStatus, useAutosaveNotifications } from './components/notifications/AutosaveNotifications';
 
 function App() {
-  const [currentView, setCurrentView] = React.useState('hq'); // 'hq' | 'venture' | 'pricing' | 'billing'
+  const [currentView, setCurrentView] = React.useState('hq');
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showCommandBar, setShowCommandBar] = useState(false);
+  const [showFounderMode, setShowFounderMode] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const { alerts, addAlert, removeAlert } = useAlerts();
+  const { saveStatus, lastSaved } = useAutosaveNotifications();
+
+  // Global shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandBar(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -36,6 +60,9 @@ function App() {
 
   return (
     <TooltipProvider>
+      {/* Alert Strip */}
+      <AlertStrip alerts={alerts} onDismiss={removeAlert} />
+      
       {/* Navigation Bar for Demo */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-6 py-3">
@@ -85,6 +112,13 @@ function App() {
               >
                 Billing
               </button>
+              <AutosaveStatus status={saveStatus} lastSaved={lastSaved} />
+              <button
+                onClick={() => setShowFounderMode(true)}
+                className="px-3 py-1 text-sm rounded-md text-muted-foreground hover:text-foreground"
+              >
+                Founder Mode
+              </button>
             </div>
           </div>
         </div>
@@ -94,6 +128,12 @@ function App() {
       <div className="pt-16">
         {renderCurrentView()}
       </div>
+
+      {/* Phase 3 Components */}
+      <AIChatShell isOpen={showAIChat} onToggle={() => setShowAIChat(!showAIChat)} />
+      <CommandBar isOpen={showCommandBar} onClose={() => setShowCommandBar(false)} />
+      <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
+      <OnboardingFlow isOpen={showOnboarding} onComplete={() => setShowOnboarding(false)} onClose={() => setShowOnboarding(false)} />
     </TooltipProvider>
   );
 }
