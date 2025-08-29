@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import WorksheetRenderer from '../components/WorksheetRenderer';
-import { Progress } from '../components/ui/progress';
+import ProgressBar from '../components/ui/ProgressBar';
 import { 
   Rocket, 
   Target, 
@@ -368,7 +368,7 @@ const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <div className="space-y-4">
-            <Progress value={progress} className="w-full" />
+            <ProgressBar value={progress} className="w-full" />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Step {currentStep + 1} of {totalSteps}</span>
               <span>{Math.round(progress)}% complete</span>
@@ -384,6 +384,6 @@ const OnboardingFlow = ({ isOpen, onComplete, onClose }) => {
   );
 };
 
-// Note: Now using proper Progress component from ui/progress.jsx
+// Note: Now using shared ProgressBar component from ui/ProgressBar.jsx
 
 export default OnboardingFlow;
