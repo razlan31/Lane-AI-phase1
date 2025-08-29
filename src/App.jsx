@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './pages/HQDashboard';
-import VentureDashboard from './components/dashboards/VentureDashboard';
 import VentureWorkspace from './components/workspaces/VentureWorkspace';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
-import PricingPage from './components/billing/PricingPage';
 import BillingTab from './components/billing/BillingTab';
 import { AIChatShell, CommandBar } from './components/chat/AIChat';
 import AlertStrip, { useAlerts } from './components/notifications/AlertStrip';
@@ -14,19 +12,14 @@ import UpgradeModal from './components/modals/UpgradeModal';
 import { AutosaveStatus, useAutosaveNotifications } from './components/notifications/AutosaveNotifications';
 import DisplaySettings from './components/settings/DisplaySettings';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
-import TopBar from './components/navigation/TopBar';
 import SidebarRestructured from './components/navigation/SidebarRestructured';
 import BuildModal from './components/modals/BuildModal';
-import GoalChatMode from './components/modes/GoalChatMode';
 import StreamMode from './components/modes/StreamMode';
-import PlaygroundMode from './components/modes/PlaygroundMode';
 import ActivityLog from './components/activity/ActivityLog';
 import AdminUsageDashboard from './components/admin/AdminUsageDashboard';
 import userProfile from './lib/userProfile';
-import HQEmptyState from './components/states/HQEmptyState';
 import CsvUploadModal from './components/csv/CsvUploadModal';
 import CsvMappingModal from './components/csv/CsvMappingModal';
-import TemplatesGallery from './components/templates/TemplatesGallery';
 
 function App() {
   const [currentView, setCurrentView] = useState('hq'); // Always start at HQ after onboarding
@@ -43,10 +36,8 @@ function App() {
   
   // Flow state
   const [isOnboarded, setIsOnboarded] = useState(false);
-  const [showGoalChat, setShowGoalChat] = useState(false);
   const [showCsvUpload, setShowCsvUpload] = useState(false);
   const [showCsvMapping, setShowCsvMapping] = useState(false);
-  const [showTemplatesGallery, setShowTemplatesGallery] = useState(false);
   const [csvData, setCsvData] = useState(null);
 
   // Mock ventures data - add sample ventures to demonstrate the workspace structure
@@ -113,21 +104,11 @@ function App() {
   }, []);
 
   // Handle onboarding completion - set flag and redirect to HQ
-  const handleOnboardingComplete = async (profileData) => {
-    await userProfile.completeOnboarding(profileData);
+  const handleOnboardingComplete = async () => {
+    await userProfile.setOnboarded(true);
     setIsOnboarded(true);
     setShowOnboarding(false);
     setCurrentView('hq'); // Always go to HQ after onboarding
-    
-    // Create a starter venture if onboarding includes it
-    if (profileData.createStarterVenture) {
-      const newVenture = {
-        id: Date.now(),
-        name: profileData.ventureName || 'My Venture',
-        status: 'draft'
-      };
-      setVentures([newVenture]);
-    }
     
     // Add welcome message
     addAlert({
@@ -177,35 +158,6 @@ function App() {
     setShowCsvUpload(true);
   };
 
-  const handleStartChat = () => {
-    setShowGoalChat(true);
-  };
-
-  const handleImportCSV = () => {
-    setShowCsvUpload(true);
-  };
-
-  const handleOpenPlayground = () => {
-    setCurrentMode('playground');
-    setCurrentView('playground');
-  };
-
-  const handleGoalChatComplete = (ventureData) => {
-    // Create venture from chat flow
-    const newVenture = {
-      id: Date.now(),
-      name: ventureData.name,
-      goal: ventureData.goal,
-      status: 'draft'
-    };
-    setVentures([...ventures, newVenture]);
-    setShowGoalChat(false);
-    setCurrentView('hq');
-    
-    // TODO: Create worksheets based on ventureData
-    console.log('Created venture from chat:', ventureData);
-  };
-
   const handleCsvUploaded = (csvData) => {
     setCsvData(csvData);
     setShowCsvUpload(false);
@@ -215,50 +167,17 @@ function App() {
   const handleCsvMappingComplete = (worksheetData) => {
     // Create venture from CSV import
     const newVenture = {
-      id: Date.now(),
-      name: worksheetData.name,
-      source: 'csv_import',
-      status: 'draft'
+      id: ventures.length + 1,
+      name: worksheetData.name || 'CSV Import Venture',
+      description: 'Created from CSV import',
+      source: 'csv_import'
     };
     setVentures([...ventures, newVenture]);
     setShowCsvMapping(false);
     setCsvData(null);
-    setCurrentView('hq');
+    setCurrentView(`venture-${newVenture.id}`);
     
-    // TODO: Create worksheet based on worksheetData
     console.log('Created venture from CSV:', worksheetData);
-  };
-
-  const handleTemplateSelected = (templateData) => {
-    // Create venture from template
-    const newVenture = {
-      id: Date.now(),
-      name: `${templateData.template.title} Workspace`,
-      template: templateData.template.id,
-      status: 'draft'
-    };
-    setVentures([...ventures, newVenture]);
-    setShowTemplatesGallery(false);
-    setCurrentView('hq');
-    
-    // TODO: Create worksheets based on template
-    console.log('Created venture from template:', templateData);
-  };
-
-  const handlePromoteToWorkspace = (canvasBlocks) => {
-    // Handle promotion of playground canvas to workspace
-    const newVenture = {
-      id: Date.now(),
-      name: 'Playground Workspace',
-      source: 'playground',
-      blocks: canvasBlocks,
-      status: 'draft'
-    };
-    setVentures([...ventures, newVenture]);
-    setCurrentMode('workspace');
-    setCurrentView('hq');
-    
-    console.log('Promoted playground to workspace:', canvasBlocks);
   };
 
   // Render main content based on current view
@@ -276,16 +195,6 @@ function App() {
     // Main app views - only show after onboarding is complete
     switch (currentView) {
       case 'hq':
-        // Show empty state if no ventures, otherwise show HQ dashboard
-        if (ventures.length === 0) {
-          return (
-            <HQEmptyState 
-              onStartChat={handleStartChat}
-              onImportCSV={handleImportCSV}
-              onOpenPlayground={handleOpenPlayground}
-            />
-          );
-        }
         return <HQDashboard ventures={ventures} />;
       case 'venture-1':
         return <VentureWorkspace ventureId={1} ventureName="Coffee Kiosk" />;
@@ -354,14 +263,8 @@ function App() {
         <div className="min-h-screen bg-background w-full">
           {/* Alert Strip */}
           <AlertStrip alerts={alerts} onDismiss={removeAlert} />
-          
-          {/* Top Bar */}
-          <TopBar 
-            onSearchClick={() => setShowCommandBar(true)}
-            onProfileClick={() => setCurrentView('settings')}
-          />
 
-          <div className="flex w-full">
+          <div className="flex h-screen overflow-hidden">
             {/* Restructured Sidebar */}
             <SidebarRestructured
               currentView={currentView}
@@ -374,9 +277,7 @@ function App() {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
-              <div className="p-6">
-                {renderMainContent()}
-              </div>
+              {renderMainContent()}
             </main>
           </div>
 
@@ -395,17 +296,12 @@ function App() {
             <AutosaveStatus status={saveStatus} lastSaved={lastSaved} />
           </div>
 
-          {/* Phase 3 Components */}
+          {/* AI Chat Shell */}
           <AIChatShell isOpen={showAIChat} onToggle={() => setShowAIChat(!showAIChat)} />
           <CommandBar isOpen={showCommandBar} onClose={() => setShowCommandBar(false)} />
           <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
           
-          {/* Flow Components */}
-          <GoalChatMode 
-            isOpen={showGoalChat}
-            onCreateVenture={handleGoalChatComplete}
-            onClose={() => setShowGoalChat(false)}
-          />
+          {/* CSV Flow Components */}
           <CsvUploadModal 
             isOpen={showCsvUpload}
             onClose={() => setShowCsvUpload(false)}
@@ -417,11 +313,7 @@ function App() {
             onClose={() => setShowCsvMapping(false)}
             onMappingComplete={handleCsvMappingComplete}
           />
-          <TemplatesGallery 
-            isOpen={showTemplatesGallery}
-            onClose={() => setShowTemplatesGallery(false)}
-            onTemplateSelected={handleTemplateSelected}
-          />
+          
           <UpgradeModal 
             isOpen={showUpgradeModal} 
             onClose={() => setShowUpgradeModal(false)} 
