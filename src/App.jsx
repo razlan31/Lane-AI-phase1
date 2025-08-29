@@ -14,14 +14,19 @@ import DisplaySettings from './components/settings/DisplaySettings';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import TopBar from './components/navigation/TopBar';
 import Sidebar from './components/navigation/Sidebar';
-import GoalMode from './components/modes/GoalMode';
+import GoalChatMode from './components/modes/GoalChatMode';
 import StreamMode from './components/modes/StreamMode';
 import PlaygroundMode from './components/modes/PlaygroundMode';
 import ActivityLog from './components/activity/ActivityLog';
 import AdminUsageDashboard from './components/admin/AdminUsageDashboard';
+import userProfile from './lib/userProfile';
+import HQEmptyState from './components/states/HQEmptyState';
+import CsvUploadModal from './components/csv/CsvUploadModal';
+import CsvMappingModal from './components/csv/CsvMappingModal';
+import TemplatesGallery from './components/templates/TemplatesGallery';
 
 function App() {
-  const [currentMode, setCurrentMode] = useState('workspace'); // Changed from 'goal' to show HQ by default
+  const [currentMode, setCurrentMode] = useState('workspace');
   const [currentView, setCurrentView] = useState('hq');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
@@ -30,18 +35,35 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeTargetFeature, setUpgradeTargetFeature] = useState(null);
+  
+  // Flow state
+  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [showGoalChat, setShowGoalChat] = useState(false);
+  const [showCsvUpload, setShowCsvUpload] = useState(false);
+  const [showCsvMapping, setShowCsvMapping] = useState(false);
+  const [showTemplatesGallery, setShowTemplatesGallery] = useState(false);
+  const [csvData, setCsvData] = useState(null);
 
-  // Mock ventures data
-  const ventures = [
-    { id: 1, name: 'Coffee Kiosk' },
-    { id: 2, name: 'Tech Startup' }
-  ];
+  // Mock ventures data - empty for demonstration of empty state
+  const [ventures, setVentures] = useState([]);
 
   const { alerts, addAlert, removeAlert } = useAlerts();
   const { saveStatus, lastSaved } = useAutosaveNotifications();
 
-  // Global shortcuts and upgrade modal listener
+  // Check onboarding status and setup global listeners
   useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      const onboarded = await userProfile.isOnboarded();
+      setIsOnboarded(onboarded);
+      
+      // Show onboarding for new users
+      if (!onboarded) {
+        setShowOnboarding(true);
+      }
+    };
+
+    checkOnboardingStatus();
+
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -67,7 +89,7 @@ function App() {
     setCurrentMode(mode);
     // Set appropriate default view for each mode
     if (mode === 'goal') {
-      setCurrentView('goal');
+      setShowGoalChat(true);
     } else if (mode === 'workspace') {
       setCurrentView('hq');
     } else if (mode === 'stream') {
@@ -77,29 +99,109 @@ function App() {
     }
   };
 
-  const handleSuggestedPath = (goal) => {
-    if (goal) {
-      // Navigate to appropriate worksheet/dashboard based on goal
-      setCurrentMode('workspace');
-      setCurrentView('hq');
-    } else {
-      // User chose to skip, go to workspace mode
-      setCurrentMode('workspace');
-      setCurrentView('hq');
+  const handleOnboardingComplete = async (profileData) => {
+    await userProfile.completeOnboarding(profileData);
+    setIsOnboarded(true);
+    setShowOnboarding(false);
+    
+    // Create a starter venture if onboarding includes it
+    if (profileData.createStarterVenture) {
+      const newVenture = {
+        id: Date.now(),
+        name: profileData.ventureName || 'My Venture',
+        status: 'draft'
+      };
+      setVentures([newVenture]);
     }
+  };
+
+  // Build flow handlers
+  const handleStartChat = () => {
+    setShowGoalChat(true);
+  };
+
+  const handleImportCSV = () => {
+    setShowCsvUpload(true);
+  };
+
+  const handleOpenPlayground = () => {
+    setCurrentMode('playground');
+    setCurrentView('playground');
+  };
+
+  const handleGoalChatComplete = (ventureData) => {
+    // Create venture from chat flow
+    const newVenture = {
+      id: Date.now(),
+      name: ventureData.name,
+      goal: ventureData.goal,
+      status: 'draft'
+    };
+    setVentures([...ventures, newVenture]);
+    setShowGoalChat(false);
+    setCurrentView('hq');
+    
+    // TODO: Create worksheets based on ventureData
+    console.log('Created venture from chat:', ventureData);
+  };
+
+  const handleCsvUploaded = (csvData) => {
+    setCsvData(csvData);
+    setShowCsvUpload(false);
+    setShowCsvMapping(true);
+  };
+
+  const handleCsvMappingComplete = (worksheetData) => {
+    // Create venture from CSV import
+    const newVenture = {
+      id: Date.now(),
+      name: worksheetData.name,
+      source: 'csv_import',
+      status: 'draft'
+    };
+    setVentures([...ventures, newVenture]);
+    setShowCsvMapping(false);
+    setCsvData(null);
+    setCurrentView('hq');
+    
+    // TODO: Create worksheet based on worksheetData
+    console.log('Created venture from CSV:', worksheetData);
+  };
+
+  const handleTemplateSelected = (templateData) => {
+    // Create venture from template
+    const newVenture = {
+      id: Date.now(),
+      name: `${templateData.template.title} Workspace`,
+      template: templateData.template.id,
+      status: 'draft'
+    };
+    setVentures([...ventures, newVenture]);
+    setShowTemplatesGallery(false);
+    setCurrentView('hq');
+    
+    // TODO: Create worksheets based on template
+    console.log('Created venture from template:', templateData);
   };
 
   const handlePromoteToWorkspace = (canvasBlocks) => {
     // Handle promotion of playground canvas to workspace
+    const newVenture = {
+      id: Date.now(),
+      name: 'Playground Workspace',
+      source: 'playground',
+      blocks: canvasBlocks,
+      status: 'draft'
+    };
+    setVentures([...ventures, newVenture]);
     setCurrentMode('workspace');
     setCurrentView('hq');
+    
+    console.log('Promoted playground to workspace:', canvasBlocks);
   };
 
   const renderCurrentView = () => {
     // Mode-specific views
-    if (currentMode === 'goal') {
-      return <GoalMode onSuggestedPath={handleSuggestedPath} />;
-    }
     if (currentMode === 'stream') {
       return <StreamMode />;
     }
@@ -122,9 +224,19 @@ function App() {
         );
       case 'tools':
         return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold mb-4">Tools & Scratchpads</h1>
-            <p className="text-muted-foreground">Custom worksheets and sandbox area</p>
+          <div className="p-6 space-y-6">
+            <div>
+              <h1 className="text-2xl font-semibold mb-4">Tools & Scratchpads</h1>
+              <p className="text-muted-foreground">Custom worksheets and templates</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowTemplatesGallery(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+              >
+                Browse Templates
+              </button>
+            </div>
           </div>
         );
       case 'reports':
@@ -156,7 +268,17 @@ function App() {
         return <AdminUsageDashboard />;
       case 'hq':
       default:
-        return <HQDashboard />;
+        // Show empty state if no ventures, otherwise show HQ dashboard
+        if (ventures.length === 0) {
+          return (
+            <HQEmptyState 
+              onStartChat={handleStartChat}
+              onImportCSV={handleImportCSV}
+              onOpenPlayground={handleOpenPlayground}
+            />
+          );
+        }
+        return <HQDashboard ventures={ventures} />;
     }
   };
 
@@ -202,7 +324,34 @@ function App() {
           <AIChatShell isOpen={showAIChat} onToggle={() => setShowAIChat(!showAIChat)} />
           <CommandBar isOpen={showCommandBar} onClose={() => setShowCommandBar(false)} />
           <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
-          <OnboardingFlow isOpen={showOnboarding} onComplete={() => setShowOnboarding(false)} onClose={() => setShowOnboarding(false)} />
+          
+          {/* Flow Components */}
+          <OnboardingFlow 
+            isOpen={showOnboarding} 
+            onComplete={handleOnboardingComplete} 
+            onClose={() => setShowOnboarding(false)} 
+          />
+          <GoalChatMode 
+            isOpen={showGoalChat}
+            onCreateVenture={handleGoalChatComplete}
+            onClose={() => setShowGoalChat(false)}
+          />
+          <CsvUploadModal 
+            isOpen={showCsvUpload}
+            onClose={() => setShowCsvUpload(false)}
+            onFileUploaded={handleCsvUploaded}
+          />
+          <CsvMappingModal 
+            isOpen={showCsvMapping}
+            csvData={csvData}
+            onClose={() => setShowCsvMapping(false)}
+            onMappingComplete={handleCsvMappingComplete}
+          />
+          <TemplatesGallery 
+            isOpen={showTemplatesGallery}
+            onClose={() => setShowTemplatesGallery(false)}
+            onTemplateSelected={handleTemplateSelected}
+          />
           <UpgradeModal 
             isOpen={showUpgradeModal} 
             onClose={() => setShowUpgradeModal(false)} 

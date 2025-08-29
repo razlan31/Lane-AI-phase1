@@ -5,7 +5,7 @@ import PortfolioTiles from '../components/portfolio/PortfolioTiles';
 import QuickActionsDock from '../components/primitives/QuickActionsDock';
 import { DollarSign, TrendingUp, Clock, Users, Zap, Target } from 'lucide-react';
 
-const HQDashboard = () => {
+const HQDashboard = ({ ventures = [] }) => {
   // Top KPI Strip Data
   const topStripKpis = [
     {
@@ -117,29 +117,15 @@ const HQDashboard = () => {
     }
   ];
 
-  // Mock ventures for portfolio
-  const ventures = [
-    {
-      id: 1,
-      name: "Coffee Kiosk",
-      description: "Local coffee shop expansion",
-      status: "live",
-      runway: 8,
-      cashflow: -2800,
-      revenue: 12500,
-      burnRate: 3200
-    },
-    {
-      id: 2,
-      name: "Tech Startup",
-      description: "B2B SaaS platform",
-      status: "draft",
-      runway: 18,
-      cashflow: -8500,
-      revenue: 4200,
-      burnRate: 12300
-    }
-  ];
+  // Mock additional data for ventures if they exist
+  const mockVentureDetails = ventures.map(venture => ({
+    ...venture,
+    description: venture.description || "Business venture",
+    runway: venture.runway || Math.floor(Math.random() * 20) + 5,
+    cashflow: venture.cashflow || (Math.random() - 0.5) * 10000,
+    revenue: venture.revenue || Math.floor(Math.random() * 20000),
+    burnRate: venture.burnRate || Math.floor(Math.random() * 15000)
+  }));
 
   const handleQuickActions = {
     onAddData: () => console.log('Add Data clicked'),
@@ -195,9 +181,15 @@ const HQDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-6 space-y-8">
         {/* Alerts Strip */}
-        {alerts.length > 0 && (
+        {ventures.length > 0 && alerts.length > 0 ? (
           <section>
             <AlertStrip alerts={alerts} onDismiss={(id) => console.log('Dismiss alert:', id)} />
+          </section>
+        ) : ventures.length > 0 && (
+          <section>
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              No alerts — you're all set ✓
+            </div>
           </section>
         )}
 
@@ -243,17 +235,19 @@ const HQDashboard = () => {
         </section>
 
         {/* Portfolio Tiles */}
-        <section>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground mb-2">Portfolio</h2>
-            <p className="text-sm text-muted-foreground">Your ventures at a glance</p>
-          </div>
-          <PortfolioTiles 
-            ventures={ventures}
-            onVentureClick={handleVentureClick}
-            onCreateVenture={handleCreateVenture}
-          />
-        </section>
+        {ventures.length > 0 && (
+          <section>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-2">Portfolio</h2>
+              <p className="text-sm text-muted-foreground">Your ventures at a glance</p>
+            </div>
+            <PortfolioTiles 
+              ventures={mockVentureDetails}
+              onVentureClick={handleVentureClick}
+              onCreateVenture={handleCreateVenture}
+            />
+          </section>
+        )}
       </main>
 
       {/* Quick Actions Dock */}
