@@ -21,7 +21,7 @@ import ActivityLog from './components/activity/ActivityLog';
 import AdminUsageDashboard from './components/admin/AdminUsageDashboard';
 
 function App() {
-  const [currentMode, setCurrentMode] = useState('goal');
+  const [currentMode, setCurrentMode] = useState('workspace'); // Changed from 'goal' to show HQ by default
   const [currentView, setCurrentView] = useState('hq');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
