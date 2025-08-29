@@ -9,6 +9,8 @@ import AlertStrip, { useAlerts } from './components/notifications/AlertStrip';
 import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 import FounderModeOverlay from './components/overlays/FounderMode';
 import { AutosaveStatus, useAutosaveNotifications } from './components/notifications/AutosaveNotifications';
+import DisplaySettings from './components/settings/DisplaySettings';
+import { DisplaySettingsProvider } from './hooks/useDisplaySettings';
 
 function App() {
   const [currentView, setCurrentView] = React.useState('hq');
@@ -52,6 +54,20 @@ function App() {
             </main>
           </div>
         );
+      case 'settings':
+        return (
+          <div className="min-h-screen bg-background">
+            <header className="border-b border-border">
+              <div className="container mx-auto px-6 py-4">
+                <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+                <p className="text-sm text-muted-foreground mt-1">Manage your display preferences</p>
+              </div>
+            </header>
+            <main className="container mx-auto px-6 py-8">
+              <DisplaySettings />
+            </main>
+          </div>
+        );
       case 'hq':
       default:
         return <HQDashboard />;
@@ -59,7 +75,8 @@ function App() {
   };
 
   return (
-    <TooltipProvider>
+    <DisplaySettingsProvider>
+      <TooltipProvider>
       {/* Alert Strip */}
       <AlertStrip alerts={alerts} onDismiss={removeAlert} />
       
@@ -114,6 +131,16 @@ function App() {
               </button>
               <AutosaveStatus status={saveStatus} lastSaved={lastSaved} />
               <button
+                onClick={() => setCurrentView('settings')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  currentView === 'settings' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Settings
+              </button>
+              <button
                 onClick={() => setShowFounderMode(true)}
                 className="px-3 py-1 text-sm rounded-md text-muted-foreground hover:text-foreground"
               >
@@ -134,7 +161,8 @@ function App() {
       <CommandBar isOpen={showCommandBar} onClose={() => setShowCommandBar(false)} />
       <FounderModeOverlay isOpen={showFounderMode} onClose={() => setShowFounderMode(false)} />
       <OnboardingFlow isOpen={showOnboarding} onComplete={() => setShowOnboarding(false)} onClose={() => setShowOnboarding(false)} />
-    </TooltipProvider>
+      </TooltipProvider>
+    </DisplaySettingsProvider>
   );
 }
 

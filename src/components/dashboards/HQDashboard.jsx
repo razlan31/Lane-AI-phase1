@@ -10,6 +10,7 @@ const HQDashboard = () => {
     <KpiCard
       key="runway"
       title="Runway"
+      description="How long your money will last with current spending"
       value={18}
       unit="months"
       trend={-2}
@@ -19,6 +20,7 @@ const HQDashboard = () => {
     <KpiCard
       key="cashflow"
       title="Monthly Cashflow"
+      description="Money coming in minus money going out each month"
       value={-15000}
       unit="currency"
       trend={12}
@@ -28,6 +30,7 @@ const HQDashboard = () => {
     <KpiCard
       key="obligations"
       title="Obligations"
+      description="Total amount you owe to others"
       value={85000}
       unit="currency"
       trend={5}
@@ -39,6 +42,7 @@ const HQDashboard = () => {
   const signalsKpis = [
     {
       title: "Revenue Growth",
+      description: "How fast your income is increasing over time",
       value: 23.5,
       unit: "percentage",
       trend: 8.2,
@@ -47,6 +51,7 @@ const HQDashboard = () => {
     },
     {
       title: "Customer Acquisition",
+      description: "Number of new customers gained this period",
       value: 47,
       unit: "number",
       trend: 12,
@@ -55,6 +60,7 @@ const HQDashboard = () => {
     },
     {
       title: "Burn Rate",
+      description: "How much money you're spending each month",
       value: 12500,
       unit: "currency",
       trend: -8,
@@ -64,6 +70,7 @@ const HQDashboard = () => {
     },
     {
       title: "Product-Market Fit",
+      description: "How well your product meets customer needs",
       value: 7.8,
       unit: "number",
       trend: 0.5,
@@ -72,6 +79,7 @@ const HQDashboard = () => {
     },
     {
       title: "Market Signals",
+      description: "Important trends happening in your industry",
       value: 6,
       unit: "number",
       trend: 2,
@@ -80,6 +88,7 @@ const HQDashboard = () => {
     },
     {
       title: "Risk Indicators",
+      description: "Warning signs that need your attention",
       value: 3,
       unit: "number",
       trend: 1,
@@ -115,6 +124,7 @@ const HQDashboard = () => {
                 >
                   <KpiCard
                     title={kpi.title}
+                    description={kpi.description}
                     value={kpi.value}
                     unit={kpi.unit}
                     trend={kpi.trend}

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { cn, formatNumber, formatPercentage } from '../../lib/utils';
+import { useDisplaySettings } from '../../hooks/useDisplaySettings';
 
 const KpiCard = ({ 
   title, 
+  description,
   value, 
   trend, 
   trendDirection, 
@@ -13,9 +15,11 @@ const KpiCard = ({
   onClick,
   showModal = false,
   modalContent,
-  className 
+  className,
+  size = 'default'
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { showPlainExplanations } = useDisplaySettings();
 
   const formatValue = (val) => {
     switch (unit) {
@@ -61,10 +65,22 @@ const KpiCard = ({
     }
   };
 
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'p-3';
+      case 'lg':
+        return 'p-8';
+      default:
+        return 'p-6';
+    }
+  };
+
   const CardContent = () => (
     <div 
       className={cn(
-        "p-6 rounded-lg bg-card text-card-foreground shadow-sm transition-all duration-200",
+        "rounded-lg bg-card text-card-foreground shadow-sm transition-all duration-200",
+        getSizeClasses(),
         getStateClasses(),
         (onClick || showModal) && "cursor-pointer hover:shadow-md hover:scale-[1.02]",
         className
@@ -73,12 +89,20 @@ const KpiCard = ({
     >
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            {getStateIcon()}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold">{title}</p>
+              {getStateIcon()}
+            </div>
+            {description && showPlainExplanations && (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-2xl font-bold">{formatValue(value)}</p>
+            <p className={cn(
+              "font-bold",
+              size === 'sm' ? 'text-lg' : 'text-2xl'
+            )}>{formatValue(value)}</p>
             {getTrendIcon()}
           </div>
           {trend && (

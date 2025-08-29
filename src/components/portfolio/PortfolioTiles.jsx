@@ -110,6 +110,7 @@ const VentureTile = ({ venture, onClick }) => {
       <div className="grid grid-cols-2 gap-3">
         <KpiCard
           title="Runway"
+          description="Money left"
           value={venture.metrics?.runway || '—'}
           trend={venture.metrics?.runwayTrend}
           state={venture.metrics?.runwayState || 'draft'}
@@ -118,6 +119,7 @@ const VentureTile = ({ venture, onClick }) => {
         />
         <KpiCard
           title="Cash Flow"
+          description="Monthly flow"
           value={venture.metrics?.cashFlow || '—'}
           trend={venture.metrics?.cashFlowTrend}
           state={venture.metrics?.cashFlowState || 'draft'}
@@ -126,6 +128,7 @@ const VentureTile = ({ venture, onClick }) => {
         />
         <KpiCard
           title="Revenue"
+          description="Sales income"
           value={venture.metrics?.revenue || '—'}
           trend={venture.metrics?.revenueTrend}
           state={venture.metrics?.revenueState || 'draft'}
@@ -134,6 +137,7 @@ const VentureTile = ({ venture, onClick }) => {
         />
         <KpiCard
           title="Burn Rate"
+          description="Monthly spend"
           value={venture.metrics?.burnRate || '—'}
           trend={venture.metrics?.burnTrend}
           state={venture.metrics?.burnState || 'draft'}

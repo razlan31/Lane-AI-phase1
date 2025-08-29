@@ -11,6 +11,7 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const ventureSignals = [
     {
       title: "Monthly Revenue",
+      description: "Total money earned from sales this month",
       value: 8500,
       unit: "currency",
       trend: 15,
@@ -18,6 +19,7 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
     },
     {
       title: "Customer Count",
+      description: "Number of people who bought from you",
       value: 342,
       unit: "number",
       trend: 23,
@@ -25,6 +27,7 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
     },
     {
       title: "Avg Order Value",
+      description: "Average amount customers spend per purchase",
       value: 24.85,
       unit: "currency",
       trend: 8,
@@ -87,6 +90,7 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
               >
                 <KpiCard
                   title={signal.title}
+                  description={signal.description}
                   value={signal.value}
                   unit={signal.unit}
                   trend={signal.trend}
