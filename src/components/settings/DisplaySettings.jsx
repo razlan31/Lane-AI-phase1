@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDisplaySettings } from '../../hooks/useDisplaySettings';
+import { useDisplaySettings } from '../../hooks/useDisplaySettings.jsx';
 import { Button } from '../ui/button';
 
 const DisplaySettings = () => {

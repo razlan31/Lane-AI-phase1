@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { cn, formatNumber, formatPercentage } from '../../lib/utils';
-import { useDisplaySettings } from '../../hooks/useDisplaySettings';
+import { useDisplaySettings } from '../../hooks/useDisplaySettings.jsx';
 
 const KpiCard = ({ 
   title, 
