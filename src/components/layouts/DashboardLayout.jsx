@@ -20,6 +20,7 @@ const DashboardLayout = ({
         onFounderMode={onQuickAction?.onFounderMode}
         onSearchClick={() => console.log('Search')}
         onProfileClick={() => console.log('Profile')}
+        onHomeClick={() => console.log('Navigate to HQ')}
       />
 
       {/* Header */}
