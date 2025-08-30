@@ -208,39 +208,49 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
 
           {/* Worksheets Tab */}
           <TabsContent value="worksheets" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Worksheets</h3>
-              <LockUnlockWrapper feature="advanced_worksheets" requiredTier="pro">
-                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
-                  + New Worksheet
-                </Button>
-              </LockUnlockWrapper>
+            <div className="space-y-2 mb-8">
+              <h1 className="text-2xl font-bold text-foreground">Worksheets</h1>
+              <p className="text-muted-foreground">All calculators and financial tools for this venture</p>
             </div>
             
             {worksheetsLoading ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="h-20 bg-muted animate-pulse rounded-lg"></div>
+                  <div key={i} className="h-48 bg-muted animate-pulse rounded-lg"></div>
                 ))}
               </div>
             ) : worksheets.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {worksheets.map(worksheet => (
-                  <div key={worksheet.id} className="p-4 border border-border rounded-lg bg-card">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">{worksheet.name}</h4>
-                        <p className="text-sm text-muted-foreground capitalize">{worksheet.type} worksheet</p>
+                  <div key={worksheet.id} className="border border-border rounded-lg bg-card p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-semibold text-foreground">{worksheet.name}</h3>
+                        <p className="text-muted-foreground text-sm">
+                          {worksheet.type === 'roi' && 'Return on investment analysis'}
+                          {worksheet.type === 'cashflow' && 'Cash in and cash out projections'}
+                          {worksheet.type === 'breakeven' && 'Break-even analysis calculator'}
+                          {worksheet.type === 'personal' && 'Personal financial planning'}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          worksheet.status === 'live' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 text-sm rounded-md border ${
+                          worksheet.status === 'live' 
+                            ? 'bg-green-50 text-green-700 border-green-200' 
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
                         }`}>
-                          {worksheet.status}
+                          {worksheet.status === 'live' ? 'Live' : 'Draft'}
                         </span>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="px-4">
                           Open
                         </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Preview Area */}
+                    <div className="bg-muted/30 rounded-lg p-8 text-center border-2 border-dashed border-muted">
+                      <div className="text-muted-foreground text-sm">
+                        Preview: {worksheet.name}
                       </div>
                     </div>
                   </div>

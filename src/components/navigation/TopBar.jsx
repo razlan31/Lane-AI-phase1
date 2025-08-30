@@ -103,17 +103,17 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
             
             {/* Notifications Dropdown */}
             {notificationsOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-lg z-50">
-                <div className="p-3 border-b border-border">
-                  <h3 className="font-medium text-sm">Notifications</h3>
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[60]">
+                <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                  <h3 className="font-medium text-sm text-gray-900 dark:text-white">Notifications</h3>
                 </div>
-                <div className="max-h-80 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
                   {mockNotifications.map((notification) => (
                     <div 
                       key={notification.id}
                       className={cn(
-                        "p-3 border-b border-border last:border-b-0 hover:bg-muted/50 cursor-pointer",
-                        !notification.isRead && "bg-blue-50/50"
+                        "p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer bg-white dark:bg-gray-800",
+                        !notification.isRead && "bg-blue-50 dark:bg-blue-900/20"
                       )}
                     >
                       <div className="flex items-start gap-2">
@@ -124,13 +124,13 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
                           notification.type === 'info' && "bg-blue-500"
                         )} />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-foreground">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {notification.title}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {notification.message}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                             {notification.timestamp}
                           </div>
                         </div>
@@ -141,8 +141,8 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
                     </div>
                   ))}
                 </div>
-                <div className="p-3 border-t border-border">
-                  <button className="text-xs text-primary hover:text-primary/80 w-full text-center">
+                <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                  <button className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-500 w-full text-center">
                     View all notifications
                   </button>
                 </div>
@@ -163,23 +163,23 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
             
             {/* Profile Dropdown */}
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
-                <div className="p-3 border-b border-border">
-                  <div className="text-sm font-medium">John Doe</div>
-                  <div className="text-xs text-muted-foreground">john@example.com</div>
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[60]">
+                <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">John Doe</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">john@example.com</div>
                 </div>
-                <div className="p-1">
-                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded">
+                <div className="p-1 bg-white dark:bg-gray-800">
+                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-white">
                     Profile Settings
                   </button>
-                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded">
+                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-white">
                     Billing
                   </button>
-                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded">
+                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-white">
                     Workspace Settings
                   </button>
-                  <div className="border-t border-border my-1"></div>
-                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded text-red-600">
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-red-600 dark:text-red-400">
                     Sign Out
                   </button>
                 </div>
@@ -192,7 +192,7 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
       {/* Click outside handlers */}
       {(notificationsOpen || profileOpen) && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[50]" 
           onClick={() => {
             setNotificationsOpen(false);
             setProfileOpen(false);
