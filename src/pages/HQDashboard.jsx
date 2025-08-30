@@ -2,7 +2,6 @@ import React from 'react';
 import KpiCard from '../components/primitives/KpiCard';
 import AlertsStrip from '../components/alerts/AlertsStrip';
 import PortfolioTiles from '../components/portfolio/PortfolioTiles';
-import QuickActionsDock from '../components/primitives/QuickActionsDock';
 import HQEmptyState from '../components/states/HQEmptyState';
 import { DollarSign, TrendingUp, Clock, Users, Zap, Target } from 'lucide-react';
 
@@ -164,15 +163,6 @@ const HQDashboard = ({ ventures = [] }) => {
         <main className="container mx-auto px-6 py-12">
           <HQEmptyState />
         </main>
-
-        {/* Quick Actions Dock */}
-        <QuickActionsDock
-          onAddData={handleQuickActions.onAddData}
-          onSignals={handleQuickActions.onSignals}
-          onRunFlow={handleQuickActions.onRunFlow}
-          onExport={handleQuickActions.onExport}
-          onChat={handleQuickActions.onChat}
-        />
       </div>
     );
   }
@@ -280,16 +270,6 @@ const HQDashboard = ({ ventures = [] }) => {
             onCreateVenture={handleCreateVenture}
           />
         </section>
-      </main>
-
-      {/* Quick Actions Dock */}
-      <QuickActionsDock
-        onAddData={handleQuickActions.onAddData}
-        onSignals={handleQuickActions.onSignals}
-        onRunFlow={handleQuickActions.onRunFlow}
-        onExport={handleQuickActions.onExport}
-        onChat={handleQuickActions.onChat}
-      />
     </div>
   );
 };
