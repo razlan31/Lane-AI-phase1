@@ -4,6 +4,7 @@ import HQDashboard from './components/dashboards/HQDashboard';
 import VentureHub from './components/workspaces/VentureHub';
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
+import TopBar from './components/navigation/TopBar';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
@@ -92,6 +93,14 @@ function App() {
     onFounderMode: () => console.log('Open Founder Mode')
   };
 
+  // TopBar handlers
+  const handleTopBarActions = {
+    onSearchClick: () => console.log('Search clicked'),
+    onProfileClick: () => console.log('Profile clicked'),
+    onFounderMode: () => console.log('Founder mode clicked'),
+    onHomeClick: () => setCurrentView('hq')
+  };
+
   // Render main content
   const renderMainContent = () => {
     switch (currentView) {
@@ -100,16 +109,13 @@ function App() {
       case 'workspace':
         return (
           <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="border-b border-border bg-background/95 backdrop-blur-sm">
-              <div className="container mx-auto px-6 py-6">
+            {/* Main Content */}
+            <main className="px-6 py-8">
+              <div className="mb-6">
                 <h1 className="text-3xl font-bold text-foreground">Workspace</h1>
                 <p className="text-muted-foreground mt-2">Manage your ventures and projects</p>
               </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="container mx-auto px-6 py-8">
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {ventures.map(venture => (
                   <div key={venture.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -197,10 +203,21 @@ function App() {
               onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto">
-              {renderMainContent()}
-            </main>
+            {/* Main Content Area with TopBar */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* TopBar */}
+              <TopBar 
+                onSearchClick={handleTopBarActions.onSearchClick}
+                onProfileClick={handleTopBarActions.onProfileClick}
+                onFounderMode={handleTopBarActions.onFounderMode}
+                onHomeClick={handleTopBarActions.onHomeClick}
+              />
+
+              {/* Main Content */}
+              <main className="flex-1 overflow-auto">
+                {renderMainContent()}
+              </main>
+            </div>
           </div>
 
           {/* Quick Actions Dock */}
