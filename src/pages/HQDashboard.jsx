@@ -270,6 +270,7 @@ const HQDashboard = ({ ventures = [] }) => {
             onCreateVenture={handleCreateVenture}
           />
         </section>
+      </main>
     </div>
   );
 };
