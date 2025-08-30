@@ -1,6 +1,6 @@
 import React from 'react';
 import KpiCard from '../components/primitives/KpiCard';
-import { AlertStrip } from '../components/notifications/AlertStrip';
+import AlertsStrip from '../components/alerts/AlertsStrip';
 import PortfolioTiles from '../components/portfolio/PortfolioTiles';
 import QuickActionsDock from '../components/primitives/QuickActionsDock';
 import HQEmptyState from '../components/states/HQEmptyState';
@@ -217,7 +217,7 @@ const HQDashboard = ({ ventures = [] }) => {
         {/* Alerts Strip */}
         {alerts.length > 0 ? (
           <section>
-            <AlertStrip alerts={alerts} onDismiss={(id) => console.log('Dismiss alert:', id)} />
+            <AlertsStrip alerts={alerts} onDismiss={(id) => console.log('Dismiss alert:', id)} />
           </section>
         ) : (
           <section>
