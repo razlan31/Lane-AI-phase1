@@ -118,20 +118,65 @@ function App() {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {ventures.map(venture => (
-                  <div key={venture.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="mb-4">
-                      <h2 className="text-xl font-bold text-foreground">{venture.name}</h2>
-                      <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
+                  <div key={venture.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-200 cursor-pointer" 
+                       onClick={() => setCurrentView(`venture-${venture.id}`)}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">{venture.name}</h2>
+                        <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-xs text-muted-foreground">Active</span>
+                      </div>
                     </div>
                     
-                    <button 
-                      onClick={() => setCurrentView(`venture-${venture.id}`)}
-                      className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-2"
-                    >
-                      Open Workspace →
-                    </button>
+                    {/* Mini Dashboard Metrics */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="text-center p-3 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">${venture.revenue.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">Monthly Revenue</div>
+                      </div>
+                      <div className="text-center p-3 bg-muted/50 rounded-lg">
+                        <div className={`text-2xl font-bold ${venture.cashflow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ${Math.abs(venture.cashflow).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Cashflow</div>
+                      </div>
+                      <div className="text-center p-3 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">{venture.runway}m</div>
+                        <div className="text-xs text-muted-foreground">Runway</div>
+                      </div>
+                      <div className="text-center p-3 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">${venture.burnRate.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">Burn Rate</div>
+                      </div>
+                    </div>
+                    
+                    {/* Quick Actions */}
+                    <div className="flex justify-between items-center pt-4 border-t border-border">
+                      <span className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-2">
+                        Open Workspace →
+                      </span>
+                      <div className="flex gap-2">
+                        <button className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">View Metrics</button>
+                        <button className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Settings</button>
+                      </div>
+                    </div>
                   </div>
                 ))}
+                
+                {/* Add New Venture Card */}
+                <div className="bg-card border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]">
+                  <div className="text-center">
+                    <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <span className="text-2xl">+</span>
+                    </div>
+                    <h3 className="font-semibold mb-2">Add New Venture</h3>
+                    <p className="text-sm text-muted-foreground">Create a new workspace for your business</p>
+                  </div>
+                </div>
               </div>
             </main>
           </div>

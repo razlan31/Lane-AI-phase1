@@ -15,13 +15,6 @@ const DashboardLayout = ({
 }) => {
   return (
     <div className={cn("min-h-screen bg-background", className)}>
-      {/* Top Bar */}
-      <TopBar 
-        onFounderMode={onQuickAction?.onFounderMode}
-        onSearchClick={() => console.log('Search')}
-        onProfileClick={() => console.log('Profile')}
-        onHomeClick={() => console.log('Navigate to HQ')}
-      />
 
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur-sm">
