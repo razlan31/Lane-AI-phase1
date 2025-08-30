@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, AlertTriangle, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, Info, HelpCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { cn, formatNumber, formatPercentage } from '../../lib/utils';
 import { useDisplaySettings } from '../../hooks/useDisplaySettings.jsx';
+import ExplainOverlay from '../overlays/ExplainOverlay';
 
 const KpiCard = ({ 
   title, 
@@ -16,9 +17,11 @@ const KpiCard = ({
   showModal = false,
   modalContent,
   className,
-  size = 'default'
+  size = 'default',
+  showExplain = true
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExplainOpen, setIsExplainOpen] = useState(false);
   const { showPlainExplanations } = useDisplaySettings();
 
   const formatValue = (val) => {
@@ -79,7 +82,7 @@ const KpiCard = ({
   const CardContent = () => (
     <div 
       className={cn(
-        "rounded-lg bg-card text-card-foreground shadow-sm transition-all duration-200",
+        "rounded-lg bg-card text-card-foreground shadow-sm transition-all duration-200 relative group",
         getSizeClasses(),
         getStateClasses(),
         (onClick || showModal) && "cursor-pointer hover:shadow-md hover:scale-[1.02]",
@@ -88,11 +91,24 @@ const KpiCard = ({
       onClick={onClick || (showModal ? () => setIsModalOpen(true) : undefined)}
     >
       <div className="flex items-center justify-between">
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold">{title}</p>
-              {getStateIcon()}
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">{title}</p>
+                {getStateIcon()}
+              </div>
+              {showExplain && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExplainOpen(true);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                >
+                  <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
             </div>
             {description && showPlainExplanations && (
               <p className="text-xs text-muted-foreground">{description}</p>
@@ -115,30 +131,39 @@ const KpiCard = ({
     </div>
   );
 
-  if (showModal && modalContent) {
-    return (
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogTrigger asChild>
-          <div>
-            <CardContent />
-          </div>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5" />
-              {title} Details
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {modalContent}
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  return <CardContent />;
+  return (
+    <>
+      {showModal && modalContent ? (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <div>
+              <CardContent />
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                {title} Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {modalContent}
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <CardContent />
+      )}
+      
+      <ExplainOverlay
+        isOpen={isExplainOpen}
+        onClose={() => setIsExplainOpen(false)}
+        context={`${title}: ${description || 'Key performance indicator'}`}
+        title={`Explain ${title}`}
+      />
+    </>
+  );
 };
 
 export default KpiCard;

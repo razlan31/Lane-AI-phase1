@@ -3,9 +3,29 @@ import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target } from '
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';
 import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+import PortfolioTiles from '../portfolio/PortfolioTiles';
+import AlertsStrip from '../alerts/AlertsStrip';
+import { useRoleBasedKpis } from '../../hooks/useKpiData';
+import userProfile from '../../lib/userProfile';
 
 const HQDashboard = () => {
-  // Top strip KPIs - Critical metrics
+  // Get user profile to determine role-based KPIs
+  const [userRole, setUserRole] = React.useState('entrepreneur');
+  const [ventureType, setVentureType] = React.useState('startup');
+
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      const { data } = await userProfile.getProfile();
+      if (data?.role) setUserRole(data.role);
+      if (data?.venture_basics?.type) setVentureType(data.venture_basics.type);
+    };
+    fetchProfile();
+  }, []);
+
+  // Generate role-based KPIs
+  const { kpis: roleBasedKpis, loading: kpisLoading } = useRoleBasedKpis(userRole, ventureType);
+
+  // Top strip KPIs - Always show these 3 critical metrics
   const topStripKpis = [
     <KpiCard
       key="runway"
@@ -111,55 +131,57 @@ const HQDashboard = () => {
               <h2 className="text-lg font-medium text-foreground">Signals Board</h2>
               <LockUnlockWrapper feature="advanced_signals" requiredTier="pro">
                 <button className="text-sm text-primary hover:text-primary/80">
-                  View All Signals →
+                  Auto-Generate KPIs →
                 </button>
               </LockUnlockWrapper>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {signalsKpis.map((kpi, index) => (
-                <LockUnlockWrapper 
-                  key={index}
-                  feature={index > 2 ? "advanced_signals" : "basic_dashboard"}
-                  requiredTier="pro"
-                >
-                  <KpiCard
-                    title={kpi.title}
-                    description={kpi.description}
-                    value={kpi.value}
-                    unit={kpi.unit}
-                    trend={kpi.trend}
-                    trendDirection={kpi.trendDirection}
-                    state={kpi.state}
-                    icon={kpi.icon}
-                  />
-                </LockUnlockWrapper>
-              ))}
-            </div>
+            {kpisLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="h-32 bg-muted animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {roleBasedKpis.map((kpi, index) => (
+                  <LockUnlockWrapper 
+                    key={index}
+                    feature={index > 2 ? "advanced_signals" : "basic_dashboard"}
+                    requiredTier="pro"
+                  >
+                    <KpiCard
+                      title={kpi.title}
+                      description={kpi.description}
+                      value={kpi.value}
+                      unit={kpi.unit}
+                      trend={kpi.trend}
+                      trendDirection={kpi.trendDirection}
+                      state={kpi.state}
+                    />
+                  </LockUnlockWrapper>
+                ))}
+              </div>
+            )}
           </section>
 
-          {/* Portfolio Tiles Placeholder */}
+          {/* Portfolio Tiles */}
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
               <LockUnlockWrapper feature="unlimited_ventures" requiredTier="pro">
                 <button className="text-sm text-primary hover:text-primary/80">
-                  Manage Ventures →
+                  + Add Venture
                 </button>
               </LockUnlockWrapper>
             </div>
-            <div className="border border-dashed border-border rounded-lg p-8 text-center">
-              <p className="text-muted-foreground">Portfolio tiles coming in Phase 3</p>
-            </div>
+            <PortfolioTiles 
+              onVentureClick={(ventureId) => console.log('Navigate to venture:', ventureId)}
+            />
           </section>
 
-          {/* Alerts Strip Placeholder */}
+          {/* Alerts Strip */}
           <section>
-            <div className="border border-dashed border-border rounded-lg p-6">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <AlertTriangle className="h-4 w-4" />
-                <span>Alert strip placeholder - Phase 3</span>
-              </div>
-            </div>
+            <AlertsStrip />
           </section>
         </div>
       )
