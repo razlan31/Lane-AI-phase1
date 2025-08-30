@@ -88,7 +88,8 @@ function App() {
     onAddWorksheet: () => console.log('Add worksheet'),
     onAddDashboard: () => console.log('Add dashboard'),
     onImportCsv: () => console.log('Import CSV'),
-    onAddVenture: () => console.log('Add venture (Pro feature)')
+    onAddVenture: () => console.log('Add venture'),
+    onFounderMode: () => console.log('Open Founder Mode')
   };
 
   // Render main content
@@ -98,22 +99,35 @@ function App() {
         return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
       case 'workspace':
         return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Workspace</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {ventures.map(venture => (
-                <div key={venture.id} className="p-4 border rounded-lg">
-                  <h3 className="font-semibold">{venture.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{venture.description}</p>
-                  <button 
-                    onClick={() => setCurrentView(`venture-${venture.id}`)}
-                    className="text-primary hover:underline"
-                  >
-                    Open Workspace →
-                  </button>
-                </div>
-              ))}
-            </div>
+          <div className="min-h-screen bg-background">
+            {/* Header */}
+            <header className="border-b border-border bg-background/95 backdrop-blur-sm">
+              <div className="container mx-auto px-6 py-6">
+                <h1 className="text-3xl font-bold text-foreground">Workspace</h1>
+                <p className="text-muted-foreground mt-2">Manage your ventures and projects</p>
+              </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="container mx-auto px-6 py-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {ventures.map(venture => (
+                  <div key={venture.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div className="mb-4">
+                      <h2 className="text-xl font-bold text-foreground">{venture.name}</h2>
+                      <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setCurrentView(`venture-${venture.id}`)}
+                      className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-2"
+                    >
+                      Open Workspace →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </main>
           </div>
         );
       case 'venture-1':
@@ -195,6 +209,7 @@ function App() {
             onAddDashboard={handleQuickActions.onAddDashboard}
             onImportCsv={handleQuickActions.onImportCsv}
             onAddVenture={handleQuickActions.onAddVenture}
+            onFounderMode={handleQuickActions.onFounderMode}
           />
         </div>
       </TooltipProvider>
