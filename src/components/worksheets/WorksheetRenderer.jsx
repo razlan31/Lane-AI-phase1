@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, Eye, Edit3, Save, X, Plus, Tabs, Settings } from 'lucide-react';
+import { FileSpreadsheet, Eye, Edit3, Save, X, Plus, Layers, Settings } from 'lucide-react';
 import { Button } from '../ui/button';
 import DataTable from '../primitives/DataTable';
 import KpiCard from '../primitives/KpiCard';
@@ -252,7 +252,7 @@ const WorksheetRenderer = ({
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Tabs className="h-4 w-4 mr-2 inline" />
+                <Layers className="h-4 w-4 mr-2 inline" />
                 {sheet.name}
               </button>
             ))}
