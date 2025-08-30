@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
-import HQDashboard from './pages/HQDashboard';
+import HQDashboard from './components/dashboards/HQDashboard';
 import VentureHub from './components/workspaces/VentureHub';
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
