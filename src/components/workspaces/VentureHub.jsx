@@ -9,6 +9,7 @@ import ReportsList from '../reports/ReportsList';
 // import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import VentureChatPanel from '../chat/VentureChatPanel';
 import NewWorksheetModal from '../modals/NewWorksheetModal';
+import NewReportModal from '../modals/NewReportModal';
 import TemplateChooser from '../templates/TemplateChooser';
 import FounderModeOverlay from '../overlays/FounderModeOverlay';
 import { useVentureKpis } from '../../hooks/useKpiData';
@@ -20,6 +21,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatContext, setChatContext] = useState(null);
   const [isNewWorksheetModalOpen, setIsNewWorksheetModalOpen] = useState(false);
+  const [isNewReportModalOpen, setIsNewReportModalOpen] = useState(false);
   const [isTemplateChooserOpen, setIsTemplateChooserOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [founderModeOpen, setFounderModeOpen] = useState(false);
@@ -46,6 +48,14 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const handleBlankWorksheet = () => {
     console.log('Creating blank worksheet');
     // In real app: create empty worksheet and open renderer
+  };
+
+  const handleGenerateReport = () => {
+    setIsNewReportModalOpen(true);
+  };
+
+  const handleCreateWorksheet = () => {
+    setIsNewWorksheetModalOpen(true);
   };
 
   const handleSelectTemplate = (template) => {
@@ -196,8 +206,8 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
             <section>
               <h3 className="text-lg font-medium mb-4">Quick Actions</h3>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm">Create Worksheet</Button>
-                <Button variant="outline" size="sm">Generate Report</Button>
+                <Button variant="outline" size="sm" onClick={handleCreateWorksheet}>Create Worksheet</Button>
+                <Button variant="outline" size="sm" onClick={handleGenerateReport}>Generate Report</Button>
                 <Button variant="outline" size="sm">Export CSV</Button>
                 <Button variant="outline" size="sm">AI Insights</Button>
               </div>
@@ -260,7 +270,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                 <p className="text-muted-foreground mb-4">
                   Create your first worksheet to start tracking metrics
                 </p>
-                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+              <Button onClick={handleCreateWorksheet}>
                   + Create Worksheet
                 </Button>
               </div>
@@ -276,7 +286,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           <TabsContent value="reports" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Reports</h3>
-              <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+              <Button onClick={handleGenerateReport}>
                 + Generate Report
               </Button>
             </div>
@@ -326,6 +336,12 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
         onChatBuild={handleChatBuild}
         onChooseTemplate={handleChooseTemplate}
         onBlankWorksheet={handleBlankWorksheet}
+      />
+
+      <NewReportModal
+        isOpen={isNewReportModalOpen}
+        onClose={() => setIsNewReportModalOpen(false)}
+        onGenerateReport={(reportType) => console.log('Generating report:', reportType)}
       />
 
       <TemplateChooser
