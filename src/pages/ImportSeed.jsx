@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileSpreadsheet, Download, Upload, Database, BarChart3, Calculator } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import TemplateChooser from '../components/templates/TemplateChooser';
 import { worksheetTemplates } from '../components/templates/WorksheetTemplates';
 
