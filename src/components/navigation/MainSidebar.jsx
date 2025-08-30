@@ -53,7 +53,14 @@ const MainSidebar = ({
     }
   ];
 
+  // Utility items
   const utilityItems = [
+    { 
+      id: 'import-seed', 
+      label: 'Import/Seed', 
+      icon: FileText, 
+      description: 'Templates & data import' 
+    },
     { 
       id: 'playground', 
       label: 'Playground', 

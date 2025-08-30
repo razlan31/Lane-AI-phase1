@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './pages/HQDashboard';
-import VentureWorkspace from './components/workspaces/VentureWorkspace';
+import VentureHub from './components/workspaces/VentureHub';
+import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
@@ -116,13 +117,15 @@ function App() {
           </div>
         );
       case 'venture-1':
-        return <VentureWorkspace ventureId={1} ventureName="Coffee Kiosk" />;
+        return <VentureHub ventureId={1} ventureName="Coffee Kiosk" />;
       case 'venture-2':
-        return <VentureWorkspace ventureId={2} ventureName="Tech Startup" />;
+        return <VentureHub ventureId={2} ventureName="Tech Startup" />;
       case 'chat-build':
         return <div className="p-6"><h1 className="text-2xl font-bold">Chat Build</h1><p>AI-guided builder coming soon...</p></div>;
       case 'stream':
         return <div className="p-6"><h1 className="text-2xl font-bold">Stream</h1><p>Timeline of insights coming soon...</p></div>;
+      case 'import-seed':
+        return <ImportSeed />;
       case 'playground':
         return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Freeform canvas coming soon...</p></div>;
       case 'scratchpads':

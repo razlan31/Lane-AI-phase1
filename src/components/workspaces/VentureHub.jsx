@@ -8,18 +8,43 @@ import ScenariosTab from '../scenarios/ScenariosTab';
 import ReportsList from '../reports/ReportsList';
 import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import VentureChatPanel from '../chat/VentureChatPanel';
+import NewWorksheetModal from '../modals/NewWorksheetModal';
+import TemplateChooser from '../templates/TemplateChooser';
 import { useVentureKpis } from '../../hooks/useKpiData';
 
 const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatContext, setChatContext] = useState(null);
+  const [isNewWorksheetModalOpen, setIsNewWorksheetModalOpen] = useState(false);
+  const [isTemplateChooserOpen, setIsTemplateChooserOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const { kpis: ventureKpis, loading: kpisLoading } = useVentureKpis(ventureId);
 
   const handleExplainClick = (context) => {
     setChatContext(context);
     setIsChatOpen(true);
+  };
+
+  const handleChatBuild = () => {
+    console.log('Starting chat build for new worksheet');
+    // In real app: start AI chat workflow for worksheet creation
+  };
+
+  const handleChooseTemplate = () => {
+    setIsTemplateChooserOpen(true);
+  };
+
+  const handleBlankWorksheet = () => {
+    console.log('Creating blank worksheet');
+    // In real app: create empty worksheet and open renderer
+  };
+
+  const handleSelectTemplate = (template) => {
+    setSelectedTemplate(template);
+    console.log('Creating worksheet from template:', template.title);
+    // In real app: create worksheet from template and open renderer
   };
 
   const mockAlerts = [
@@ -160,10 +185,15 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Worksheets</h3>
               <LockUnlockWrapper feature="advanced_worksheets" requiredTier="pro">
-                <Button>+ New Worksheet</Button>
+                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+                  + New Worksheet
+                </Button>
               </LockUnlockWrapper>
             </div>
-            <WorksheetRenderer ventureId={ventureId} />
+            <WorksheetRenderer 
+              ventureId={ventureId} 
+              templateId={selectedTemplate?.id}
+            />
           </TabsContent>
 
           {/* Scenarios Tab */}
@@ -176,7 +206,9 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Reports</h3>
               <LockUnlockWrapper feature="reports" requiredTier="pro">
-                <Button>+ Generate Report</Button>
+                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+                  + Generate Report
+                </Button>
               </LockUnlockWrapper>
             </div>
             <ReportsList ventureId={ventureId} />
@@ -226,6 +258,21 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modals */}
+      <NewWorksheetModal
+        isOpen={isNewWorksheetModalOpen}
+        onClose={() => setIsNewWorksheetModalOpen(false)}
+        onChatBuild={handleChatBuild}
+        onChooseTemplate={handleChooseTemplate}
+        onBlankWorksheet={handleBlankWorksheet}
+      />
+
+      <TemplateChooser
+        isOpen={isTemplateChooserOpen}
+        onClose={() => setIsTemplateChooserOpen(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
 
       {/* Chat Panel */}
       <VentureChatPanel
