@@ -216,9 +216,14 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
 
           {/* Worksheets Tab */}
           <TabsContent value="worksheets" className="space-y-6">
-            <div className="space-y-2 mb-8">
-              <h1 className="text-2xl font-bold text-foreground">Worksheets</h1>
-              <p className="text-muted-foreground">All calculators and financial tools for this venture</p>
+            <div className="flex items-center justify-between mb-8">
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold text-foreground">Worksheets</h1>
+                <p className="text-muted-foreground">All calculators and financial tools for this venture</p>
+              </div>
+              <Button onClick={handleCreateWorksheet}>
+                + Create Worksheet
+              </Button>
             </div>
             
             {worksheetsLoading ? (
