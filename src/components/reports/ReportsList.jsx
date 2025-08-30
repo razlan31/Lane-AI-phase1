@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, FileText, Calendar, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import DataTable from '../primitives/DataTable';
-import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+// import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import { formatNumber } from '../../lib/utils';
 
 const ReportsList = ({ ventureId }) => {
@@ -144,15 +144,13 @@ const ReportsList = ({ ventureId }) => {
               >
                 <Eye className="h-4 w-4" />
               </Button>
-              <LockUnlockWrapper feature="reports" requiredTier="pro">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleExport(row.id, row.name)}
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-              </LockUnlockWrapper>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleExport(row.id, row.name)}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
             </>
           )}
           {row.status === 'generating' && (
@@ -176,11 +174,9 @@ const ReportsList = ({ ventureId }) => {
       <div className="border border-dashed border-border rounded-lg p-8 text-center">
         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground mb-4">No reports generated yet</p>
-        <LockUnlockWrapper feature="reports" requiredTier="pro">
-          <Button variant="outline">
-            Generate First Report
-          </Button>
-        </LockUnlockWrapper>
+        <Button variant="outline">
+          Generate First Report
+        </Button>
       </div>
     );
   }
@@ -203,12 +199,10 @@ const ReportsList = ({ ventureId }) => {
             </div>
           </div>
         </div>
-        <LockUnlockWrapper feature="reports" requiredTier="pro">
-          <Button size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            New Report
-          </Button>
-        </LockUnlockWrapper>
+        <Button size="sm">
+          <FileText className="h-4 w-4 mr-2" />
+          New Report
+        </Button>
       </div>
 
       <DataTable

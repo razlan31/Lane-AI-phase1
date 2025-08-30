@@ -2,7 +2,7 @@ import React from 'react';
 import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';
-import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+// import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import PortfolioTiles from '../portfolio/PortfolioTiles';
 import AlertsStrip from '../alerts/AlertsStrip';
 import FounderModeOverlay from '../overlays/FounderModeOverlay';
@@ -88,11 +88,9 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Signals Board</h2>
-              <LockUnlockWrapper feature="advanced_signals" requiredTier="pro">
-                <button className="text-sm text-primary hover:text-primary/80">
-                  Auto-Generate KPIs →
-                </button>
-              </LockUnlockWrapper>
+              <button className="text-sm text-primary hover:text-primary/80">
+                Auto-Generate KPIs →
+              </button>
             </div>
             {kpisLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -103,22 +101,17 @@ const HQDashboard = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {roleBasedKpis.map((kpi, index) => (
-                  <LockUnlockWrapper 
+                  <KpiCard
                     key={index}
-                    feature={index > 2 ? "advanced_signals" : "basic_dashboard"}
-                    requiredTier="pro"
-                  >
-                    <KpiCard
-                      title={kpi.title}
-                      description={kpi.description}
-                      value={kpi.value}
-                      unit={kpi.unit}
-                      trend={kpi.trend}
-                      trendDirection={kpi.trendDirection}
-                      state={kpi.state}
-                      icon={kpi.icon}
-                    />
-                  </LockUnlockWrapper>
+                    title={kpi.title}
+                    description={kpi.description}
+                    value={kpi.value}
+                    unit={kpi.unit}
+                    trend={kpi.trend}
+                    trendDirection={kpi.trendDirection}
+                    state={kpi.state}
+                    icon={kpi.icon}
+                  />
                 ))}
               </div>
             )}
@@ -128,11 +121,9 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
-              <LockUnlockWrapper feature="unlimited_ventures" requiredTier="pro">
-                <button className="text-sm text-primary hover:text-primary/80">
-                  + Add Venture
-                </button>
-              </LockUnlockWrapper>
+              <button className="text-sm text-primary hover:text-primary/80">
+                + Add Venture
+              </button>
             </div>
             <PortfolioTiles 
               onVentureClick={(ventureId) => console.log('Navigate to venture:', ventureId)}

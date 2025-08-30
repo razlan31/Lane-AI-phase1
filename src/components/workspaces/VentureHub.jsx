@@ -6,7 +6,7 @@ import KpiCard from '../primitives/KpiCard';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
 import ScenariosTab from '../scenarios/ScenariosTab';
 import ReportsList from '../reports/ReportsList';
-import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+// import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import VentureChatPanel from '../chat/VentureChatPanel';
 import NewWorksheetModal from '../modals/NewWorksheetModal';
 import TemplateChooser from '../templates/TemplateChooser';
@@ -199,9 +199,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                 <Button variant="outline" size="sm">Create Worksheet</Button>
                 <Button variant="outline" size="sm">Generate Report</Button>
                 <Button variant="outline" size="sm">Export CSV</Button>
-                <LockUnlockWrapper feature="ai_insights" requiredTier="pro">
-                  <Button variant="outline" size="sm">AI Insights</Button>
-                </LockUnlockWrapper>
+                <Button variant="outline" size="sm">AI Insights</Button>
               </div>
             </section>
           </TabsContent>
@@ -278,11 +276,9 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           <TabsContent value="reports" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Reports</h3>
-              <LockUnlockWrapper feature="reports" requiredTier="pro">
-                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
-                  + Generate Report
-                </Button>
-              </LockUnlockWrapper>
+              <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+                + Generate Report
+              </Button>
             </div>
             <ReportsList ventureId={ventureId} />
           </TabsContent>
@@ -291,43 +287,34 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           <TabsContent value="signals" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Pinned Signals</h3>
-              <LockUnlockWrapper feature="advanced_signals" requiredTier="pro">
-                <Button>Configure Alerts</Button>
-              </LockUnlockWrapper>
+              <Button>Configure Alerts</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ventureKpis.map((kpi, index) => (
-                <LockUnlockWrapper 
+                <KpiCard
                   key={index}
-                  feature={index > 1 ? "advanced_signals" : "basic_signals"}
-                  requiredTier="pro"
-                >
-                  <KpiCard
-                    title={kpi.title}
-                    description={kpi.description}
-                    value={kpi.value}
-                    unit={kpi.unit}
-                    trend={kpi.trend}
-                    trendDirection={kpi.trendDirection}
-                    onClick={() => handleExplainClick(`Explain ${kpi.title} trend`)}
-                  />
-                </LockUnlockWrapper>
+                  title={kpi.title}
+                  description={kpi.description}
+                  value={kpi.value}
+                  unit={kpi.unit}
+                  trend={kpi.trend}
+                  trendDirection={kpi.trendDirection}
+                  onClick={() => handleExplainClick(`Explain ${kpi.title} trend`)}
+                />
               ))}
             </div>
           </TabsContent>
 
           {/* Flows Tab */}
           <TabsContent value="flows">
-            <LockUnlockWrapper feature="workflows" requiredTier="pro">
-              <div className="border border-dashed border-border rounded-lg p-12 text-center">
-                <Workflow className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Workflow Builder</h3>
-                <p className="text-muted-foreground mb-4">
-                  Automate your business processes with visual workflows
-                </p>
-                <Button>Coming Soon</Button>
-              </div>
-            </LockUnlockWrapper>
+            <div className="border border-dashed border-border rounded-lg p-12 text-center">
+              <Workflow className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Workflow Builder</h3>
+              <p className="text-muted-foreground mb-4">
+                Automate your business processes with visual workflows
+              </p>
+              <Button>Coming Soon</Button>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

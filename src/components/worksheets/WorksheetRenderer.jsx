@@ -3,7 +3,7 @@ import { FileSpreadsheet, Eye, Edit3, Save, X, Plus, Layers, Settings } from 'lu
 import { Button } from '../ui/button';
 import DataTable from '../primitives/DataTable';
 import KpiCard from '../primitives/KpiCard';
-import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+// import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import AssumptionsPanel from './AssumptionsPanel';
 import VentureChatPanel from '../chat/VentureChatPanel';
 import { cn } from '../../lib/utils';
@@ -163,11 +163,9 @@ const WorksheetRenderer = ({
       <div className="border border-dashed border-border rounded-lg p-8 text-center">
         <FileSpreadsheet className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground">No worksheets found</p>
-        <LockUnlockWrapper feature="advanced_worksheets" requiredTier="pro">
-          <Button variant="outline" className="mt-4">
-            Create First Worksheet
-          </Button>
-        </LockUnlockWrapper>
+        <Button variant="outline" className="mt-4">
+          Create First Worksheet
+        </Button>
       </div>
     );
   }
@@ -220,12 +218,10 @@ const WorksheetRenderer = ({
                   <X className="h-4 w-4 mr-2" />
                   Discard
                 </Button>
-                <LockUnlockWrapper feature="advanced_worksheets" requiredTier="pro">
-                  <Button size="sm">
-                    <Save className="h-4 w-4 mr-2" />
-                    Promote to Live
-                  </Button>
-                </LockUnlockWrapper>
+                <Button size="sm">
+                  <Save className="h-4 w-4 mr-2" />
+                  Promote to Live
+                </Button>
               </>
             )}
             <Button 
@@ -283,19 +279,14 @@ const WorksheetRenderer = ({
 
         {/* Data Table */}
         {currentSheet && (
-          <LockUnlockWrapper 
-            feature={selectedWorksheet.type === 'roi' ? "advanced_worksheets" : "core_worksheets"} 
-            requiredTier="pro"
-          >
-            <DataTable
-              data={currentSheet.data || []}
-              columns={currentSheet.columns || []}
-              editable={mode === 'draft'}
-              mode={mode}
-              onSave={handleSave}
-              onEdit={handleEdit}
-            />
-          </LockUnlockWrapper>
+          <DataTable
+            data={currentSheet.data || []}
+            columns={currentSheet.columns || []}
+            editable={mode === 'draft'}
+            mode={mode}
+            onSave={handleSave}
+            onEdit={handleEdit}
+          />
         )}
       </div>
 

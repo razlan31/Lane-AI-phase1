@@ -11,7 +11,7 @@ import {
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
-import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
+// import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/dialog';
 
 const ToolsScratchpads = ({ 
@@ -181,12 +181,10 @@ const ToolsScratchpads = ({
                     Custom worksheets and experiments
                   </p>
                 </div>
-                <LockUnlockWrapper feature="custom_worksheets" requiredTier="pro">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Scratchpad
-                  </Button>
-                </LockUnlockWrapper>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Scratchpad
+                </Button>
               </div>
 
               {/* Scratchpad List */}
@@ -240,12 +238,10 @@ const ToolsScratchpads = ({
                   <p className="text-sm text-muted-foreground mb-4">
                     Create custom calculators and experiment with ideas
                   </p>
-                  <LockUnlockWrapper feature="custom_worksheets" requiredTier="pro">
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create First Scratchpad
-                    </Button>
-                  </LockUnlockWrapper>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create First Scratchpad
+                  </Button>
                 </div>
               )}
             </TabsContent>
