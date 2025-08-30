@@ -36,8 +36,7 @@ const MainSidebar = ({
       id: 'workspace', 
       label: 'Workspace', 
       icon: Building2, 
-      description: 'Multi-venture management hub',
-      showVentures: true
+      description: 'Multi-venture management hub'
     },
     { 
       id: 'chat-build', 
@@ -174,27 +173,7 @@ const MainSidebar = ({
       <div className="flex-1 p-2 space-y-4 overflow-y-auto">
         {/* Main Navigation */}
         <div className="space-y-1">
-          {navigationItems.map((item) => {
-            if (item.showVentures) {
-              return (
-                <div key={item.id}>
-                  {renderNavItem(item)}
-                  {currentView === 'workspace' && !isCollapsed && (
-                    <div className="ml-4 mt-2 space-y-2">
-                      {ventures.length > 0 ? (
-                        ventures.map(renderVenturePreview)
-                      ) : (
-                        <div className="text-sm text-muted-foreground text-center py-4">
-                          No ventures yet. Create your first workspace!
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            return renderNavItem(item);
-          })}
+          {navigationItems.map(renderNavItem)}
         </div>
 
         {/* Separator */}
