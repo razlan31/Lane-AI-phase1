@@ -10,6 +10,7 @@ import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import VentureChatPanel from '../chat/VentureChatPanel';
 import NewWorksheetModal from '../modals/NewWorksheetModal';
 import TemplateChooser from '../templates/TemplateChooser';
+import FounderModeOverlay from '../overlays/FounderModeOverlay';
 import { useVentureKpis } from '../../hooks/useKpiData';
 
 const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
@@ -19,6 +20,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [isNewWorksheetModalOpen, setIsNewWorksheetModalOpen] = useState(false);
   const [isTemplateChooserOpen, setIsTemplateChooserOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [founderModeOpen, setFounderModeOpen] = useState(false);
 
   const { kpis: ventureKpis, loading: kpisLoading } = useVentureKpis(ventureId);
 
@@ -281,6 +283,12 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
         ventureId={ventureId}
         ventureName={ventureName}
         initialContext={chatContext}
+      />
+
+      {/* Founder Mode Overlay */}
+      <FounderModeOverlay 
+        isOpen={founderModeOpen} 
+        onClose={() => setFounderModeOpen(false)} 
       />
     </div>
   );

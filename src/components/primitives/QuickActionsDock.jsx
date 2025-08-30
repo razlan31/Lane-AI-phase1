@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Activity, Play, Download, MessageCircle } from 'lucide-react';
+import { Plus, Activity, Play, Download, MessageCircle, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
@@ -10,6 +10,7 @@ const QuickActionsDock = ({
   onRunFlow, 
   onExport, 
   onChat,
+  onFounderMode,
   className 
 }) => {
   const actions = [
@@ -47,6 +48,14 @@ const QuickActionsDock = ({
       label: 'Chat',
       onClick: onChat,
       tooltip: 'Open AI assistant'
+    },
+    {
+      id: 'founder-mode',
+      icon: Crown,
+      label: 'Founder',
+      onClick: onFounderMode,
+      tooltip: 'Strategic decision cockpit',
+      isPro: true
     }
   ];
 
@@ -65,7 +74,10 @@ const QuickActionsDock = ({
                 variant="ghost"
                 size="sm"
                 onClick={action.onClick}
-                className="flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-accent"
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-accent",
+                  action.isPro && "text-amber-600 hover:bg-amber-50"
+                )}
               >
                 <action.icon className="h-4 w-4" />
                 <span className="hidden sm:inline text-sm">{action.label}</span>

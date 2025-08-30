@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 import TabContainer from '../primitives/TabContainer';
 import QuickActionsDock from '../primitives/QuickActionsDock';
+import TopBar from '../navigation/TopBar';
 
 const DashboardLayout = ({ 
   title,
@@ -14,8 +15,15 @@ const DashboardLayout = ({
 }) => {
   return (
     <div className={cn("min-h-screen bg-background", className)}>
+      {/* Top Bar */}
+      <TopBar 
+        onFounderMode={onQuickAction?.onFounderMode}
+        onSearchClick={() => console.log('Search')}
+        onProfileClick={() => console.log('Profile')}
+      />
+
       {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -58,6 +66,7 @@ const DashboardLayout = ({
         onRunFlow={onQuickAction?.onRunFlow}
         onExport={onQuickAction?.onExport}
         onChat={onQuickAction?.onChat}
+        onFounderMode={onQuickAction?.onFounderMode}
       />
     </div>
   );

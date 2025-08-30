@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button } from '../ui/button';
-import { Plus, FileSpreadsheet, Upload, Building2 } from 'lucide-react';
+import { Plus, FileSpreadsheet, Upload, Building2, Crown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-const QuickDock = ({ onAddWorksheet, onAddDashboard, onImportCsv, onAddVenture, className }) => {
+const QuickDock = ({ onAddWorksheet, onAddDashboard, onImportCsv, onAddVenture, onFounderMode, className }) => {
   const actions = [
     {
       id: 'worksheet',
@@ -32,6 +32,14 @@ const QuickDock = ({ onAddWorksheet, onAddDashboard, onImportCsv, onAddVenture, 
       label: 'Add Venture',
       onClick: onAddVenture,
       tooltip: 'Create new venture (Pro feature)',
+      isPro: true
+    },
+    {
+      id: 'founder-mode',
+      icon: Crown,
+      label: 'Founder Mode',
+      onClick: onFounderMode,
+      tooltip: 'Strategic decision cockpit',
       isPro: true
     }
   ];

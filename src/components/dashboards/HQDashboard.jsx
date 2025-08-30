@@ -5,6 +5,7 @@ import KpiCard from '../primitives/KpiCard';
 import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import PortfolioTiles from '../portfolio/PortfolioTiles';
 import AlertsStrip from '../alerts/AlertsStrip';
+import FounderModeOverlay from '../overlays/FounderModeOverlay';
 import { useRoleBasedKpis } from '../../hooks/useKpiData';
 import userProfile from '../../lib/userProfile';
 
@@ -12,6 +13,7 @@ const HQDashboard = () => {
   // Get user profile to determine role-based KPIs
   const [userRole, setUserRole] = React.useState('entrepreneur');
   const [ventureType, setVentureType] = React.useState('startup');
+  const [founderModeOpen, setFounderModeOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchProfile = async () => {
@@ -193,17 +195,24 @@ const HQDashboard = () => {
     onSignals: () => console.log('View signals'),
     onRunFlow: () => console.log('Run flow'),
     onExport: () => console.log('Export'),
-    onChat: () => console.log('Open chat')
+    onChat: () => console.log('Open chat'),
+    onFounderMode: () => setFounderModeOpen(true)
   };
 
   return (
-    <DashboardLayout
-      title="HQ Dashboard"
-      subtitle="Portfolio overview and key signals"
-      topStrip={topStripKpis}
-      tabs={tabs}
-      onQuickAction={handleQuickActions}
-    />
+    <>
+      <DashboardLayout
+        title="HQ Dashboard"
+        subtitle="Portfolio overview and key signals"
+        topStrip={topStripKpis}
+        tabs={tabs}
+        onQuickAction={handleQuickActions}
+      />
+      <FounderModeOverlay 
+        isOpen={founderModeOpen} 
+        onClose={() => setFounderModeOpen(false)} 
+      />
+    </>
   );
 };
 

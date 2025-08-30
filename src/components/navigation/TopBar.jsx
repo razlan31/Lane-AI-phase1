@@ -1,9 +1,9 @@
 import React from 'react';
-import { Search, Bell, User, Command } from 'lucide-react';
+import { Search, Bell, User, Command, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
-const TopBar = ({ onSearchClick, onProfileClick, className }) => {
+const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, className }) => {
   return (
     <header className={cn(
       "h-14 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-50",
@@ -35,6 +35,15 @@ const TopBar = ({ onSearchClick, onProfileClick, className }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onFounderMode}
+            className="text-amber-600 border-amber-200 hover:bg-amber-50"
+          >
+            <Crown className="h-4 w-4 mr-2" />
+            Founder Mode
+          </Button>
           <Button variant="ghost" size="sm">
             <Bell className="h-4 w-4" />
           </Button>
