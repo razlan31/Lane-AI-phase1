@@ -5,11 +5,31 @@ import VentureWorkspace from './components/workspaces/VentureWorkspace';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
+import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
+import OnboardingSteps from './components/onboarding/OnboardingSteps';
+import OnboardingComplete from './components/onboarding/OnboardingComplete';
+import MainSidebar from './components/navigation/MainSidebar';
+import QuickDock from './components/navigation/QuickDock';
 
 function App() {
   const [currentView, setCurrentView] = useState('hq');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isOnboarded, setIsOnboarded] = useState(true); // Start with true for now
+  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState('welcome'); // 'welcome', 'steps', 'complete'
+  const [userProfileData, setUserProfileData] = useState(null);
+
+  // Check onboarding status on mount
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      const onboarded = await userProfile.isOnboarded();
+      setIsOnboarded(onboarded);
+      if (onboarded) {
+        const { data } = await userProfile.getProfile();
+        setUserProfileData(data);
+      }
+    };
+    checkOnboardingStatus();
+  }, []);
 
   // Mock ventures data
   const [ventures, setVentures] = useState([
@@ -33,68 +53,146 @@ function App() {
     }
   ]);
 
-  // Simple sidebar component
-  const SimpleSidebar = () => (
-    <aside className="w-64 border-r border-border bg-card/50 p-4">
-      <h2 className="text-lg font-semibold mb-4">Navigation</h2>
-      <div className="space-y-2">
-        <button 
-          onClick={() => setCurrentView('hq')}
-          className={`w-full text-left px-3 py-2 rounded ${currentView === 'hq' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-        >
-          🏠 HQ
-        </button>
-        <button 
-          onClick={() => setCurrentView('venture-1')}
-          className={`w-full text-left px-3 py-2 rounded ${currentView === 'venture-1' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-        >
-          ☕ Coffee Kiosk
-        </button>
-        <button 
-          onClick={() => setCurrentView('venture-2')}
-          className={`w-full text-left px-3 py-2 rounded ${currentView === 'venture-2' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-        >
-          💻 Tech Startup
-        </button>
-        <button 
-          onClick={() => setCurrentView('tools')}
-          className={`w-full text-left px-3 py-2 rounded ${currentView === 'tools' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-        >
-          🔧 Tools
-        </button>
-      </div>
-    </aside>
-  );
+  // Onboarding handlers
+  const handleOnboardingStart = () => {
+    setOnboardingStep('steps');
+  };
+
+  const handleOnboardingSkip = async () => {
+    // Save minimal profile and mark as onboarded
+    await userProfile.completeOnboarding({
+      role: 'other',
+      ventureType: 'small_business',
+      stage: 'idea',
+      generatedKpis: ['Runway', 'Cashflow', 'Obligations']
+    });
+    setIsOnboarded(true);
+    setCurrentView('hq');
+  };
+
+  const handleOnboardingComplete = async (profileData) => {
+    // Save full profile
+    await userProfile.completeOnboarding(profileData);
+    setUserProfileData(profileData);
+    setOnboardingStep('complete');
+  };
+
+  const handleEnterApp = () => {
+    setIsOnboarded(true);
+    setCurrentView('hq');
+  };
+
+  // Quick dock handlers
+  const handleQuickActions = {
+    onAddWorksheet: () => console.log('Add worksheet'),
+    onAddDashboard: () => console.log('Add dashboard'),
+    onImportCsv: () => console.log('Import CSV'),
+    onAddVenture: () => console.log('Add venture (Pro feature)')
+  };
 
   // Render main content
   const renderMainContent = () => {
     switch (currentView) {
       case 'hq':
-        return <HQDashboard ventures={ventures} />;
+        return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
+      case 'workspace':
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-6">Workspace</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ventures.map(venture => (
+                <div key={venture.id} className="p-4 border rounded-lg">
+                  <h3 className="font-semibold">{venture.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{venture.description}</p>
+                  <button 
+                    onClick={() => setCurrentView(`venture-${venture.id}`)}
+                    className="text-primary hover:underline"
+                  >
+                    Open Workspace →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
       case 'venture-1':
         return <VentureWorkspace ventureId={1} ventureName="Coffee Kiosk" />;
       case 'venture-2':
         return <VentureWorkspace ventureId={2} ventureName="Tech Startup" />;
-      case 'tools':
+      case 'chat-build':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Chat Build</h1><p>AI-guided builder coming soon...</p></div>;
+      case 'stream':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Stream</h1><p>Timeline of insights coming soon...</p></div>;
+      case 'playground':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Freeform canvas coming soon...</p></div>;
+      case 'scratchpads':
         return <ToolsScratchpads ventures={ventures} />;
+      case 'reports':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p>Global reports coming soon...</p></div>;
+      case 'personal':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
+      case 'settings':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Settings</h1><p>Profile and preferences coming soon...</p></div>;
       default:
-        return <HQDashboard ventures={ventures} />;
+        return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
     }
   };
+
+  // Handle onboarding flow
+  if (!isOnboarded) {
+    switch (onboardingStep) {
+      case 'welcome':
+        return (
+          <OnboardingWelcome 
+            onGetStarted={handleOnboardingStart}
+            onSkip={handleOnboardingSkip}
+          />
+        );
+      case 'steps':
+        return (
+          <OnboardingSteps 
+            onComplete={handleOnboardingComplete}
+          />
+        );
+      case 'complete':
+        return (
+          <OnboardingComplete 
+            profileData={userProfileData}
+            onContinue={handleEnterApp}
+          />
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
     <DisplaySettingsProvider>
       <TooltipProvider>
         <div className="min-h-screen bg-background w-full">
           <div className="flex h-screen overflow-hidden">
-            {/* Simple Sidebar */}
-            <SimpleSidebar />
+            {/* Main Sidebar */}
+            <MainSidebar 
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              ventures={ventures}
+              isCollapsed={sidebarCollapsed}
+              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
               {renderMainContent()}
             </main>
           </div>
+
+          {/* Quick Actions Dock */}
+          <QuickDock 
+            onAddWorksheet={handleQuickActions.onAddWorksheet}
+            onAddDashboard={handleQuickActions.onAddDashboard}
+            onImportCsv={handleQuickActions.onImportCsv}
+            onAddVenture={handleQuickActions.onAddVenture}
+          />
         </div>
       </TooltipProvider>
     </DisplaySettingsProvider>
