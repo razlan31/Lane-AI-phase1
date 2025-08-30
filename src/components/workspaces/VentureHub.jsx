@@ -12,6 +12,8 @@ import NewWorksheetModal from '../modals/NewWorksheetModal';
 import TemplateChooser from '../templates/TemplateChooser';
 import FounderModeOverlay from '../overlays/FounderModeOverlay';
 import { useVentureKpis } from '../../hooks/useKpiData';
+import { useWorksheets } from '../../hooks/useWorksheets';
+import { useAlerts } from '../../hooks/useAlerts';
 
 const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -22,7 +24,10 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [founderModeOpen, setFounderModeOpen] = useState(false);
 
+  // Get venture-specific data
   const { kpis: ventureKpis, loading: kpisLoading } = useVentureKpis(ventureId);
+  const { worksheets, loading: worksheetsLoading, createWorksheet } = useWorksheets(ventureId);
+  const { alerts, loading: alertsLoading } = useAlerts(ventureId);
 
   const handleExplainClick = (context) => {
     setChatContext(context);
@@ -127,17 +132,36 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
             {/* Venture Alerts */}
             <section>
               <h3 className="text-lg font-medium mb-4">Alerts</h3>
-              <div className="space-y-2">
-                {mockAlerts.map(alert => (
-                  <div key={alert.id} className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card">
-                    <div className={`w-2 h-2 rounded-full ${alert.type === 'warning' ? 'bg-warning' : 'bg-info'}`}></div>
-                    <span className="text-sm">{alert.message}</span>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      {alert.timestamp.toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {alertsLoading ? (
+                <div className="space-y-2">
+                  {[1, 2].map(i => (
+                    <div key={i} className="h-12 bg-muted animate-pulse rounded-lg"></div>
+                  ))}
+                </div>
+              ) : alerts.length > 0 ? (
+                <div className="space-y-2">
+                  {alerts.map(alert => (
+                    <div key={alert.id} className={`flex items-center gap-3 p-3 border rounded-lg ${
+                      alert.type === 'warning' ? 'bg-amber-50 border-amber-200' : 
+                      alert.type === 'alert' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        alert.type === 'warning' ? 'bg-amber-500' : 
+                        alert.type === 'alert' ? 'bg-red-500' : 'bg-blue-500'
+                      }`}></div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{alert.title}</div>
+                        <div className="text-xs text-muted-foreground">{alert.message}</div>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(alert.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">No alerts for this venture</div>
+              )}
             </section>
 
             {/* Venture KPIs */}
@@ -192,10 +216,47 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                 </Button>
               </LockUnlockWrapper>
             </div>
-            <WorksheetRenderer 
-              ventureId={ventureId} 
-              templateId={selectedTemplate?.id}
-            />
+            
+            {worksheetsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-20 bg-muted animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : worksheets.length > 0 ? (
+              <div className="space-y-4">
+                {worksheets.map(worksheet => (
+                  <div key={worksheet.id} className="p-4 border border-border rounded-lg bg-card">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{worksheet.name}</h4>
+                        <p className="text-sm text-muted-foreground capitalize">{worksheet.type} worksheet</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          worksheet.status === 'live' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {worksheet.status}
+                        </span>
+                        <Button variant="outline" size="sm">
+                          Open
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-dashed border-border rounded-lg p-12 text-center">
+                <h4 className="text-lg font-medium mb-2">No worksheets yet</h4>
+                <p className="text-muted-foreground mb-4">
+                  Create your first worksheet to start tracking metrics
+                </p>
+                <Button onClick={() => setIsNewWorksheetModalOpen(true)}>
+                  + Create Worksheet
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           {/* Scenarios Tab */}

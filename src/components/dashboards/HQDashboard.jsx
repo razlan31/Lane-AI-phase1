@@ -6,26 +6,23 @@ import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import PortfolioTiles from '../portfolio/PortfolioTiles';
 import AlertsStrip from '../alerts/AlertsStrip';
 import FounderModeOverlay from '../overlays/FounderModeOverlay';
-import { useRoleBasedKpis } from '../../hooks/useKpiData';
-import userProfile from '../../lib/userProfile';
+import { useUserProfile } from '../../hooks/useUserProfile';
+import { useRoleBasedKpis } from '../../hooks/useRoleBasedKpis';
+import { useAlerts } from '../../hooks/useAlerts';
 
 const HQDashboard = () => {
   // Get user profile to determine role-based KPIs
-  const [userRole, setUserRole] = React.useState('entrepreneur');
-  const [ventureType, setVentureType] = React.useState('startup');
+  const { profile, loading: profileLoading } = useUserProfile();
   const [founderModeOpen, setFounderModeOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    const fetchProfile = async () => {
-      const { data } = await userProfile.getProfile();
-      if (data?.role) setUserRole(data.role);
-      if (data?.venture_basics?.type) setVentureType(data.venture_basics.type);
-    };
-    fetchProfile();
-  }, []);
+  // Generate role-based KPIs based on user profile
+  const { kpis: roleBasedKpis, loading: kpisLoading } = useRoleBasedKpis(
+    profile?.role || 'entrepreneur',
+    profile?.venture_type || 'startup'
+  );
 
-  // Generate role-based KPIs
-  const { kpis: roleBasedKpis, loading: kpisLoading } = useRoleBasedKpis(userRole, ventureType);
+  // Get global alerts
+  const { alerts, loading: alertsLoading } = useAlerts();
 
   // Top strip KPIs - Always show these 3 critical metrics
   const topStripKpis = [
@@ -61,65 +58,6 @@ const HQDashboard = () => {
   ];
 
   // Signals board - 6-9 KPI Cards
-  const signalsKpis = [
-    {
-      title: "Revenue Growth",
-      description: "How fast your income is increasing over time",
-      value: 23.5,
-      unit: "percentage",
-      trend: 8.2,
-      trendDirection: "up",
-      icon: TrendingUp
-    },
-    {
-      title: "Customer Acquisition",
-      description: "Number of new customers gained this period",
-      value: 47,
-      unit: "number",
-      trend: 12,
-      trendDirection: "up",
-      icon: Users
-    },
-    {
-      title: "Burn Rate",
-      description: "How much money you're spending each month",
-      value: 12500,
-      unit: "currency",
-      trend: -8,
-      trendDirection: "down",
-      icon: DollarSign,
-      state: "warning"
-    },
-    {
-      title: "Product-Market Fit",
-      description: "How well your product meets customer needs",
-      value: 7.8,
-      unit: "number",
-      trend: 0.5,
-      trendDirection: "up",
-      icon: Target
-    },
-    {
-      title: "Market Signals",
-      description: "Important trends happening in your industry",
-      value: 6,
-      unit: "number",
-      trend: 2,
-      trendDirection: "up",
-      icon: Activity
-    },
-    {
-      title: "Risk Indicators",
-      description: "Warning signs that need your attention",
-      value: 3,
-      unit: "number",
-      trend: 1,
-      trendDirection: "up",
-      icon: AlertTriangle,
-      state: "alert"
-    }
-  ];
-
   const tabs = [
     {
       value: "overview",
@@ -127,6 +65,25 @@ const HQDashboard = () => {
       icon: Activity,
       content: (
         <div className="space-y-8">
+          {/* AI Timeline Strip */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-foreground">AI Insights</h2>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-3 border border-amber-200 rounded-lg bg-amber-50">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span className="text-sm text-amber-800">⚠️ Alert: Your expenses grew 25% faster this month</span>
+                <span className="text-xs text-amber-600 ml-auto">2 hours ago</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 border border-blue-200 rounded-lg bg-blue-50">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-blue-800">📈 Revenue trend shows 15% growth potential next quarter</span>
+                <span className="text-xs text-blue-600 ml-auto">1 day ago</span>
+              </div>
+            </div>
+          </section>
+
           {/* Signals Board */}
           <section>
             <div className="flex items-center justify-between mb-6">
@@ -159,6 +116,7 @@ const HQDashboard = () => {
                       trend={kpi.trend}
                       trendDirection={kpi.trendDirection}
                       state={kpi.state}
+                      icon={kpi.icon}
                     />
                   </LockUnlockWrapper>
                 ))}
@@ -183,7 +141,7 @@ const HQDashboard = () => {
 
           {/* Alerts Strip */}
           <section>
-            <AlertsStrip />
+            <AlertsStrip alerts={alerts} loading={alertsLoading} />
           </section>
         </div>
       )

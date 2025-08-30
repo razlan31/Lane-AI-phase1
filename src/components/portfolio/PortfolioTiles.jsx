@@ -2,10 +2,10 @@ import React from 'react';
 import { Building2, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { formatNumber } from '../../lib/utils';
-import { usePortfolioVentures } from '../../hooks/useKpiData';
+import { useVentures } from '../../hooks/useVentures';
 
 const PortfolioTiles = ({ onVentureClick }) => {
-  const { ventures, loading } = usePortfolioVentures();
+  const { ventures, loading } = useVentures();
 
   if (loading) {
     return (
@@ -80,18 +80,18 @@ const PortfolioTiles = ({ onVentureClick }) => {
                 {venture.name}
               </CardTitle>
               <div className="text-sm text-muted-foreground capitalize">
-                {venture.type} • {venture.stage}
+                {venture.type} • {venture.status}
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {venture.previewKpis.map((kpi, index) => {
-                  const IconComponent = getKpiIcon(kpi.label);
+                {venture.kpis.slice(0, 3).map((kpi, index) => {
+                  const IconComponent = getKpiIcon(kpi.title);
                   return (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <IconComponent className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{kpi.label}</span>
+                        <span className="text-sm text-muted-foreground">{kpi.title}</span>
                       </div>
                       <span className="font-medium">
                         {formatKpiValue(kpi.value, kpi.unit)}
