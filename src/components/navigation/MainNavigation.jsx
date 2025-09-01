@@ -76,12 +76,6 @@ const MainNavigation = ({
       label: 'Personal', 
       icon: User, 
       description: 'Your personal dashboard and life metrics' 
-    },
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: Settings, 
-      description: 'Profile, preferences, and billing' 
     }
   ];
 
