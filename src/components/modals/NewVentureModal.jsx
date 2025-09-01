@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAICopilotStore } from "../../hooks/useAICopilotStore";
+import { useVentures } from "../../hooks/useVentures";
 import VentureCardsFlow from "../venture/VentureCardsFlow";
 
 /**
@@ -8,8 +9,9 @@ import VentureCardsFlow from "../venture/VentureCardsFlow";
  * - AI Chat shows chat interface directly in modal
  * - Quick Setup shows step-by-step venture creation flow
  */
-const NewVentureModal = ({ isOpen, onClose }) => {
+const NewVentureModal = ({ isOpen, onClose, onCreateVenture }) => {
   const { activeChatId, addMessage, chats } = useAICopilotStore();
+  const { createVenture } = useVentures();
   const [mode, setMode] = useState("ai-chat"); // "ai-chat" | "quick-setup"
   const [input, setInput] = useState("");
 
@@ -34,9 +36,14 @@ const NewVentureModal = ({ isOpen, onClose }) => {
     setInput("");
   };
 
-  const handleQuickSetupComplete = (ventureData) => {
-    console.log("Venture created:", ventureData);
-    onClose();
+  const handleQuickSetupComplete = async (ventureData) => {
+    const result = await createVenture(ventureData);
+    if (result.success) {
+      onCreateVenture?.(result.data);
+      onClose();
+    } else {
+      console.error("Failed to create venture:", result.error);
+    }
   };
 
   return (
