@@ -179,8 +179,8 @@ const AICoPilot = ({
 
   return (
     <Card className={cn(
-      "fixed right-4 top-20 w-96 h-[500px] flex flex-col bg-card border-border shadow-lg z-40",
-      isMinimized && "h-12",
+      "fixed right-4 top-20 w-96 flex flex-col bg-card border-border shadow-lg z-40",
+      isMinimized ? "h-12" : "h-[500px]",
       className
     )}>
       {/* Header */}

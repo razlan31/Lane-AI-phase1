@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Bell, User, Command, Crown, Home } from 'lucide-react';
+import { Search, Bell, User, Command, Crown, Home, Bot } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
-const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, className }) => {
+const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onToggleCoPilot, className }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   
@@ -74,6 +74,17 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, cla
 
         {/* Right Actions */}
         <div className="flex items-center gap-1">
+          {/* AI Co-Pilot Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onToggleCoPilot || (() => console.log('Toggle Co-Pilot'))}
+            className="hidden sm:flex items-center gap-2"
+          >
+            <Bot className="h-4 w-4" />
+            <span className="hidden md:inline">AI Co-Pilot</span>
+          </Button>
+
           {/* Founder Mode Button */}
           <Button 
             variant="ghost" 

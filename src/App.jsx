@@ -25,7 +25,7 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
-  const [showCoPilot, setShowCoPilot] = useState(true);
+  const [showCoPilot, setShowCoPilot] = useState(false);
   const [showFounderMode, setShowFounderMode] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
@@ -327,6 +327,7 @@ function App() {
                 onProfileClick={handleTopBarActions.onProfileClick}
                 onFounderMode={handleTopBarActions.onFounderMode}
                 onHomeClick={handleTopBarActions.onHomeClick}
+                onToggleCoPilot={() => setShowCoPilot(!showCoPilot)}
               />
 
               {/* Main Content */}
@@ -337,7 +338,7 @@ function App() {
           </div>
 
           {/* AI Co-Pilot - Always Available */}
-          {showCoPilot && currentView !== 'copilot' && (
+          {showCoPilot && (
             <AICoPilot 
               isOpen={showCoPilot}
               onToggle={() => setShowCoPilot(!showCoPilot)}
