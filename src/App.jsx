@@ -10,15 +10,19 @@ import userProfile from './lib/userProfile';
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
-import MainSidebar from './components/navigation/MainSidebar';
+import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from './components/navigation/QuickDock';
+import AICoPilot from './components/chat/AICoPilot';
+import FounderMode from './components/modes/FounderMode';
+import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
 
 function App() {
-  const [currentView, setCurrentView] = useState('hq');
+  const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState('welcome'); // 'welcome', 'steps', 'complete'
   const [userProfileData, setUserProfileData] = useState(null);
+  const [showCoPilot, setShowCoPilot] = useState(true);
+  const [showFounderMode, setShowFounderMode] = useState(false);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -56,32 +60,49 @@ function App() {
   ]);
 
   // Onboarding handlers
-  const handleOnboardingStart = () => {
-    setOnboardingStep('steps');
-  };
-
-  const handleOnboardingSkip = async () => {
-    // Save minimal profile and mark as onboarded
-    await userProfile.completeOnboarding({
-      role: 'other',
-      ventureType: 'small_business',
-      stage: 'idea',
-      generatedKpis: ['Runway', 'Cashflow', 'Obligations']
-    });
-    setIsOnboarded(true);
-    setCurrentView('hq');
-  };
-
   const handleOnboardingComplete = async (profileData) => {
-    // Save full profile
+    // Save full profile and create initial venture/KPIs
     await userProfile.completeOnboarding(profileData);
     setUserProfileData(profileData);
-    setOnboardingStep('complete');
+    
+    // Create initial venture based on profile
+    const initialVenture = {
+      id: Date.now(),
+      name: getVentureNameFromProfile(profileData),
+      description: getVentureDescriptionFromProfile(profileData),
+      runway: 12,
+      cashflow: -1500,
+      revenue: 5000,
+      burnRate: 2500
+    };
+    
+    setVentures([initialVenture]);
+    setIsOnboarded(true);
+    setCurrentView('copilot'); // Start with AI Co-Pilot
   };
 
-  const handleEnterApp = () => {
-    setIsOnboarded(true);
-    setCurrentView('hq');
+  const getVentureNameFromProfile = (profile) => {
+    const names = {
+      tech_startup: 'My SaaS Startup',
+      service_business: 'My Consulting Business',
+      ecommerce: 'My Online Store',
+      local_business: 'My Local Business',
+      creative: 'My Creative Studio',
+      other: 'My Business'
+    };
+    return names[profile.ventureType] || 'My Business';
+  };
+
+  const getVentureDescriptionFromProfile = (profile) => {
+    const descriptions = {
+      tech_startup: 'Building innovative software solutions',
+      service_business: 'Providing professional services',
+      ecommerce: 'Selling products online',
+      local_business: 'Serving the local community',
+      creative: 'Creating digital content and designs',
+      other: 'Working on exciting projects'
+    };
+    return descriptions[profile.ventureType] || 'A new business venture';
   };
 
   // Quick dock handlers
@@ -97,13 +118,47 @@ function App() {
   const handleTopBarActions = {
     onSearchClick: () => console.log('Search clicked'),
     onProfileClick: () => console.log('Profile clicked'),
-    onFounderMode: () => console.log('Founder mode clicked'),
+    onFounderMode: () => setShowFounderMode(true),
     onHomeClick: () => setCurrentView('hq')
   };
 
   // Render main content
   const renderMainContent = () => {
     switch (currentView) {
+      case 'copilot':
+        return (
+          <div className="h-full bg-background flex items-center justify-center">
+            <div className="text-center space-y-6 max-w-2xl px-6">
+              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🤖</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold mb-3">Welcome to AI Co-Pilot</h1>
+                <p className="text-lg text-muted-foreground mb-6">
+                  Your AI-first business assistant. Just describe what you need and I'll build it for you.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="font-medium mb-2">💬 Natural Language</div>
+                    <div className="text-muted-foreground">"I run a coffee shop and need to track daily sales"</div>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="font-medium mb-2">🎯 Goal-Based</div>
+                    <div className="text-muted-foreground">"I need to reach $10k monthly revenue"</div>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="font-medium mb-2">📊 Auto-Generated</div>
+                    <div className="text-muted-foreground">Dashboards, worksheets, and KPIs built for you</div>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="font-medium mb-2">🚀 Always Learning</div>
+                    <div className="text-muted-foreground">Adapts to your business as it grows</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'hq':
         return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
       case 'workspace':
@@ -185,14 +240,8 @@ function App() {
         return <VentureHub ventureId={1} ventureName="Coffee Kiosk" />;
       case 'venture-2':
         return <VentureHub ventureId={2} ventureName="Tech Startup" />;
-      case 'chat-build':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Chat Build</h1><p>AI-guided builder coming soon...</p></div>;
-      case 'stream':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Stream</h1><p>Timeline of insights coming soon...</p></div>;
-      case 'import-seed':
-        return <ImportSeed />;
       case 'playground':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Freeform canvas coming soon...</p></div>;
+        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Experimental canvas coming soon...</p></div>;
       case 'scratchpads':
         return <ToolsScratchpads ventures={ventures} />;
       case 'reports':
@@ -208,30 +257,11 @@ function App() {
 
   // Handle onboarding flow
   if (!isOnboarded) {
-    switch (onboardingStep) {
-      case 'welcome':
-        return (
-          <OnboardingWelcome 
-            onGetStarted={handleOnboardingStart}
-            onSkip={handleOnboardingSkip}
-          />
-        );
-      case 'steps':
-        return (
-          <OnboardingSteps 
-            onComplete={handleOnboardingComplete}
-          />
-        );
-      case 'complete':
-        return (
-          <OnboardingComplete 
-            profileData={userProfileData}
-            onContinue={handleEnterApp}
-          />
-        );
-      default:
-        return null;
-    }
+    return (
+      <EnhancedOnboardingFlow 
+        onComplete={handleOnboardingComplete}
+      />
+    );
   }
 
   return (
@@ -239,8 +269,8 @@ function App() {
       <TooltipProvider>
         <div className="min-h-screen bg-background w-full">
           <div className="flex h-screen overflow-hidden">
-            {/* Main Sidebar */}
-            <MainSidebar 
+            {/* Main Navigation */}
+            <MainNavigation 
               currentView={currentView}
               onViewChange={setCurrentView}
               ventures={ventures}
@@ -265,13 +295,28 @@ function App() {
             </div>
           </div>
 
+          {/* AI Co-Pilot - Always Available */}
+          {showCoPilot && currentView !== 'copilot' && (
+            <AICoPilot 
+              isOpen={showCoPilot}
+              onToggle={() => setShowCoPilot(!showCoPilot)}
+              context={currentView.startsWith('venture-') ? 'venture' : 'global'}
+              ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
+            />
+          )}
+
+          {/* Founder Mode Overlay */}
+          {showFounderMode && (
+            <FounderMode onClose={() => setShowFounderMode(false)} />
+          )}
+
           {/* Quick Actions Dock */}
           <QuickDock 
             onAddWorksheet={handleQuickActions.onAddWorksheet}
             onAddDashboard={handleQuickActions.onAddDashboard}
             onImportCsv={handleQuickActions.onImportCsv}
             onAddVenture={handleQuickActions.onAddVenture}
-            onFounderMode={handleQuickActions.onFounderMode}
+            onFounderMode={() => setShowFounderMode(true)}
           />
         </div>
       </TooltipProvider>
