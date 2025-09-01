@@ -1,50 +1,139 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
-import { Plus, FileSpreadsheet, Upload, Building2, Crown, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, FileSpreadsheet, Upload, Building2, Crown, ChevronUp, ChevronDown, Activity, Play, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-const QuickDock = ({ onAddWorksheet, onAddDashboard, onImportCsv, onAddVenture, onFounderMode, className }) => {
+const QuickDock = ({ 
+  onAddWorksheet, 
+  onAddDashboard, 
+  onImportCsv, 
+  onAddVenture, 
+  onFounderMode,
+  onAddData,
+  onSignals, 
+  onRunFlow,
+  onExport,
+  onChat,
+  currentView,
+  className 
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   
-  const actions = [
-    {
-      id: 'worksheet',
-      icon: Plus,
-      label: '+Worksheet',
-      onClick: onAddWorksheet,
-      tooltip: 'Create new worksheet'
-    },
-    {
-      id: 'dashboard',
-      icon: FileSpreadsheet,
-      label: '+Dashboard',
-      onClick: onAddDashboard,
-      tooltip: 'Create new dashboard'
-    },
-    {
-      id: 'import',
-      icon: Upload,
-      label: 'Import CSV',
-      onClick: onImportCsv,
-      tooltip: 'Import data from CSV'
-    },
-    {
-      id: 'venture',
-      icon: Building2,
-      label: 'Add Venture',
-      onClick: onAddVenture,
-      tooltip: 'Create new venture (Pro feature)',
-      isPro: true
-    },
-    {
-      id: 'founder-mode',
-      icon: Crown,
-      label: 'Founder Mode',
-      onClick: onFounderMode,
-      tooltip: 'Strategic decision cockpit',
-      isPro: true
+  // Context-aware actions based on current view
+  const getActions = () => {
+    // HQ Dashboard actions
+    if (currentView === 'hq') {
+      return [
+        {
+          id: 'add-data',
+          icon: Plus,
+          label: '+Data',
+          onClick: onAddData,
+          tooltip: 'Add new data or worksheet'
+        },
+        {
+          id: 'signals',
+          icon: Activity,
+          label: 'Signals',
+          onClick: onSignals,
+          tooltip: 'View insights and alerts'
+        },
+        {
+          id: 'run-flow',
+          icon: Play,
+          label: 'Run Flow',
+          onClick: onRunFlow,
+          tooltip: 'Execute workflow'
+        },
+        {
+          id: 'export',
+          icon: Upload,
+          label: 'Export',
+          onClick: onExport,
+          tooltip: 'Export data and reports'
+        },
+        {
+          id: 'chat',
+          icon: MessageCircle,
+          label: 'Chat',
+          onClick: onChat,
+          tooltip: 'Open AI assistant'
+        },
+        {
+          id: 'founder-mode',
+          icon: Crown,
+          label: 'Founder',
+          onClick: onFounderMode,
+          tooltip: 'Strategic decision cockpit',
+          isPro: true
+        }
+      ];
     }
-  ];
+    
+    // Venture-specific actions
+    if (currentView?.startsWith('venture-')) {
+      return [
+        {
+          id: 'worksheet',
+          icon: Plus,
+          label: '+Worksheet',
+          onClick: onAddWorksheet,
+          tooltip: 'Create new worksheet'
+        },
+        {
+          id: 'dashboard',
+          icon: FileSpreadsheet,
+          label: '+Dashboard',
+          onClick: onAddDashboard,
+          tooltip: 'Create new dashboard'
+        },
+        {
+          id: 'import',
+          icon: Upload,
+          label: 'Import CSV',
+          onClick: onImportCsv,
+          tooltip: 'Import data from CSV'
+        },
+        {
+          id: 'export',
+          icon: Upload,
+          label: 'Export',
+          onClick: onExport,
+          tooltip: 'Export data and reports'
+        },
+        {
+          id: 'founder-mode',
+          icon: Crown,
+          label: 'Founder',
+          onClick: onFounderMode,
+          tooltip: 'Strategic decision cockpit',
+          isPro: true
+        }
+      ];
+    }
+    
+    // Default actions for other views
+    return [
+      {
+        id: 'venture',
+        icon: Building2,
+        label: 'Add Venture',
+        onClick: onAddVenture,
+        tooltip: 'Create new venture (Pro feature)',
+        isPro: true
+      },
+      {
+        id: 'founder-mode',
+        icon: Crown,
+        label: 'Founder Mode',
+        onClick: onFounderMode,
+        tooltip: 'Strategic decision cockpit',
+        isPro: true
+      }
+    ];
+  };
+
+  const actions = getActions();
 
   return (
     <div className={cn(

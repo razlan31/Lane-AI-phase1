@@ -14,6 +14,7 @@ import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from './components/navigation/QuickDock';
 import AICoPilot from './components/chat/AICoPilot';
 import FounderMode from './components/modes/FounderMode';
+import { Activity, Play, Download, MessageCircle } from 'lucide-react';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
 import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
@@ -145,7 +146,11 @@ function App() {
     onImportCsv: () => console.log('Import CSV'),
     onAddVenture: () => setNewVentureModalOpen(true),
     onFounderMode: () => setShowFounderMode(true),
-    onExport: () => setExportModalOpen(true)
+    onExport: () => setExportModalOpen(true),
+    onAddData: () => console.log('Add data'),
+    onSignals: () => console.log('View signals'),
+    onRunFlow: () => console.log('Run flow'),
+    onChat: () => setShowCoPilot(true)
   };
 
   // TopBar handlers
@@ -323,11 +328,17 @@ function App() {
 
           {/* Quick Actions Dock */}
           <QuickDock 
+            currentView={currentView}
             onAddWorksheet={handleQuickActions.onAddWorksheet}
             onAddDashboard={handleQuickActions.onAddDashboard}
             onImportCsv={handleQuickActions.onImportCsv}
             onAddVenture={handleQuickActions.onAddVenture}
             onFounderMode={() => setShowFounderMode(true)}
+            onAddData={handleQuickActions.onAddData}
+            onSignals={handleQuickActions.onSignals}
+            onRunFlow={handleQuickActions.onRunFlow}
+            onExport={handleQuickActions.onExport}
+            onChat={handleQuickActions.onChat}
           />
 
           {/* Global Modals */}

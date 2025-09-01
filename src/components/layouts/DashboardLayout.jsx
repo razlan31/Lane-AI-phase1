@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import TabContainer from '../primitives/TabContainer';
-import QuickActionsDock from '../primitives/QuickActionsDock';
+
 import TopBar from '../navigation/TopBar';
 
 const DashboardLayout = ({ 
@@ -53,15 +53,6 @@ const DashboardLayout = ({
         )}
       </main>
 
-      {/* Quick Actions Dock */}
-      <QuickActionsDock
-        onAddData={onQuickAction?.onAddData}
-        onSignals={onQuickAction?.onSignals}
-        onRunFlow={onQuickAction?.onRunFlow}
-        onExport={onQuickAction?.onExport}
-        onChat={onQuickAction?.onChat}
-        onFounderMode={onQuickAction?.onFounderMode}
-      />
     </div>
   );
 };
