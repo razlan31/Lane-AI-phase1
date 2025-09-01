@@ -19,6 +19,7 @@ import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
+import AICopilotPage from './pages/AICopilotPage';
 
 function App() {
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
@@ -159,39 +160,7 @@ function App() {
   const renderMainContent = () => {
     switch (currentView) {
       case 'copilot':
-        return (
-          <div className="h-full bg-background flex items-center justify-center">
-            <div className="text-center space-y-6 max-w-2xl px-6">
-              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🤖</span>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-3">Welcome to AI Co-Pilot</h1>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Your AI-first business assistant. Just describe what you need and I'll build it for you.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="font-medium mb-2">💬 Natural Language</div>
-                    <div className="text-muted-foreground">"I run a coffee shop and need to track daily sales"</div>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="font-medium mb-2">🎯 Goal-Based</div>
-                    <div className="text-muted-foreground">"I need to reach $10k monthly revenue"</div>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="font-medium mb-2">📊 Auto-Generated</div>
-                    <div className="text-muted-foreground">Dashboards, worksheets, and KPIs built for you</div>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="font-medium mb-2">🚀 Always Learning</div>
-                    <div className="text-muted-foreground">Adapts to your business as it grows</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <AICopilotPage />;
       case 'hq':
         return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
       case 'workspace':
