@@ -75,3 +75,5 @@ export const useAICopilotStore = () => {
     addMessage,
   };
 };
+
+export default useAICopilotStore;
