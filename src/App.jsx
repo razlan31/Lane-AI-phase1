@@ -15,6 +15,10 @@ import QuickDock from './components/navigation/QuickDock';
 import AICoPilot from './components/chat/AICoPilot';
 import FounderMode from './components/modes/FounderMode';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
+import SettingsPage from './pages/SettingsPage';
+import CommandPalette from './components/modals/CommandPalette';
+import NewVentureModal from './components/modals/NewVentureModal';
+import ExportModal from './components/export/ExportModal';
 
 function App() {
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
@@ -23,6 +27,9 @@ function App() {
   const [userProfileData, setUserProfileData] = useState(null);
   const [showCoPilot, setShowCoPilot] = useState(true);
   const [showFounderMode, setShowFounderMode] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -35,6 +42,17 @@ function App() {
       }
     };
     checkOnboardingStatus();
+
+    // Global keyboard shortcuts
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Mock ventures data
@@ -81,6 +99,11 @@ function App() {
     setCurrentView('copilot'); // Start with AI Co-Pilot
   };
 
+  const handleCreateVenture = (ventureData) => {
+    const newVentures = [...ventures, ventureData];
+    setVentures(newVentures);
+  };
+
   const getVentureNameFromProfile = (profile) => {
     const names = {
       tech_startup: 'My SaaS Startup',
@@ -110,14 +133,15 @@ function App() {
     onAddWorksheet: () => console.log('Add worksheet'),
     onAddDashboard: () => console.log('Add dashboard'),
     onImportCsv: () => console.log('Import CSV'),
-    onAddVenture: () => console.log('Add venture'),
-    onFounderMode: () => console.log('Open Founder Mode')
+    onAddVenture: () => setNewVentureModalOpen(true),
+    onFounderMode: () => setShowFounderMode(true),
+    onExport: () => setExportModalOpen(true)
   };
 
   // TopBar handlers
   const handleTopBarActions = {
-    onSearchClick: () => console.log('Search clicked'),
-    onProfileClick: () => console.log('Profile clicked'),
+    onSearchClick: () => setCommandPaletteOpen(true),
+    onProfileClick: () => setCurrentView('settings'),
     onFounderMode: () => setShowFounderMode(true),
     onHomeClick: () => setCurrentView('hq')
   };
@@ -223,7 +247,10 @@ function App() {
                 ))}
                 
                 {/* Add New Venture Card */}
-                <div className="bg-card border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]">
+                <div 
+                  className="bg-card border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]"
+                  onClick={() => setNewVentureModalOpen(true)}
+                >
                   <div className="text-center">
                     <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-lg flex items-center justify-center">
                       <span className="text-2xl">+</span>
@@ -249,7 +276,7 @@ function App() {
       case 'personal':
         return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
       case 'settings':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Settings</h1><p>Profile and preferences coming soon...</p></div>;
+        return <SettingsPage />;
       default:
         return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
     }
@@ -317,6 +344,23 @@ function App() {
             onImportCsv={handleQuickActions.onImportCsv}
             onAddVenture={handleQuickActions.onAddVenture}
             onFounderMode={() => setShowFounderMode(true)}
+          />
+
+          {/* Global Modals */}
+          <CommandPalette 
+            isOpen={commandPaletteOpen} 
+            onClose={() => setCommandPaletteOpen(false)} 
+          />
+          
+          <NewVentureModal
+            isOpen={newVentureModalOpen}
+            onClose={() => setNewVentureModalOpen(false)}
+            onCreateVenture={handleCreateVenture}
+          />
+          
+          <ExportModal
+            isOpen={exportModalOpen}
+            onClose={() => setExportModalOpen(false)}
           />
         </div>
       </TooltipProvider>
