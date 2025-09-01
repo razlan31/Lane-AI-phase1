@@ -66,13 +66,14 @@ export const useVentureKpis = (ventureId) => {
   const [kpis, setKpis] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
-  // Early return if no ventureId to prevent hook issues
-  if (!ventureId) {
-    return { kpis: [], loading: false };
-  }
-
   React.useEffect(() => {
     const fetchVentureKpis = async () => {
+      if (!ventureId) {
+        setKpis([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       // Mock API call - replace with Supabase
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -88,9 +89,7 @@ export const useVentureKpis = (ventureId) => {
       setLoading(false);
     };
 
-    if (ventureId) {
-      fetchVentureKpis();
-    }
+    fetchVentureKpis();
   }, [ventureId]);
 
   return { kpis, loading };
