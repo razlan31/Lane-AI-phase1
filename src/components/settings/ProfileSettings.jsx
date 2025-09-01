@@ -3,17 +3,17 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { User, Building2, TrendingUp, Brain, Target, DollarSign, Users, Zap } from 'lucide-react';
 
-const ProfileSettings = () => {
+const ProfileSettings = ({ userProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    role: 'founder',
-    ventureType: 'tech_startup',
-    stage: 'mvp',
-    northStar: 'Launch MVP and get 100 customers',
-    decisionStyle: 'data_driven',
-    moneyStyle: 'balanced',
-    growthStyle: 'viral',
-    riskAppetite: 'calculated'
+    role: userProfile?.role || 'founder',
+    ventureType: userProfile?.ventureType || 'tech_startup',
+    stage: userProfile?.stage || 'mvp',
+    northStar: userProfile?.northStar || 'Launch MVP and get 100 customers',
+    decisionStyle: userProfile?.decisionStyle || 'data_driven',
+    moneyStyle: userProfile?.moneyStyle || 'balanced',
+    growthStyle: userProfile?.growthStyle || 'viral',
+    riskAppetite: userProfile?.riskAppetite || 'calculated'
   });
 
   const roles = [

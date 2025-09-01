@@ -6,7 +6,7 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import DisplaySettings from '../components/settings/DisplaySettings';
 import BillingTab from '../components/billing/BillingTab';
 
-const SettingsPage = () => {
+const SettingsPage = ({ userProfile }) => {
   const [activeTab, setActiveTab] = useState('profile');
 
   return (
@@ -50,7 +50,7 @@ const SettingsPage = () => {
           </TabsList>
 
           <TabsContent value="profile">
-            <ProfileSettings />
+            <ProfileSettings userProfile={userProfile} />
           </TabsContent>
 
           <TabsContent value="display">

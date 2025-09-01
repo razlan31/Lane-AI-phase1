@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Minimize2, Maximize2, Sparkles, Bot, User, Lightbulb } from 'lucide-react';
+import { MessageCircle, Send, Minimize2, Maximize2, Sparkles, Bot, User, Lightbulb, Upload, Paperclip, FileText, Image, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../lib/utils';
@@ -15,13 +15,22 @@ const AICoPilot = ({
     {
       id: 1,
       type: 'assistant',
-      content: "Hi! I'm your AI Co-Pilot. Tell me about your business or goals, and I'll help you build the perfect dashboard, worksheets, and analytics.",
-      timestamp: new Date()
+      content: "Hi! I'm your AI Co-Pilot. Upload files (CSV, Excel, PDF) or tell me about your business, and I'll build dashboards and worksheets for you.",
+      timestamp: new Date(),
+      suggestions: [
+        "Upload my business data",
+        "I run a coffee shop",
+        "Create revenue tracking",
+        "Help me hit $20k monthly"
+      ]
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [showFileUpload, setShowFileUpload] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,6 +39,48 @@ const AICoPilot = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const newFiles = files.map(file => ({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      file: file
+    }));
+
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+
+    // Send file upload message
+    const fileMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: `Uploaded ${files.length} file(s): ${files.map(f => f.name).join(', ')}`,
+      timestamp: new Date(),
+      files: newFiles
+    };
+
+    setMessages(prev => [...prev, fileMessage]);
+
+    // AI response to file upload
+    setTimeout(() => {
+      const aiResponse = generateFileResponse(files);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: aiResponse,
+        timestamp: new Date(),
+        actions: [
+          { label: "Create Dashboard", action: "create_dashboard" },
+          { label: "Build Worksheets", action: "build_worksheets" },
+          { label: "Generate KPIs", action: "generate_kpis" }
+        ]
+      }]);
+    }, 1500);
+
+    setShowFileUpload(false);
+  };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -55,6 +106,20 @@ const AICoPilot = ({
         actions: generateActions(inputValue.trim())
       }]);
     }, 1000);
+  };
+
+  const generateFileResponse = (files) => {
+    const fileTypes = files.map(f => f.type);
+    
+    if (fileTypes.some(type => type.includes('csv') || type.includes('excel'))) {
+      return "Perfect! I found financial data in your files. I'm creating:\n\n📊 Revenue Dashboard with trends\n📈 P&L Worksheet from your data\n💰 Cash Flow tracker\n📋 Monthly/quarterly reports\n🎯 Key performance indicators\n\nProcessing your data now... This will take 30 seconds.";
+    }
+    
+    if (fileTypes.some(type => type.includes('pdf'))) {
+      return "I'm analyzing your PDF documents. Creating:\n\n📊 Business insights dashboard\n📝 Key metrics extraction\n📈 Performance tracking\n📋 Document insights summary\n\nExtracting data from your documents...";
+    }
+    
+    return "Files uploaded successfully! I'm analyzing your data to create relevant dashboards and worksheets. This will take a moment...";
   };
 
   const generateAIResponse = (input, context) => {
@@ -171,6 +236,33 @@ const AICoPilot = ({
                     : "bg-muted text-foreground"
                 )}>
                   <div className="whitespace-pre-wrap">{message.content}</div>
+                  {message.files && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {message.files.map((file, index) => (
+                        <div key={index} className="flex items-center gap-1 bg-background/20 px-2 py-1 rounded text-xs">
+                          {file.type.includes('csv') ? <FileText className="h-3 w-3" /> : 
+                           file.type.includes('image') ? <Image className="h-3 w-3" /> : 
+                           <Paperclip className="h-3 w-3" />}
+                          <span>{file.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {message.suggestions && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {message.suggestions.map((suggestion, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-6"
+                          onClick={() => setInputValue(suggestion)}
+                        >
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   {message.actions && (
                     <div className="flex gap-1 mt-2">
                       {message.actions.map((action, index) => (
@@ -200,12 +292,28 @@ const AICoPilot = ({
           {/* Input */}
           <div className="p-3 border-t border-border bg-card/50">
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-8 w-8 p-0"
+              >
+                <Paperclip className="h-3 w-3" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".csv,.xlsx,.xls,.pdf,.png,.jpg,.jpeg"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Describe your business or ask for help..."
+                placeholder="Upload files or describe your business..."
                 className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               <Button
@@ -218,8 +326,8 @@ const AICoPilot = ({
               </Button>
             </div>
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-              <Sparkles className="h-3 w-3" />
-              <span>Try: "I run a coffee shop" or "I need to hit $20k revenue"</span>
+              <Upload className="h-3 w-3" />
+              <span>Upload CSV, Excel, PDF or type: "I run a coffee shop"</span>
             </div>
           </div>
         </>

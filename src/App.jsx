@@ -272,6 +272,16 @@ function App() {
             </main>
           </div>
         );
+      case 'playground':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Experimental canvas coming soon...</p></div>;
+      case 'scratchpads':
+        return <ToolsScratchpads ventures={ventures} />;
+      case 'reports':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p>Global reports coming soon...</p></div>;
+      case 'personal':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
+      case 'settings':
+        return <SettingsPage userProfile={userProfileData} />;
       // Dynamic venture views
       default:
         if (currentView.startsWith('venture-')) {
@@ -282,16 +292,6 @@ function App() {
           }
         }
         return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
-      case 'playground':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Experimental canvas coming soon...</p></div>;
-      case 'scratchpads':
-        return <ToolsScratchpads ventures={ventures} />;
-      case 'reports':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p>Global reports coming soon...</p></div>;
-      case 'personal':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
-      case 'settings':
-        return <SettingsPage />;
     }
   };
 
