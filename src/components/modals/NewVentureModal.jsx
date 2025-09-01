@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import AICopilotPage from "../../pages/AICopilotPage";
+import VentureCardsFlow from "../venture/VentureCardsFlow";
 
 /**
  * New Venture Modal
  * - Default mode: AI Chat (venture-specific flow)
- * - Alternative mode: Cards flow (old 3/6 card system)
+ * - Alternative mode: Quick Setup flow (form-based)
  */
 const NewVentureModal = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState("chat"); // "chat" | "cards"
@@ -36,7 +37,7 @@ const NewVentureModal = ({ isOpen, onClose }) => {
                   : "bg-gray-100 hover:bg-gray-200"
               }`}
             >
-              Cards
+              Quick Setup
             </button>
             <button
               onClick={onClose}
@@ -52,9 +53,13 @@ const NewVentureModal = ({ isOpen, onClose }) => {
           {mode === "chat" ? (
             <AICopilotPage mode="venture" />
           ) : (
-            <div className="p-6 text-center">
-              <p className="text-muted-foreground">Cards flow coming soon...</p>
-            </div>
+            <VentureCardsFlow 
+              onCancel={onClose}
+              onContinue={(ventureData) => {
+                console.log("Creating venture:", ventureData);
+                onClose();
+              }}
+            />
           )}
         </div>
       </div>
