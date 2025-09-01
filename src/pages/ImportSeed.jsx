@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FileSpreadsheet, Download, Upload, Database, BarChart3, Calculator } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -6,7 +6,7 @@ import TemplateChooser from '../components/templates/TemplateChooser';
 import { worksheetTemplates } from '../components/templates/WorksheetTemplates';
 
 const ImportSeed = () => {
-  const [isTemplateChooserOpen, setIsTemplateChooserOpen] = React.useState(false);
+  const [isTemplateChooserOpen, setIsTemplateChooserOpen] = useState(false);
 
   const handleSelectTemplate = (template) => {
     console.log('Selected template:', template);

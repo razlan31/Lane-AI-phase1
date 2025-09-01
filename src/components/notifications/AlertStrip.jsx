@@ -1,5 +1,5 @@
 // src/components/notifications/AlertStrip.jsx
-import React from "react";
+import React, { useState } from "react";
 
 /**
  * AlertStrip
@@ -35,7 +35,7 @@ const AlertStrip = ({ alerts = [] }) => {
 
 // Hook for managing alerts (needed by App.jsx)
 export const useAlerts = () => {
-  const [alerts, setAlerts] = React.useState([]);
+  const [alerts, setAlerts] = useState([]);
 
   const addAlert = (alert) => {
     const newAlert = {

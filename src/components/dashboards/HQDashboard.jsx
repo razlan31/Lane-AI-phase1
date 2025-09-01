@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';
@@ -13,7 +13,7 @@ import { useAlerts } from '../../hooks/useAlerts';
 const HQDashboard = () => {
   // Get user profile to determine role-based KPIs
   const { profile, loading: profileLoading } = useUserProfile();
-  const [founderModeOpen, setFounderModeOpen] = React.useState(false);
+  const [founderModeOpen, setFounderModeOpen] = useState(false);
 
   // Generate role-based KPIs based on user profile
   const { kpis: roleBasedKpis, loading: kpisLoading } = useRoleBasedKpis(

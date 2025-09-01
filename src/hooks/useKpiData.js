@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 
 // Generate role-based KPIs based on user profile
 export const useRoleBasedKpis = (userRole, ventureType) => {
-  const [kpis, setKpis] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const [kpis, setKpis] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const generateKpis = () => {
       setLoading(true);
       
@@ -63,10 +63,10 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
 
 // Venture-specific KPIs
 export const useVentureKpis = (ventureId) => {
-  const [kpis, setKpis] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const [kpis, setKpis] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchVentureKpis = async () => {
       if (!ventureId) {
         setKpis([]);
@@ -97,10 +97,10 @@ export const useVentureKpis = (ventureId) => {
 
 // Portfolio ventures data
 export const usePortfolioVentures = () => {
-  const [ventures, setVentures] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const [ventures, setVentures] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchVentures = async () => {
       setLoading(true);
       // Mock API call - replace with Supabase
