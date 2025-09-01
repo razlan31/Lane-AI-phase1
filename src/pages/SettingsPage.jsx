@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card } from '../components/ui/card';
-import { User, CreditCard, Bell, Display, HelpCircle } from 'lucide-react';
+import { User, CreditCard, Bell, Monitor, HelpCircle } from 'lucide-react';
 import ProfileSettings from '../components/settings/ProfileSettings';
 import DisplaySettings from '../components/settings/DisplaySettings';
 import BillingTab from '../components/billing/BillingTab';
@@ -32,7 +32,7 @@ const SettingsPage = () => {
               Profile
             </TabsTrigger>
             <TabsTrigger value="display" className="flex items-center gap-2">
-              <Display className="h-4 w-4" />
+              <Monitor className="h-4 w-4" />
               Display
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center gap-2">

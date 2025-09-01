@@ -79,6 +79,15 @@ function App() {
 
   // Onboarding handlers
   const handleOnboardingComplete = async (profileData) => {
+    // Handle skipped onboarding
+    if (profileData.skipped) {
+      await userProfile.completeOnboarding({ skipped: true, role: 'founder', ventureType: 'startup' });
+      setUserProfileData({ skipped: true });
+      setIsOnboarded(true);
+      setCurrentView('copilot');
+      return;
+    }
+
     // Save full profile and create initial venture/KPIs
     await userProfile.completeOnboarding(profileData);
     setUserProfileData(profileData);
@@ -263,10 +272,16 @@ function App() {
             </main>
           </div>
         );
-      case 'venture-1':
-        return <VentureHub ventureId={1} ventureName="Coffee Kiosk" />;
-      case 'venture-2':
-        return <VentureHub ventureId={2} ventureName="Tech Startup" />;
+      // Dynamic venture views
+      default:
+        if (currentView.startsWith('venture-')) {
+          const ventureId = currentView.replace('venture-', '');
+          const venture = ventures.find(v => v.id.toString() === ventureId);
+          if (venture) {
+            return <VentureHub ventureId={venture.id} ventureName={venture.name} />;
+          }
+        }
+        return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
       case 'playground':
         return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Experimental canvas coming soon...</p></div>;
       case 'scratchpads':
@@ -277,8 +292,6 @@ function App() {
         return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
       case 'settings':
         return <SettingsPage />;
-      default:
-        return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
     }
   };
 
@@ -303,6 +316,7 @@ function App() {
               ventures={ventures}
               isCollapsed={sidebarCollapsed}
               onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onAddVenture={() => setNewVentureModalOpen(true)}
             />
 
             {/* Main Content Area with TopBar */}

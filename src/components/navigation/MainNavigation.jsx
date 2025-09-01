@@ -23,6 +23,7 @@ const MainNavigation = ({
   ventures = [],
   isCollapsed, 
   onToggleCollapse,
+  onAddVenture,
   className 
 }) => {
   // Primary navigation items in correct order per spec
@@ -120,7 +121,7 @@ const MainNavigation = ({
     <Button
       variant="outline"
       className="w-full justify-start border-dashed"
-      onClick={() => console.log('Add venture')}
+      onClick={onAddVenture || (() => console.log('Add venture'))}
     >
       <Plus className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
       {!isCollapsed && "Add Venture"}

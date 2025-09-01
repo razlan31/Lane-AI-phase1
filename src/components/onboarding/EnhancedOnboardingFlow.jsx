@@ -303,10 +303,15 @@ const EnhancedOnboardingFlow = ({ onComplete }) => {
                 </div>
               </div>
             </div>
-            <Button onClick={handleNext} className="w-full">
-              Get Started
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => onComplete({ skipped: true })} className="flex-1">
+                Skip for Now
+              </Button>
+              <Button onClick={handleNext} className="flex-1">
+                Get Started
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
