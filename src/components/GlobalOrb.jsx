@@ -9,7 +9,7 @@ import { VoiceInputButton } from '@/components/VoiceInputButton';
 import AICopilot from '@/components/copilot/AICopilot';
 import { useToast } from '@/hooks/use-toast';
 
-export const GlobalOrb = ({ className = "", context = null, ventureId = null }) => {
+const GlobalOrb = ({ className = "", context = null, ventureId = null }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [input, setInput] = useState('');
@@ -191,3 +191,5 @@ export const GlobalOrb = ({ className = "", context = null, ventureId = null }) 
     </div>
   );
 };
+
+export default GlobalOrb;
