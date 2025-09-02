@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock pricing tier hook - replace with real Supabase query
 export const usePricingTier = () => {

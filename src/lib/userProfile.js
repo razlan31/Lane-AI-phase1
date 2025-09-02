@@ -1,5 +1,5 @@
 // User profile management with Supabase stub
-import { supabase } from './supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock user state for prototype
 let mockUser = {
