@@ -150,71 +150,71 @@ export const useScratchpad = () => {
     }
   };
 
-  // Enhanced AI suggestion helpers
+  // Enhanced AI suggestion helpers (tool_* IDs)
   const suggestTools = (noteText) => {
-    // Enhanced pattern detection for tool suggestions
     const text = noteText.toLowerCase();
     const suggestions = [];
 
-    // Financial patterns
+    // Finance
     if (text.includes('roi') || text.includes('return') || text.includes('investment')) {
-      suggestions.push({ toolId: 'roi_calculator', reason: 'Calculate return on investment', confidence: 0.9 });
+      suggestions.push({ toolId: 'tool_roi_calc', reason: 'Calculate return on investment', confidence: 0.9 });
     }
     if (text.includes('runway') || text.includes('cash') || text.includes('burn')) {
-      suggestions.push({ toolId: 'runway_calculator', reason: 'Analyze cash runway', confidence: 0.85 });
+      suggestions.push({ toolId: 'tool_runway_calc', reason: 'Analyze cash runway', confidence: 0.85 });
     }
     if (text.includes('break') && text.includes('even')) {
-      suggestions.push({ toolId: 'breakeven_calculator', reason: 'Calculate break-even point', confidence: 0.8 });
+      suggestions.push({ toolId: 'tool_breakeven_calc', reason: 'Find break-even point', confidence: 0.82 });
     }
-    if (text.includes('valuation') || text.includes('value') || text.includes('worth')) {
-      suggestions.push({ toolId: 'valuation_calculator', reason: 'Calculate company valuation', confidence: 0.75 });
-    }
-
-    // Marketing patterns  
-    if (text.includes('customer') && (text.includes('acquisition') || text.includes('cost') || text.includes('cac'))) {
-      suggestions.push({ toolId: 'cac_calculator', reason: 'Calculate customer acquisition cost', confidence: 0.9 });
-    }
-    if (text.includes('lifetime') && text.includes('value') || text.includes('ltv')) {
-      suggestions.push({ toolId: 'ltv_calculator', reason: 'Calculate customer lifetime value', confidence: 0.85 });
-    }
-    if (text.includes('conversion') || text.includes('funnel')) {
-      suggestions.push({ toolId: 'conversion_optimizer', reason: 'Optimize conversion rates', confidence: 0.8 });
-    }
-    if (text.includes('market') && text.includes('size') || text.includes('tam') || text.includes('sam')) {
-      suggestions.push({ toolId: 'market_sizer', reason: 'Calculate market size', confidence: 0.8 });
+    if (text.includes('valuation') || text.includes('worth') || text.includes('multiple')) {
+      suggestions.push({ toolId: 'tool_valuation_est', reason: 'Estimate company valuation', confidence: 0.78 });
     }
 
-    // Operations patterns
-    if (text.includes('capacity') || text.includes('scale') || text.includes('growth')) {
-      suggestions.push({ toolId: 'capacity_planner', reason: 'Plan operational capacity', confidence: 0.7 });
+    // Marketing
+    if (text.includes('cac') || (text.includes('acquisition') && text.includes('cost'))) {
+      suggestions.push({ toolId: 'tool_cac_calc', reason: 'Calculate customer acquisition cost', confidence: 0.88 });
     }
-    if (text.includes('inventory') || text.includes('stock')) {
-      suggestions.push({ toolId: 'inventory_optimizer', reason: 'Optimize inventory levels', confidence: 0.75 });
+    if (text.includes('ltv') || (text.includes('lifetime') && text.includes('value'))) {
+      suggestions.push({ toolId: 'tool_ltv_calc', reason: 'Estimate customer lifetime value', confidence: 0.84 });
     }
-    if (text.includes('process') || text.includes('efficiency')) {
-      suggestions.push({ toolId: 'process_optimizer', reason: 'Analyze process efficiency', confidence: 0.7 });
+    if (text.includes('funnel') || text.includes('conversion')) {
+      suggestions.push({ toolId: 'tool_funnel_dropoff', reason: 'Analyze funnel drop-off', confidence: 0.8 });
     }
-    if (text.includes('risk') || text.includes('threat')) {
-      suggestions.push({ toolId: 'risk_assessor', reason: 'Assess business risks', confidence: 0.75 });
+    if (text.includes('roas') || (text.includes('ad') && text.includes('spend'))) {
+      suggestions.push({ toolId: 'tool_roas_calc', reason: 'Compute ROAS', confidence: 0.78 });
     }
 
-    // Strategy patterns
-    if (text.includes('scenario') || text.includes('planning')) {
-      suggestions.push({ toolId: 'scenario_planner', reason: 'Model business scenarios', confidence: 0.7 });
+    // Risk
+    if (text.includes('sensitivity') || text.includes('variation') || text.includes('range')) {
+      suggestions.push({ toolId: 'tool_sensitivity', reason: 'Run sensitivity analysis', confidence: 0.75 });
     }
-    if (text.includes('competitor') || text.includes('competition')) {
-      suggestions.push({ toolId: 'competitive_analyzer', reason: 'Analyze competitive landscape', confidence: 0.8 });
+    if (text.includes('concentration') || text.includes('herfindahl') || text.includes('distribution')) {
+      suggestions.push({ toolId: 'tool_concentration_risk', reason: 'Assess concentration risk', confidence: 0.72 });
     }
-    if (text.includes('swot') || text.includes('strength') || text.includes('weakness')) {
-      suggestions.push({ toolId: 'swot_analyzer', reason: 'Conduct SWOT analysis', confidence: 0.85 });
+    if (text.includes('portfolio') || text.includes('diversification') || text.includes('variance')) {
+      suggestions.push({ toolId: 'tool_portfolio_diversification', reason: 'Measure diversification', confidence: 0.72 });
     }
-    if (text.includes('goal') || text.includes('objective') || text.includes('kpi')) {
-      suggestions.push({ toolId: 'goal_tracker', reason: 'Track strategic goals', confidence: 0.75 });
+
+    // Personal
+    if ((text.includes('savings') && text.includes('expenses')) || text.includes('personal runway')) {
+      suggestions.push({ toolId: 'tool_personal_runway', reason: 'Personal runway calculator', confidence: 0.8 });
+    }
+    if (text.includes('work hours') || text.includes('personal hours') || text.includes('balance')) {
+      suggestions.push({ toolId: 'tool_workload_balance', reason: 'Assess workload balance', confidence: 0.7 });
+    }
+    if (text.includes('burnout') || text.includes('stress')) {
+      suggestions.push({ toolId: 'tool_burnout_risk', reason: 'Estimate burnout risk', confidence: 0.72 });
+    }
+
+    // Growth
+    if (text.includes('viral') || text.includes('k-factor') || text.includes('invitation')) {
+      suggestions.push({ toolId: 'tool_viral_coeff', reason: 'Compute viral coefficient', confidence: 0.74 });
+    }
+    if (text.includes('pipeline') || text.includes('win rate') || text.includes('sales cycle')) {
+      suggestions.push({ toolId: 'tool_pipeline_velocity', reason: 'Calculate pipeline velocity', confidence: 0.74 });
     }
 
     return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
   };
-
   // Search and filter
   const searchNotes = (query) => {
     return notes.filter(note => 
