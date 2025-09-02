@@ -15,7 +15,7 @@ import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from '@/components/dock/QuickDock';
-import { GlobalOrb } from './components/GlobalOrb';
+import { GlobalOrbFixed } from './components/GlobalOrbFixed';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
@@ -377,7 +377,7 @@ function App() {
 
           {/* GlobalOrb with AI Copilot Integration */}
           {!showCoPilot && (
-            <GlobalOrb 
+            <GlobalOrbFixed 
               context={currentView.startsWith('venture-') ? 'venture' : currentView}
               ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
             />
