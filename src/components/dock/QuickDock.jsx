@@ -73,6 +73,8 @@ const QuickDock = ({ className = "" }) => {
           })}
         </div>
 
+        {/* Temporarily disabled to fix React context issues */}
+        {/*
         <ScratchpadPanel 
           isOpen={scratchpadOpen} 
           onClose={() => setScratchpadOpen(false)} 
@@ -81,6 +83,7 @@ const QuickDock = ({ className = "" }) => {
           isOpen={toolsOpen} 
           onClose={() => setToolsOpen(false)} 
         />
+        */}
       </div>
     </TooltipProvider>
   );
