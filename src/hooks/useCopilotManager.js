@@ -51,42 +51,50 @@ export const useCopilotManager = () => {
     return true;
   };
 
-  // Generate AI suggestion based on context
-  const generateSuggestion = async (context, data) => {
+  // Enhanced context-aware suggestion generation
+  const generateSuggestion = async (context, data = {}) => {
     try {
       let suggestion = null;
-      
-      switch (context.type) {
+
+      switch (context) {
         case 'scratchpad':
-          suggestion = await generateScratchpadSuggestion(data.text);
+          suggestion = generateScratchpadSuggestion(data.text);
           break;
         case 'tool':
-          suggestion = await generateToolSuggestion(data.toolId, data.outputs);
+          suggestion = generateToolSuggestion(data.toolId, data.outputs);
           break;
         case 'block':
-          suggestion = await generateBlockSuggestion(data.blockId, data.kpiValue);
+          suggestion = generateBlockSuggestion(data.blockId, data.kpiValue);
           break;
         case 'worksheet':
-          suggestion = await generateWorksheetSuggestion(data.worksheetId);
+          suggestion = generateWorksheetSuggestion(data.worksheetId);
           break;
         case 'venture':
-          suggestion = await generateVentureSuggestion(data.ventureId);
+          suggestion = generateVentureSuggestion(data.ventureId);
           break;
+        case 'flow':
+          suggestion = generateFlowSuggestion(data);
+          break;
+        case 'hq':
+          suggestion = generateHQSuggestion(data);
+          break;
+        default:
+          return null;
       }
 
       if (suggestion && shouldShowSuggestion(context, suggestion.confidence)) {
-        const enrichedSuggestion = {
-          ...suggestion,
-          context,
-          timestamp: Date.now(),
-          id: `suggestion_${Date.now()}`
-        };
-
-        setActiveSuggestion(enrichedSuggestion);
+        setActiveSuggestion(suggestion);
         setLastSuggestionTime(Date.now());
-        
-        // Log suggestion
-        await logSuggestion(enrichedSuggestion, false);
+        await logSuggestion(suggestion, false);
+        return suggestion;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error generating suggestion:', error);
+      return null;
+    }
+  };
         
         return enrichedSuggestion;
       }
@@ -263,8 +271,73 @@ export const useCopilotManager = () => {
     return null;
   };
 
-  // Log suggestion to database
-  const logSuggestion = async (suggestion, accepted) => {
+  // Enhanced Flow and HQ suggestions
+  const generateFlowSuggestion = (data) => {
+    if (data.step === 'scratchpad' && data.noteCount > 3) {
+      return {
+        id: `flow-tools-${Date.now()}`,
+        context: 'flow',
+        title: 'Ready for Tools?',
+        description: 'You have several notes. Let me suggest tools to analyze them.',
+        action: 'suggest_tools',
+        actionText: 'Analyze Notes',
+        confidence: 0.8,
+        priority: 'medium',
+        data: { noteCount: data.noteCount }
+      };
+    }
+    
+    if (data.step === 'tools' && data.toolRunCount > 2) {
+      return {
+        id: `flow-blocks-${Date.now()}`,
+        context: 'flow',
+        title: 'Create Building Blocks',
+        description: 'Your tool outputs can become reusable blocks.',
+        action: 'suggest_blocks',
+        actionText: 'Create Blocks',
+        confidence: 0.85,
+        priority: 'medium',
+        data: { toolRunCount: data.toolRunCount }
+      };
+    }
+
+    return null;
+  };
+
+  const generateHQSuggestion = (data) => {
+    if (data.ventureCount === 0) {
+      return {
+        id: `hq-first-venture-${Date.now()}`,
+        context: 'hq',
+        title: 'Start Your First Venture',
+        description: 'Create your first business venture to unlock the full platform.',
+        action: 'create_venture',
+        actionText: 'Create Venture',
+        confidence: 0.9,
+        priority: 'high',
+        data: {}
+      };
+    }
+
+    if (data.hasUnusedBlocks) {
+      return {
+        id: `hq-organize-blocks-${Date.now()}`,
+        context: 'hq',
+        title: 'Organize Your Blocks',
+        description: 'You have blocks that could be better organized into ventures.',
+        action: 'organize_blocks',
+        actionText: 'Organize',
+        confidence: 0.7,
+        priority: 'low',
+        data: { blockCount: data.blockCount }
+      };
+    }
+
+    return null;
+  };
+
+  // Enhanced logging with better context tracking
+  const logSuggestion = async (suggestion, accepted = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -273,14 +346,20 @@ export const useCopilotManager = () => {
         .from('manual_logs')
         .insert({
           user_id: user.id,
+          venture_id: suggestion.ventureId || null,
+          type: accepted ? 'ai_suggestion_accepted' : 'ai_suggestion_shown',
           content: JSON.stringify({
-            suggestion_text: suggestion.message,
-            reasoning: suggestion.reasoning,
-            confidence: suggestion.confidence,
+            suggestion_id: suggestion.id,
             context: suggestion.context,
-            accepted
-          }),
-          type: 'ai_suggestion'
+            confidence: suggestion.confidence,
+            action: suggestion.action,
+            accepted,
+            timestamp: new Date().toISOString(),
+            user_context: {
+              route: window.location.pathname,
+              viewport: { width: window.innerWidth, height: window.innerHeight }
+            }
+          })
         });
     } catch (error) {
       console.error('Error logging suggestion:', error);

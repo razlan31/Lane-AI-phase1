@@ -7,6 +7,9 @@ import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
+import { useAuth } from './hooks/useAuth';
+import AuthPage from './pages/AuthPage';
+import DemoPage from './pages/DemoPage';
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
@@ -29,6 +32,7 @@ import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 
 
 function App() {
+  const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
@@ -38,6 +42,28 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+
+  // Check for demo mode
+  if (window.location.pathname === '/demo') {
+    return <DemoPage />;
+  }
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth page if not authenticated
+  if (!user) {
+    return <AuthPage />;
+  }
 
   // Check onboarding status on mount
   useEffect(() => {

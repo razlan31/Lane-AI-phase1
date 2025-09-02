@@ -8,14 +8,38 @@ import { useBlocks } from '@/hooks/useBlocks';
 export const ToolResultsPanel = ({ toolRun, suggestedBlocks = [] }) => {
   const { createBlock, generateWorksheetFromBlocks } = useBlocks();
 
-  const handleLinkToBlock = async (blockId) => {
-    // Logic to link tool output to block
-    console.log('Linking tool run to block:', blockId);
+  // Handle linking to a block (enhanced)
+  const handleLinkToBlock = (blockId) => {
+    console.log('Linking to block:', blockId);
+    // Create connection between tool run and block
+    if (toolRun?.id) {
+      // This would integrate with block management system
+      console.log(`Creating link: Tool ${toolRun.tool_id} → Block ${blockId}`);
+    }
   };
 
+  // Handle converting tool output to KPI (enhanced)
   const handleConvertToKPI = async () => {
-    // Logic to convert tool output to KPI
-    console.log('Converting tool output to KPI');
+    if (!toolRun?.outputs) return;
+    
+    try {
+      // Extract primary metric from tool output
+      const primaryOutput = Object.keys(toolRun.outputs)[0];
+      const value = toolRun.outputs[primaryOutput];
+      
+      console.log('Converting to KPI:', {
+        toolId: toolRun.tool_id,
+        output: primaryOutput,
+        value,
+        runId: toolRun.id
+      });
+      
+      // This would create a KPI record
+      // For now, just log the conversion
+      console.log(`Created KPI: ${primaryOutput.toUpperCase()} = ${value}`);
+    } catch (error) {
+      console.error('Error converting to KPI:', error);
+    }
   };
 
   if (!toolRun) {
