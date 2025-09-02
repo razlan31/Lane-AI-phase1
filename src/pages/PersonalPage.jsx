@@ -71,7 +71,7 @@ export const PersonalPage = ({ isEmbedded = false }) => {
             </div>
           ) : (
             <div className="space-y-2">
-              {personalKpis.slice(0, 3).map((kpi, index) => (
+              {personalKPIs.slice(0, 3).map((kpi, index) => (
                 <div key={index} className="p-2 border rounded-lg bg-card">
                   <div className="flex justify-between items-center">
                     <div>
