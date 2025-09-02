@@ -9,7 +9,7 @@ import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
 import { useAuth } from './hooks/useAuth';
 import AuthPage from './pages/AuthPage';
-import DemoPage from './pages/DemoPage';
+
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
@@ -44,10 +44,6 @@ function App() {
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
-  // Check for demo mode
-  if (window.location.pathname === '/demo') {
-    return <DemoPage />;
-  }
 
   // Show loading while checking auth
   if (loading) {
