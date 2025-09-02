@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { Plus, Target, AlertTriangle, TrendingUp, Lightbulb, ChevronRight } from 'lucide-react';
+import { Plus, Target, AlertTriangle, TrendingUp, Lightbulb, ChevronRight, ExternalLink } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useWorksheets } from '../../hooks/useWorksheets';
+import { useVentures } from '../../hooks/useVentures';
+import { supabase } from '@/integrations/supabase/client';
 
 const WarRoomBoard = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [promoteLoading, setPromoteLoading] = useState(null);
+  const { createWorksheet } = useWorksheets();
+  const { createVenture } = useVentures();
   
   const categories = [
     { id: 'all', label: 'All Items', color: 'bg-muted' },
@@ -103,6 +109,74 @@ const WarRoomBoard = () => {
       case 'high': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
     }
+  };
+
+  // Enhanced promote to scenario functionality
+  const promoteToScenario = async (item) => {
+    setPromoteLoading(item.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Create worksheet based on item type
+      let worksheetType = 'scenario_analysis';
+      if (item.category === 'risks') worksheetType = 'risk_assessment';
+      if (item.category === 'opportunities') worksheetType = 'opportunity_analysis';
+      if (item.category === 'ventures') worksheetType = 'venture_validation';
+
+      const worksheetData = {
+        type: worksheetType,
+        inputs: {
+          war_room_item: item,
+          scenario_type: item.category,
+          title: item.title,
+          description: item.description,
+          impact: item.impact,
+          effort: item.effort,
+          confidence: item.confidence,
+          actions: item.actions,
+          source: 'war_room_board'
+        },
+        outputs: {
+          summary: `Scenario analysis for: ${item.title}`,
+          risk_level: item.impact === 'high' ? 'high' : 'medium',
+          recommended_actions: item.actions,
+          timeline: item.timeline
+        },
+        confidence_level: 'estimate'
+      };
+
+      const result = await createWorksheet(worksheetData);
+      
+      if (result) {
+        // Create timeline event
+        await supabase
+          .from('timeline_events')
+          .insert({
+            user_id: user.id,
+            kind: 'worksheet_created',
+            title: `Scenario Created: ${item.title}`,
+            body: `War room item "${item.title}" was promoted to a scenario analysis worksheet`,
+            payload: {
+              source: 'war_room_board',
+              item_id: item.id,
+              worksheet_id: result.id,
+              category: item.category
+            }
+          });
+
+        console.log('Successfully promoted to scenario:', result.id);
+      }
+    } catch (error) {
+      console.error('Error promoting to scenario:', error);
+    } finally {
+      setPromoteLoading(null);
+    }
+  };
+
+  const openItemDetails = (item) => {
+    // This would open a detailed modal for the item
+    console.log('Opening details for:', item.title);
   };
 
   return (
@@ -210,10 +284,28 @@ const WarRoomBoard = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs h-7">
-                    Promote to Scenario
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-xs h-7"
+                    onClick={() => promoteToScenario(item)}
+                    disabled={promoteLoading === item.id}
+                  >
+                    {promoteLoading === item.id ? (
+                      'Promoting...'
+                    ) : (
+                      <>
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Promote to Scenario
+                      </>
+                    )}
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 w-7 p-0"
+                    onClick={() => openItemDetails(item)}
+                  >
                     <ChevronRight className="h-3 w-3" />
                   </Button>
                 </div>

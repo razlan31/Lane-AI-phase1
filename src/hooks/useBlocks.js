@@ -140,6 +140,113 @@ export const useBlocks = (ventureId = null) => {
     return blocks.filter(block => block.status === status);
   };
 
+  // Enhanced Block Dependencies and Suggestions
+  const getBlockDependencies = async (blockId) => {
+    try {
+      const { data, error } = await supabase
+        .from('block_dependencies')
+        .select('*')
+        .or(`parent_block_id.eq.${blockId},dependent_block_id.eq.${blockId}`);
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err.message);
+      return [];
+    }
+  };
+
+  // Generate worksheet suggestions from block combinations
+  const generateWorksheetFromBlocks = async (blockIds, ventureId) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get the selected blocks
+      const selectedBlocks = blocks.filter(block => blockIds.includes(block.id));
+      
+      if (selectedBlocks.length === 0) return null;
+
+      // Determine worksheet type based on block categories
+      const categories = [...new Set(selectedBlocks.map(b => b.category))];
+      let worksheetType = 'custom';
+      
+      if (categories.includes('Financial')) {
+        worksheetType = 'financial_model';
+      } else if (categories.includes('Marketing')) {
+        worksheetType = 'marketing_plan';
+      } else if (categories.includes('Risk & Compliance')) {
+        worksheetType = 'risk_assessment';
+      } else if (categories.includes('Operations')) {
+        worksheetType = 'operational_plan';
+      }
+
+      // Create worksheet with block references
+      const worksheetData = {
+        user_id: user.id,
+        venture_id: ventureId,
+        type: worksheetType,
+        inputs: {
+          blocks: selectedBlocks.map(b => ({
+            id: b.id,
+            name: b.name,
+            category: b.category,
+            status: b.status
+          })),
+          generated_from: 'blocks',
+          block_count: selectedBlocks.length
+        },
+        outputs: {
+          summary: `Worksheet generated from ${selectedBlocks.length} blocks: ${selectedBlocks.map(b => b.name).join(', ')}`,
+          categories: categories,
+          completion_estimate: Math.round((selectedBlocks.filter(b => b.status === 'complete').length / selectedBlocks.length) * 100)
+        },
+        confidence_level: 'draft'
+      };
+
+      const { data, error } = await supabase
+        .from('worksheets')
+        .insert(worksheetData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  };
+
+  // Get suggested blocks based on current selection
+  const getSuggestedNextBlocks = async (currentBlockIds) => {
+    try {
+      if (currentBlockIds.length === 0) return [];
+
+      // Get dependencies for current blocks
+      const { data, error } = await supabase
+        .from('block_dependencies')
+        .select('*')
+        .in('parent_block_id', currentBlockIds.map(id => blocks.find(b => b.id === id)?.name))
+        .order('strength', { ascending: false });
+
+      if (error) throw error;
+
+      // Find suggested blocks by name
+      const suggestedNames = data.map(dep => dep.dependent_block_id);
+      const suggested = blocks.filter(block => 
+        suggestedNames.includes(block.name) && 
+        !currentBlockIds.includes(block.id)
+      );
+
+      return suggested.slice(0, 5); // Top 5 suggestions
+    } catch (err) {
+      setError(err.message);
+      return [];
+    }
+  };
+
   return {
     blocks,
     loading,
@@ -149,6 +256,9 @@ export const useBlocks = (ventureId = null) => {
     deleteBlock,
     assignBlocksToVenture,
     getBlocksByCategory,
-    getBlocksByStatus
+    getBlocksByStatus,
+    getBlockDependencies,
+    generateWorksheetFromBlocks,
+    getSuggestedNextBlocks
   };
 };

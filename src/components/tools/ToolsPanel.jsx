@@ -92,6 +92,42 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
     }
   };
 
+  // Enhanced result handling with functional buttons
+  const handleConvertToKPI = async () => {
+    if (!toolResult?.data?.id) return;
+    
+    try {
+      // This would normally get venture ID from context, using mock for now
+      const ventureId = 'sample-venture-id'; // Replace with actual venture selection
+      const result = await convertToKPI(toolResult.data.id, ventureId, null);
+      
+      if (result) {
+        console.log('Successfully converted to KPI:', result);
+        // Show success notification
+      }
+    } catch (error) {
+      console.error('Error converting to KPI:', error);
+    }
+  };
+
+  const handleLinkToBlock = async () => {
+    if (!toolResult?.data?.id) return;
+    
+    try {
+      // Get suggested blocks for this tool
+      const suggestedBlocks = await getSuggestedBlocks(selectedTool.id);
+      
+      if (suggestedBlocks.length > 0) {
+        // For demo, link to first suggested block
+        const blockId = suggestedBlocks[0].id;
+        console.log('Linking to block:', blockId);
+        // This would open a block selection modal in a real implementation
+      }
+    } catch (error) {
+      console.error('Error linking to block:', error);
+    }
+  };
+
   const renderToolResult = () => {
     if (!toolResult) return null;
 
@@ -100,22 +136,60 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
         <CardHeader>
           <CardTitle className="text-sm">Results</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          {Object.entries(toolResult.outputs).map(([key, value]) => (
-            <div key={key} className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground capitalize">
-                {key.replace('_', ' ')}:
-              </span>
-              <Badge variant="secondary">{value}</Badge>
+        <CardContent className="space-y-3">
+          {/* Results Display */}
+          <div className="space-y-2">
+            {Object.entries(toolResult.outputs).map(([key, value]) => (
+              <div key={key} className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground capitalize">
+                  {key.replace('_', ' ')}:
+                </span>
+                <Badge variant="secondary">{Array.isArray(value) ? value.join(', ') : value}</Badge>
+              </div>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="flex-1"
+              onClick={handleConvertToKPI}
+              disabled={!toolResult?.data?.id}
+            >
+              Convert to KPI
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="flex-1"
+              onClick={handleLinkToBlock}
+              disabled={!toolResult?.data?.id}
+            >
+              Link to Block
+            </Button>
+          </div>
+
+          {/* Additional suggestion if available */}
+          {activeSuggestion && activeSuggestion.context.sourceId === selectedTool?.id && (
+            <div className="mt-3 p-2 bg-blue-50 rounded text-xs">
+              <p className="text-blue-700 font-medium">{activeSuggestion.message}</p>
+              <div className="flex gap-1 mt-1">
+                {activeSuggestion.actions?.map((action, index) => (
+                  <Button
+                    key={index}
+                    size="sm"
+                    variant={action.primary ? "default" : "ghost"}
+                    className="h-6 text-xs px-2"
+                    onClick={() => handleSuggestionAction(activeSuggestion, action)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
             </div>
-          ))}
-          <Button 
-            size="sm" 
-            className="w-full mt-2"
-            onClick={() => console.log('Convert to KPI')}
-          >
-            Convert to KPI
-          </Button>
+          )}
         </CardContent>
       </Card>
     );

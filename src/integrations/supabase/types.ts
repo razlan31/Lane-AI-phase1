@@ -98,6 +98,33 @@ export type Database = {
           },
         ]
       }
+      block_dependencies: {
+        Row: {
+          created_at: string | null
+          dependency_type: string
+          dependent_block_id: string
+          id: string
+          parent_block_id: string
+          strength: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          dependency_type?: string
+          dependent_block_id: string
+          id?: string
+          parent_block_id: string
+          strength?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          dependency_type?: string
+          dependent_block_id?: string
+          id?: string
+          parent_block_id?: string
+          strength?: number | null
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           category: string
