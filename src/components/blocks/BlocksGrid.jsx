@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle2, Circle, Clock, Plus, Filter } from 'lucide-react';
 import { BlockDetailModal } from './BlockDetailModal';
+import { ExplainButton } from '@/components/ExplainButton';
 
 const STATUS_ICONS = {
   'planned': Circle,
@@ -19,7 +20,7 @@ const STATUS_COLORS = {
   'complete': 'bg-green-100 text-green-800'
 };
 
-export const BlocksGrid = ({ ventureId }) => {
+export const BlocksGrid = ({ ventureId, onExplain }) => {
   const { blocks, loading, updateBlock } = useBlocks(ventureId);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -169,12 +170,22 @@ export const BlocksGrid = ({ ventureId }) => {
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-sm font-medium">{block.name}</CardTitle>
-                        <StatusIcon className="w-4 h-4 text-muted-foreground" />
+                        <div className="flex-1">
+                          <CardTitle className="text-sm font-medium">{block.name}</CardTitle>
+                          <CardDescription className="text-xs line-clamp-2 mt-1">
+                            {block.description}
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <StatusIcon className="w-4 h-4 text-muted-foreground" />
+                          {onExplain && (
+                            <ExplainButton 
+                              context={`Explain the ${block.name} block in the ${block.category} category and why it's important for venture success`}
+                              onExplain={onExplain}
+                            />
+                          )}
+                        </div>
                       </div>
-                      <CardDescription className="text-xs line-clamp-2">
-                        {block.description}
-                      </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="flex items-center justify-between">

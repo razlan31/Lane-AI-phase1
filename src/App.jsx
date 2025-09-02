@@ -21,6 +21,10 @@ import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
 import AICopilotPage from './pages/AICopilotPage';
+import { PersonalPage } from './pages/PersonalPage';
+import { PortfolioDashboard } from './components/PortfolioDashboard';
+import { AlertsStrip } from './components/AlertsStrip';
+import { GlobalOrb } from './components/GlobalOrb';
 
 function App() {
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
@@ -166,8 +170,17 @@ function App() {
     switch (currentView) {
       case 'copilot':
         return <AICopilotPage />;
+      case 'personal':
+        return <PersonalPage />;
+      case 'portfolio':
+        return <PortfolioDashboard />;
       case 'hq':
-        return <HQDashboard ventures={ventures} userProfile={userProfileData} />;
+        return (
+          <>
+            <AlertsStrip maxAlerts={2} />
+            <HQDashboard ventures={ventures} userProfile={userProfileData} />
+          </>
+        );
       case 'workspace':
         return (
           <div className="min-h-screen bg-background">
@@ -340,6 +353,9 @@ function App() {
             onExport={handleQuickActions.onExport}
             onChat={handleQuickActions.onChat}
           />
+
+          {/* Global AI Orb */}
+          <GlobalOrb />
 
           {/* Global Modals */}
           <CommandPalette 

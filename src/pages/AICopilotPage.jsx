@@ -4,6 +4,7 @@ import { Bot, Plus, Trash2, ChevronDown, Send, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VoiceInputButton } from '@/components/VoiceInputButton';
 
 const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
   const { 
@@ -207,6 +208,10 @@ Would you like me to proceed with any of these suggestions?`,
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!activeSessionId}
               />
+              <VoiceInputButton 
+                onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                disabled={!activeSessionId}
+              />
               <Button onClick={sendMessage} disabled={!input.trim() || !activeSessionId}>
                 <Send className="w-4 h-4" />
               </Button>
@@ -258,6 +263,10 @@ Would you like me to proceed with any of these suggestions?`,
                 onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                 placeholder="Type your message..."
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!activeSessionId}
+              />
+              <VoiceInputButton 
+                onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
                 disabled={!activeSessionId}
               />
               <Button onClick={sendMessage} disabled={!input.trim() || !activeSessionId}>
