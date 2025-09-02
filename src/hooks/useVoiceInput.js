@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
+// Voice input hook for speech-to-text functionality
+
 export const useVoiceInput = (onTranscript) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
