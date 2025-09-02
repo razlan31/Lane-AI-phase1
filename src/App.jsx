@@ -11,7 +11,6 @@ import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
-import QuickDockOld from './components/navigation/QuickDock';
 import QuickDock from '@/components/dock/QuickDock';
 import { GlobalOrb } from './components/GlobalOrb';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
@@ -341,19 +340,7 @@ function App() {
           )}
 
           {/* QuickDock - Main Auto-Promotion Flow */}
-          <QuickDockOld 
-            currentView={currentView}
-            onAddWorksheet={handleQuickActions.onAddWorksheet}
-            onAddDashboard={handleQuickActions.onAddDashboard}
-            onImportCsv={handleQuickActions.onImportCsv}
-            onAddVenture={handleQuickActions.onAddVenture}
-            onFounderMode={() => setShowFounderMode(true)}
-            onAddData={handleQuickActions.onAddData}
-            onSignals={handleQuickActions.onSignals}
-            onRunFlow={handleQuickActions.onRunFlow}
-            onExport={handleQuickActions.onExport}
-            onChat={handleQuickActions.onChat}
-          />
+          <QuickDock />
 
           {/* GlobalOrb with AI Copilot Integration */}
           {!showCoPilot && (
