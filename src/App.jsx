@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './components/dashboards/HQDashboard';
 import { Toaster } from "sonner"
