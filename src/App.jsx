@@ -33,6 +33,7 @@ import VentureHub from './components/workspaces/VentureHub';
 
 
 function App() {
+  console.log('App component rendering...');
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -46,6 +47,7 @@ function App() {
 
 
   // Show loading while checking auth
+  console.log('Loading state:', loading, 'User:', !!user);
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -58,6 +60,7 @@ function App() {
   }
 
   // Show auth page if not authenticated
+  console.log('User authenticated:', !!user);
   if (!user) {
     return <AuthPage />;
   }
@@ -306,6 +309,7 @@ function App() {
   };
 
   // Handle onboarding flow
+  console.log('Onboarded:', isOnboarded);
   if (!isOnboarded) {
     return (
       <EnhancedOnboardingFlow 

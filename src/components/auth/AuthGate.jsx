@@ -67,14 +67,20 @@ const AuthGate = () => {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('AuthGate: getSession result:', { session: !!session, error });
       setSession(session);
+      setLoading(false);
+    }).catch(err => {
+      console.error('AuthGate: getSession failed:', err);
       setLoading(false);
     });
 
     return () => subscription?.unsubscribe();
   }, []);
 
+  console.log('AuthGate: Render state - loading:', loading, 'devBypass:', devBypass, 'session:', !!session);
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
