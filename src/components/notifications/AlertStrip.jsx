@@ -33,34 +33,8 @@ const AlertStrip = ({ alerts = [] }) => {
   );
 };
 
-// Hook for managing alerts (needed by App.jsx)
-export const useAlerts = () => {
-  const [alerts, setAlerts] = useState([]);
+// Removed local useAlerts hook to avoid HMR issues and duplication with src/hooks/useAlerts.js
 
-  const addAlert = (alert) => {
-    const newAlert = {
-      id: Date.now() + Math.random(),
-      level: 'info',
-      ...alert
-    };
-    setAlerts(prev => [...prev, newAlert]);
-  };
-
-  const removeAlert = (alertId) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-  };
-
-  const clearAlerts = () => {
-    setAlerts([]);
-  };
-
-  return {
-    alerts,
-    addAlert,
-    removeAlert,
-    clearAlerts
-  };
-};
 
 // named export (so `import { AlertStrip } from '...'` works)
 export { AlertStrip };

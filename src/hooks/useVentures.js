@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Supabase-ready hook for ventures management
 export const useVentures = () => {
@@ -10,53 +11,44 @@ export const useVentures = () => {
     const fetchVentures = async () => {
       setLoading(true);
       try {
-        // Simulate API call - will be replaced with Supabase query
-        await new Promise(resolve => setTimeout(resolve, 400));
-        
-        // Mock ventures data
-        const mockVentures = [
-          {
-            id: 1,
-            name: "Coffee Kiosk",
-            description: "Downtown coffee cart business",
-            type: "food_service",
-            status: "active",
-            created_at: "2024-01-15",
-            kpis: [
-              { title: "Daily Revenue", value: 340, unit: "currency", trend: 8, trendDirection: "up" },
-              { title: "Customers", value: 45, unit: "number", trend: 12, trendDirection: "up" },
-              { title: "Profit Margin", value: 28, unit: "percentage", trend: -2, trendDirection: "down" }
-            ]
-          },
-          {
-            id: 2,
-            name: "SaaS Startup",
-            description: "B2B productivity tool",
-            type: "technology",
-            status: "active",
-            created_at: "2024-02-01",
-            kpis: [
-              { title: "MRR", value: 2800, unit: "currency", trend: 25, trendDirection: "up" },
-              { title: "Users", value: 156, unit: "number", trend: 18, trendDirection: "up" },
-              { title: "Churn Rate", value: 3.2, unit: "percentage", trend: -1, trendDirection: "down" }
-            ]
-          },
-          {
-            id: 3,
-            name: "E-commerce Store",
-            description: "Online fashion retailer",
-            type: "retail",
-            status: "draft",
-            created_at: "2024-02-10",
-            kpis: [
-              { title: "Sales", value: 1200, unit: "currency", trend: 15, trendDirection: "up" },
-              { title: "Orders", value: 28, unit: "number", trend: 22, trendDirection: "up" },
-              { title: "AOV", value: 42.85, unit: "currency", trend: -5, trendDirection: "down" }
-            ]
-          }
-        ];
-        
-        setVentures(mockVentures);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setVentures([]); return; }
+
+        const { data: venturesData, error: venturesError } = await supabase
+          .from('ventures')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (venturesError) throw venturesError;
+
+        const ventureIds = (venturesData ?? []).map(v => v.id);
+        let kpisByVenture = {};
+        if (ventureIds.length > 0) {
+          const { data: kpisData, error: kpisError } = await supabase
+            .from('kpis')
+            .select('id, venture_id, name, value, confidence, created_at')
+            .in('venture_id', ventureIds);
+          if (kpisError) throw kpisError;
+          kpisByVenture = (kpisData ?? []).reduce((acc, k) => {
+            acc[k.venture_id] = acc[k.venture_id] || [];
+            acc[k.venture_id].push({
+              title: k.name,
+              value: k.value,
+              unit: 'number',
+              trend: 0,
+              trendDirection: 'up'
+            });
+            return acc;
+          }, {});
+        }
+
+        const normalized = (venturesData ?? []).map(v => ({
+          ...v,
+          status: v.stage ? 'active' : 'draft',
+          kpis: kpisByVenture[v.id] || []
+        }));
+
+        setVentures(normalized);
       } catch (err) {
         setError(err);
       } finally {
@@ -69,16 +61,23 @@ export const useVentures = () => {
 
   const createVenture = async (ventureData) => {
     try {
-      // This will be replaced with Supabase insert
-      const newVenture = {
-        id: Date.now(),
-        ...ventureData,
-        status: 'draft',
-        created_at: new Date().toISOString(),
-        kpis: []
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const insert = {
+        user_id: user.id,
+        name: ventureData.name,
+        description: ventureData.description || null,
+        type: ventureData.type || null,
+        stage: ventureData.stage || null
       };
-      
-      setVentures(prev => [...prev, newVenture]);
+      const { data, error } = await supabase
+        .from('ventures')
+        .insert(insert)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      const newVenture = { ...data, status: data.stage ? 'active' : 'draft', kpis: [] };
+      setVentures(prev => [newVenture, ...prev]);
       return { success: true, data: newVenture };
     } catch (error) {
       return { success: false, error };
@@ -87,12 +86,14 @@ export const useVentures = () => {
 
   const updateVenture = async (id, updates) => {
     try {
-      // This will be replaced with Supabase update
-      setVentures(prev => 
-        prev.map(venture => 
-          venture.id === id ? { ...venture, ...updates } : venture
-        )
-      );
+      const { data, error } = await supabase
+        .from('ventures')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      setVentures(prev => prev.map(v => v.id === id ? { ...v, ...data } : v));
       return { success: true };
     } catch (error) {
       return { success: false, error };
