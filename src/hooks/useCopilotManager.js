@@ -125,7 +125,7 @@ export const useCopilotManager = () => {
         confidence: 0.92,
         reasoning: "Note contained spend + customers. CAC Tool applies.",
         actions: [
-          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'cac_calculator' },
+          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'tool_cac_calc' },
           { label: 'Ignore', primary: false, action: 'dismiss' }
         ]
       });
@@ -138,7 +138,7 @@ export const useCopilotManager = () => {
         confidence: 0.88,
         reasoning: "Note mentioned runway or burn rate. Runway Tool applies.",
         actions: [
-          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'runway_calculator' },
+          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'tool_runway_calc' },
           { label: 'Ignore', primary: false, action: 'dismiss' }
         ]
       });
@@ -151,7 +151,7 @@ export const useCopilotManager = () => {
         confidence: 0.85,
         reasoning: "Note mentioned ROI or return. ROI Tool applies.",
         actions: [
-          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'roi_calculator' },
+          { label: 'Run Tool', primary: true, action: 'run_tool', toolId: 'tool_roi_calc' },
           { label: 'Ignore', primary: false, action: 'dismiss' }
         ]
       });
