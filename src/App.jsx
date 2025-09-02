@@ -36,12 +36,8 @@ function App() {
   console.log('App component rendering...');
   const { user, loading } = useAuth();
   
-  // Development override - create mock user if none exists
-  const effectiveUser = user || (window.location.hostname.includes('lovable') ? {
-    id: 'dev-user-123',
-    email: 'dev@example.com'
-  } : null);
-  const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
+  // All hooks must be called before any conditional returns
+  const [currentView, setCurrentView] = useState('copilot');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
@@ -50,52 +46,6 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-
-
-  // Show loading while checking auth
-  console.log('Loading state:', loading, 'User:', !!effectiveUser);
-  if (loading && !effectiveUser) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show auth page if not authenticated
-  console.log('User authenticated:', !!effectiveUser);
-  if (!effectiveUser) {
-    return <AuthPage />;
-  }
-
-  // Check onboarding status on mount
-  useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      const onboarded = await userProfile.isOnboarded();
-      setIsOnboarded(onboarded);
-      if (onboarded) {
-        const { data } = await userProfile.getProfile();
-        setUserProfileData(data);
-      }
-    };
-    checkOnboardingStatus();
-
-    // Global keyboard shortcuts
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCommandPaletteOpen(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Mock ventures data
   const [ventures, setVentures] = useState([
     { 
       id: 1, 
@@ -116,6 +66,57 @@ function App() {
       burnRate: 5500 
     }
   ]);
+  
+  // Development override - create mock user if none exists
+  const effectiveUser = user || (window.location.hostname.includes('lovable') ? {
+    id: 'dev-user-123',
+    email: 'dev@example.com'
+  } : null);
+
+  // Check onboarding status on mount
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!effectiveUser) return;
+      
+      const onboarded = await userProfile.isOnboarded();
+      setIsOnboarded(onboarded);
+      if (onboarded) {
+        const { data } = await userProfile.getProfile();
+        setUserProfileData(data);
+      }
+    };
+    checkOnboardingStatus();
+
+    // Global keyboard shortcuts
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [effectiveUser]);
+
+  // Early returns AFTER all hooks
+  console.log('Loading state:', loading, 'User:', !!effectiveUser);
+  if (loading && !effectiveUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('User authenticated:', !!effectiveUser);
+  if (!effectiveUser) {
+    return <AuthPage />;
+  }
+
 
   // Onboarding handlers
   const handleOnboardingComplete = async (profileData) => {
