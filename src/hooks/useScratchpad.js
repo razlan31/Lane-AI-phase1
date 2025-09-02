@@ -197,33 +197,6 @@ export const useScratchpad = () => {
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, 3);
   };
-      suggestions.push({ toolId: 'tool_concentration_risk', reason: 'Assess concentration risk', confidence: 0.72 });
-    }
-    if (text.includes('portfolio') || text.includes('diversification') || text.includes('variance')) {
-      suggestions.push({ toolId: 'tool_portfolio_diversification', reason: 'Measure diversification', confidence: 0.72 });
-    }
-
-    // Personal
-    if ((text.includes('savings') && text.includes('expenses')) || text.includes('personal runway')) {
-      suggestions.push({ toolId: 'tool_personal_runway', reason: 'Personal runway calculator', confidence: 0.8 });
-    }
-    if (text.includes('work hours') || text.includes('personal hours') || text.includes('balance')) {
-      suggestions.push({ toolId: 'tool_workload_balance', reason: 'Assess workload balance', confidence: 0.7 });
-    }
-    if (text.includes('burnout') || text.includes('stress')) {
-      suggestions.push({ toolId: 'tool_burnout_risk', reason: 'Estimate burnout risk', confidence: 0.72 });
-    }
-
-    // Growth
-    if (text.includes('viral') || text.includes('k-factor') || text.includes('invitation')) {
-      suggestions.push({ toolId: 'tool_viral_coeff', reason: 'Compute viral coefficient', confidence: 0.74 });
-    }
-    if (text.includes('pipeline') || text.includes('win rate') || text.includes('sales cycle')) {
-      suggestions.push({ toolId: 'tool_pipeline_velocity', reason: 'Calculate pipeline velocity', confidence: 0.74 });
-    }
-
-    return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
-  };
   // Search and filter
   const searchNotes = (query) => {
     return notes.filter(note => 
