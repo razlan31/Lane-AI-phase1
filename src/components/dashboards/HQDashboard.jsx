@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';

@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed for this component
 import { cn } from '../../lib/utils';
 
 const Progress = ({ value, className, ...props }) => (
