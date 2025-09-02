@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTools } from '@/hooks/useTools';
+import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 import { Calculator, TrendingUp, DollarSign, Users, AlertTriangle, User, X } from 'lucide-react';
 
@@ -16,7 +17,6 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
   const [selectedTool, setSelectedTool] = useState(null);
   const [toolInputs, setToolInputs] = useState({});
   const [toolResult, setToolResult] = useState(null);
-  const [aiSuggestions, setAiSuggestions] = useState([]);
   
   const {
     tools,
@@ -27,6 +27,8 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
     getSuggestedBlocks,
     getToolsByCategory
   } = useTools();
+
+  const { activeSuggestion, generateSuggestion, dismissSuggestion } = useCopilotManager();
 
   const categoryIcons = {
     Finance: DollarSign,
@@ -51,29 +53,21 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
     if (result.success) {
       setToolResult(result);
       
-      // Get suggested blocks for this tool
-      const suggestedBlocks = await getSuggestedBlocks(selectedTool.id);
-      
-      if (suggestedBlocks.length > 0) {
-        setAiSuggestions([{
-          message: `Your ${selectedTool.name} result is ready. This maps to the ${suggestedBlocks[0].name} block. Should I attach it there?`,
-          confidence: 90,
-          actions: [
-            { label: 'Attach to Block', primary: true, action: 'attach_block', blockId: suggestedBlocks[0].id },
-            { label: 'Skip', primary: false, action: 'dismiss' }
-          ]
-        }]);
-      }
+      // Generate AI suggestion for tool result
+      await generateSuggestion(
+        { type: 'tool', sourceId: result.data.id },
+        { toolId: selectedTool.id, outputs: result.outputs }
+      );
     }
   };
 
   const handleSuggestionAction = async (suggestion, action) => {
     if (action.action === 'attach_block' && toolResult) {
-      // This would link the tool result to a block and potentially create a KPI
       console.log('Attaching to block:', action.blockId);
       // Implementation would depend on venture context
     }
-    setAiSuggestions([]);
+    
+    await dismissSuggestion(suggestion.id, action.primary);
   };
 
   const renderToolInput = (field, type) => {
@@ -134,11 +128,12 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
         </div>
 
         {/* AI Copilot Suggestions */}
-        {aiSuggestions.length > 0 && (
+        {activeSuggestion && activeSuggestion.context.type === 'tool' && (
           <AICopilot
-            context={{ type: 'tool' }}
-            suggestions={aiSuggestions}
+            context={activeSuggestion.context}
+            suggestion={activeSuggestion}
             onSuggestionAction={handleSuggestionAction}
+            layout="strip"
             className="mb-4"
           />
         )}
@@ -216,8 +211,19 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
                 </Button>
               </div>
               
-              {/* Tool Results */}
+              {/* Tool Results with AI Suggestion */}
               {renderToolResult()}
+              
+              {/* Inline AI suggestion for tool results */}
+              {toolResult && activeSuggestion && activeSuggestion.context.type === 'tool' && (
+                <AICopilot
+                  context={activeSuggestion.context}
+                  suggestion={activeSuggestion}
+                  onSuggestionAction={handleSuggestionAction}
+                  layout="inline"
+                  className="mt-2"
+                />
+              )}
             </div>
           )}
         </div>

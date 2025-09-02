@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useScratchpad } from '@/hooks/useScratchpad';
+import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 import { FileText, Plus, Search, Tag, X } from 'lucide-react';
 
@@ -23,12 +24,12 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     loading,
     createNote,
     deleteNote,
-    suggestTools,
     searchNotes,
     filterByTag
   } = useScratchpad();
 
-  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const { activeSuggestion, generateSuggestion, dismissSuggestion } = useCopilotManager();
+
 
   // Filter notes based on search and tags
   const filteredNotes = () => {
@@ -55,18 +56,11 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     const note = await createNote(newNote, tags);
     
     if (note) {
-      // Generate AI suggestions for this note
-      const suggestions = suggestTools(newNote);
-      if (suggestions.length > 0) {
-        setAiSuggestions([{
-          message: suggestions[0].reason + ". Want me to run the calculator?",
-          confidence: 85,
-          actions: [
-            { label: 'Run Tool', primary: true, action: 'run_tool', toolId: suggestions[0].tool },
-            { label: 'Ignore', primary: false, action: 'dismiss' }
-          ]
-        }]);
-      }
+      // Generate AI suggestion based on note text
+      await generateSuggestion(
+        { type: 'scratchpad', sourceId: note.id },
+        { text: newNote }
+      );
       
       setNewNote('');
       setNewTags('');
@@ -75,11 +69,11 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
 
   const handleSuggestionAction = async (suggestion, action) => {
     if (action.action === 'run_tool') {
-      // Navigate to tool or open tool modal
+      // This would open the tools panel with the suggested tool
       console.log('Opening tool:', action.toolId);
-      // This would integrate with the tools system
     }
-    setAiSuggestions([]);
+    
+    await dismissSuggestion(suggestion.id, action.primary);
   };
 
   if (!isOpen) return null;
@@ -99,11 +93,12 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
         </div>
 
         {/* AI Copilot Suggestions */}
-        {aiSuggestions.length > 0 && (
+        {activeSuggestion && activeSuggestion.context.type === 'scratchpad' && (
           <AICopilot
-            context={{ type: 'scratchpad' }}
-            suggestions={aiSuggestions}
+            context={activeSuggestion.context}
+            suggestion={activeSuggestion}
             onSuggestionAction={handleSuggestionAction}
+            layout="strip"
             className="mb-4"
           />
         )}
