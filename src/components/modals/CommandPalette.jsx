@@ -122,16 +122,6 @@ const CommandPalette = ({ isOpen, onClose }) => {
       }
     }
   ];
-    },
-    {
-      id: 'settings',
-      icon: Settings,
-      title: 'Settings',
-      description: 'Account and app preferences',
-      category: 'System',
-      action: () => console.log('Open settings')
-    }
-  ];
 
   const filteredCommands = commands.filter(cmd =>
     cmd.title.toLowerCase().includes(query.toLowerCase()) ||
