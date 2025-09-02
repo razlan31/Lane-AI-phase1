@@ -1,4 +1,5 @@
 import { useState } from 'react';
+// CACHE BUST: Force rebuild after React import standardization
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, MessageSquare } from 'lucide-react';

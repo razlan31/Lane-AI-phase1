@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 
+// CACHE BUST v2: Force Vite to rebuild React chunks after import standardization  
 // AI Co-Pilot store for managing chat sessions
 
 /**

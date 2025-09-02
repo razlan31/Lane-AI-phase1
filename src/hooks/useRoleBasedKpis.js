@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+
+// CACHE BUST: Force Vite to rebuild React chunks after import standardization
 import { TrendingUp, DollarSign, AlertTriangle, Users, Target, CreditCard } from 'lucide-react';
 
 // Supabase-ready hook for role-based KPI generation
