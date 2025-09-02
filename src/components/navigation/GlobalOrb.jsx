@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
-import { AICopilot } from '@/components/copilot/AICopilot';
+import AICopilot from '@/components/copilot/AICopilot';
 
 export const GlobalOrb = () => {
   const [isExpanded, setIsExpanded] = useState(false);
