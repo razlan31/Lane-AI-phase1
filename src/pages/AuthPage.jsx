@@ -75,7 +75,7 @@ const AuthPage = () => {
             <button onClick={signUp} disabled={loading} className="w-full py-2 rounded-md bg-primary text-primary-foreground">{loading ? 'Creating...' : 'Create account'}</button>
           )}
           <button onClick={signInWithGoogle} className="w-full py-2 rounded-md border border-border">Continue with Google</button>
-          <button onClick={() => window.open('/demo', '_blank')} className="w-full py-2 rounded-md border border-dashed border-green-500/40 text-green-600 hover:bg-green-50">Try Demo Mode</button>
+          
           <button onClick={enableLogMaster} className="w-full py-2 rounded-md border border-dashed border-primary/40 text-primary">Continue as Dev (Log Master)</button>
         </div>
 

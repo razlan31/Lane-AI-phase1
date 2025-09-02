@@ -52,7 +52,7 @@ const AuthWrapper = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check for demo mode or log master bypass
+  // Check for log master bypass
   const isLogMaster = typeof window !== 'undefined' && localStorage.getItem('LOG_MASTER') === '1';
   
   if (loading) {
