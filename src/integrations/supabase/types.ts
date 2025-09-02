@@ -257,6 +257,41 @@ export type Database = {
           },
         ]
       }
+      manual_logs: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          type: string | null
+          user_id: string
+          venture_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          type?: string | null
+          user_id: string
+          venture_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          type?: string | null
+          user_id?: string
+          venture_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_logs_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           block_id: string | null
