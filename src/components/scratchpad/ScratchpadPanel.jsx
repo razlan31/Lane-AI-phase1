@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { useScratchpad } from '@/hooks/useScratchpad';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 import { FileText, Plus, Search, Tag, X } from 'lucide-react';
 
-/**
- * Scratchpad Panel - Always available floating panel for quick notes
- * First step in the Auto-Promotion Flow
- */
 const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
   const [newNote, setNewNote] = useState('');
   const [newTags, setNewTags] = useState('');
@@ -25,38 +21,32 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     createNote,
     deleteNote,
     searchNotes,
-    filterByTag
+    filterByTag,
+    suggestTools
   } = useScratchpad();
 
   const { activeSuggestion, generateSuggestion, dismissSuggestion } = useCopilotManager();
 
-
-  // Filter notes based on search and tags
   const filteredNotes = () => {
     let filtered = notes;
-    
     if (searchQuery) {
       filtered = searchNotes(searchQuery);
     }
-    
     if (selectedTag) {
       filtered = filterByTag(selectedTag);
     }
-    
     return filtered;
   };
 
-  // Get all unique tags
   const allTags = [...new Set(notes.flatMap(note => note.tags || []))];
 
   const handleCreateNote = async () => {
     if (!newNote.trim()) return;
-    
-    const tags = newTags.split(',').map(tag => tag.trim()).filter(Boolean);
+
+    const tags = newTags.split(',').map(t => t.trim()).filter(Boolean);
     const note = await createNote(newNote, tags);
     
     if (note) {
-      // Generate AI suggestion based on note text
       await generateSuggestion(
         { type: 'scratchpad', sourceId: note.id },
         { text: newNote }
@@ -69,145 +59,136 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
 
   const handleSuggestionAction = async (suggestion, action) => {
     if (action.action === 'run_tool') {
-      // This would open the tools panel with the suggested tool
-      console.log('Opening tool:', action.toolId);
+      console.log('Open tools panel with tool:', action.toolId);
     }
     
-    await dismissSuggestion(suggestion.id, action.primary);
+    await dismissSuggestion(suggestion.id, action.action !== 'dismiss');
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className={`fixed right-4 top-20 w-96 max-h-[80vh] z-50 ${className}`}>
-      <Card className="p-4 shadow-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Scratchpad</h3>
-          </div>
+    <div className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-50 ${className}`}>
+      <Card className="absolute left-4 top-4 bottom-4 w-80 flex flex-col max-h-screen">
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Scratchpad
+          </CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </Button>
-        </div>
+        </CardHeader>
 
-        {/* AI Copilot Suggestions */}
-        {activeSuggestion && activeSuggestion.context.type === 'scratchpad' && (
-          <AICopilot
-            context={activeSuggestion.context}
-            suggestion={activeSuggestion}
-            onSuggestionAction={handleSuggestionAction}
-            layout="strip"
-            className="mb-4"
-          />
-        )}
-
-        {/* New Note Input */}
-        <div className="space-y-3 mb-4">
-          <Textarea
-            placeholder="Jot down your thoughts..."
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            className="min-h-[80px]"
-          />
-          <div className="flex gap-2">
-            <Input
-              placeholder="Tags (comma separated)"
-              value={newTags}
-              onChange={(e) => setNewTags(e.target.value)}
-              className="flex-1"
+        <CardContent className="flex-1 overflow-hidden flex flex-col space-y-4">
+          {activeSuggestion && activeSuggestion.context.type === 'scratchpad' && (
+            <AICopilot
+              context={activeSuggestion.context}
+              suggestion={activeSuggestion}
+              onSuggestionAction={handleSuggestionAction}
+              layout="strip"
             />
-            <Button onClick={handleCreateNote} size="sm">
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+          )}
 
-        {/* Search and Filter */}
-        <div className="space-y-2 mb-4">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-            <Input
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+          <div className="space-y-2">
+            <Textarea
+              placeholder="Quick note..."
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              className="min-h-[80px]"
             />
-          </div>
-          
-          {allTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              <Button
-                variant={selectedTag === '' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedTag('')}
-                className="text-xs h-6"
-              >
-                All
+            <div className="flex gap-2">
+              <Input
+                placeholder="Tags (comma-separated)"
+                value={newTags}
+                onChange={(e) => setNewTags(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleCreateNote} size="sm">
+                <Plus className="h-4 w-4" />
               </Button>
-              {allTags.map(tag => (
-                <Button
-                  key={tag}
-                  variant={selectedTag === tag ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedTag(selectedTag === tag ? '' : tag)}
-                  className="text-xs h-6"
-                >
-                  <Tag className="w-3 h-3 mr-1" />
-                  {tag}
-                </Button>
-              ))}
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Notes List */}
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {loading ? (
-            <div className="text-center text-muted-foreground">Loading...</div>
-          ) : filteredNotes().length === 0 ? (
-            <div className="text-center text-muted-foreground">
-              {searchQuery || selectedTag ? 'No notes match your filter' : 'No notes yet'}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search notes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          ) : (
-            filteredNotes().map(note => (
-              <Card key={note.id} className="p-3 hover:bg-muted/50">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="text-sm flex-1">{note.text}</p>
+            
+            {allTags.length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                <Button
+                  variant={selectedTag === '' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedTag('')}
+                  className="h-6 px-2 text-xs"
+                >
+                  All
+                </Button>
+                {allTags.map(tag => (
                   <Button
-                    variant="ghost"
+                    key={tag}
+                    variant={selectedTag === tag ? "default" : "outline"}
                     size="sm"
-                    onClick={() => deleteNote(note.id)}
-                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => setSelectedTag(tag)}
+                    className="h-6 px-2 text-xs"
                   >
-                    <X className="w-3 h-3" />
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag}
                   </Button>
-                </div>
-                
-                {note.tags && note.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {note.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-auto space-y-2">
+            {loading ? (
+              <div className="text-center text-muted-foreground py-8">
+                Loading notes...
+              </div>
+            ) : filteredNotes().length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                {notes.length === 0 ? 'No notes yet' : 'No matching notes'}
+              </div>
+            ) : (
+              filteredNotes().map(note => (
+                <Card key={note.id} className="p-3">
+                  <div className="space-y-2">
+                    <p className="text-sm">{note.text}</p>
+                    
+                    {note.tags && note.tags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap">
+                        {note.tags.map(tag => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span>{new Date(note.created_at).toLocaleDateString()}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteNote(note.id)}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
-                )}
-                
-                {note.linked_context && (
-                  <Badge variant="outline" className="text-xs">
-                    Linked to {note.linked_context.type}
-                  </Badge>
-                )}
-                
-                <div className="text-xs text-muted-foreground">
-                  {new Date(note.created_at).toLocaleString()}
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </CardContent>
       </Card>
     </div>
   );
