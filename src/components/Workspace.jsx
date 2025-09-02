@@ -1,3 +1,3 @@
-import React from 'react';
+// No React import needed
 // Workspace for managing ventures & worksheets
 export default function Workspace(){ return (<div>Workspace View</div>);}

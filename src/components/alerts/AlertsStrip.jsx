@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { AlertTriangle, TrendingDown, Clock, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';

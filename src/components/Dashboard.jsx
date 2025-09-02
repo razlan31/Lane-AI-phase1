@@ -1,3 +1,3 @@
-import React from 'react';
+// No React import needed
 // Dashboard with auto-generated insights and widgets
 export default function Dashboard(){ return (<div>Dashboard View</div>);}

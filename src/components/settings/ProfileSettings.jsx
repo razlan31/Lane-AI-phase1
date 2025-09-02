@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { User, Building2, TrendingUp, Brain, Target, DollarSign, Users, Zap } from 'lucide-react';

@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Plus, Activity, Play, Download, MessageCircle, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';

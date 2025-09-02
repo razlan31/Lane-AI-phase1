@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Plus, FileSpreadsheet, Upload, Building2, Crown, ChevronUp, ChevronDown, Activity, Play, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';

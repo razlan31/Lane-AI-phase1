@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';

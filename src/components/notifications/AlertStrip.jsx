@@ -1,5 +1,5 @@
 // src/components/notifications/AlertStrip.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 
 /**
  * AlertStrip

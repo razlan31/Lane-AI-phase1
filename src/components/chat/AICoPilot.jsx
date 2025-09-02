@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, Minimize2, Maximize2, Sparkles, Bot, User, Lightbulb, Upload, Paperclip, FileText, Image, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';

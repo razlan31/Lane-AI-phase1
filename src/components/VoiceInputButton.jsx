@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, MessageSquare } from 'lucide-react';

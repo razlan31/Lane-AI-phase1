@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Edit3, Save, X, Eye, FileText } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';

@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Check, Zap, Crown, Building2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { usePricingTier } from '../../hooks/usePricingTier';

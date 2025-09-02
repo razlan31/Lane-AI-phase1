@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Eye, Edit3, Save, X, Plus, Layers, Settings } from 'lucide-react';
 import { Button } from '../ui/button';
 import DataTable from '../primitives/DataTable';

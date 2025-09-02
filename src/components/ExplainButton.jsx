@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Button } from '@/components/ui/button';
 import { HelpCircle } from 'lucide-react';
 

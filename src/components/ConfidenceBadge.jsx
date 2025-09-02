@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';

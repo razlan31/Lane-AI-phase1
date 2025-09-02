@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CreditCard, Download, ExternalLink, Crown, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { usePricingTier } from '../../hooks/usePricingTier';
