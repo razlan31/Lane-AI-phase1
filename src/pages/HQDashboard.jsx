@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import KpiCard from '../components/primitives/KpiCard';
 import AlertsStrip from '../components/alerts/AlertsStrip';
 import PortfolioTiles from '../components/portfolio/PortfolioTiles';

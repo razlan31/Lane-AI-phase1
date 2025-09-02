@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { FileSpreadsheet, Workflow, Activity, FileText } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';

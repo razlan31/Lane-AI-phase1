@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { usePricingTier } from '../../hooks/usePricingTier';
 import { cn } from '../../lib/utils';
 import { Lock } from 'lucide-react';

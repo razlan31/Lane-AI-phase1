@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { cn } from '../../lib/utils';
 

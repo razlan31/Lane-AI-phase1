@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 

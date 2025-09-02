@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { useDisplaySettings } from '../../hooks/useDisplaySettings.jsx';
 import { Button } from '../ui/button';
 

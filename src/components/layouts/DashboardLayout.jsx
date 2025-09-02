@@ -1,4 +1,4 @@
-import React from 'react';
+// No React import needed
 import { cn } from '../../lib/utils';
 import TabContainer from '../primitives/TabContainer';
 
