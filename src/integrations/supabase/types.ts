@@ -38,6 +38,66 @@ export type Database = {
         }
         Relationships: []
       }
+      alerts: {
+        Row: {
+          created_at: string
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          severity: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          venture_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          severity: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+          venture_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          severity?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          venture_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           category: string
@@ -258,6 +318,100 @@ export type Database = {
           },
         ]
       }
+      personal: {
+        Row: {
+          activities: string[] | null
+          commitments: string[] | null
+          created_at: string
+          goals: string[] | null
+          id: string
+          monthly_burn: number | null
+          savings: number | null
+          updated_at: string
+          user_id: string
+          work_hours: number | null
+        }
+        Insert: {
+          activities?: string[] | null
+          commitments?: string[] | null
+          created_at?: string
+          goals?: string[] | null
+          id?: string
+          monthly_burn?: number | null
+          savings?: number | null
+          updated_at?: string
+          user_id: string
+          work_hours?: number | null
+        }
+        Update: {
+          activities?: string[] | null
+          commitments?: string[] | null
+          created_at?: string
+          goals?: string[] | null
+          id?: string
+          monthly_burn?: number | null
+          savings?: number | null
+          updated_at?: string
+          user_id?: string
+          work_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_metrics: {
+        Row: {
+          calculated_at: string
+          diversification_score: number | null
+          id: string
+          metadata: Json | null
+          portfolio_roi: number | null
+          risk_score: number | null
+          total_burn_rate: number | null
+          total_revenue: number | null
+          total_runway: number | null
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          diversification_score?: number | null
+          id?: string
+          metadata?: Json | null
+          portfolio_roi?: number | null
+          risk_score?: number | null
+          total_burn_rate?: number | null
+          total_revenue?: number | null
+          total_runway?: number | null
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string
+          diversification_score?: number | null
+          id?: string
+          metadata?: Json | null
+          portfolio_roi?: number | null
+          risk_score?: number | null
+          total_burn_rate?: number | null
+          total_revenue?: number | null
+          total_runway?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -383,32 +537,52 @@ export type Database = {
           created_at: string | null
           id: string
           inputs: Json | null
+          is_template: boolean | null
           outputs: Json | null
+          parent_id: string | null
+          template_category: string | null
           type: string
           user_id: string | null
           venture_id: string | null
+          version: number | null
         }
         Insert: {
           confidence_level?: string | null
           created_at?: string | null
           id?: string
           inputs?: Json | null
+          is_template?: boolean | null
           outputs?: Json | null
+          parent_id?: string | null
+          template_category?: string | null
           type: string
           user_id?: string | null
           venture_id?: string | null
+          version?: number | null
         }
         Update: {
           confidence_level?: string | null
           created_at?: string | null
           id?: string
           inputs?: Json | null
+          is_template?: boolean | null
           outputs?: Json | null
+          parent_id?: string | null
+          template_category?: string | null
           type?: string
           user_id?: string | null
           venture_id?: string | null
+          version?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "worksheets_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
