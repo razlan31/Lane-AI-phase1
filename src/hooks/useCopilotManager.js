@@ -95,15 +95,6 @@ export const useCopilotManager = () => {
       return null;
     }
   };
-        
-        return enrichedSuggestion;
-      }
-    } catch (error) {
-      console.error('Error generating suggestion:', error);
-    }
-    
-    return null;
-  };
 
   // Dismiss suggestion
   const dismissSuggestion = async (suggestionId, accepted = false) => {
