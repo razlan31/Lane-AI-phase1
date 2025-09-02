@@ -35,6 +35,12 @@ import VentureHub from './components/workspaces/VentureHub';
 function App() {
   console.log('App component rendering...');
   const { user, loading } = useAuth();
+  
+  // Development override - create mock user if none exists
+  const effectiveUser = user || (window.location.hostname.includes('lovable') ? {
+    id: 'dev-user-123',
+    email: 'dev@example.com'
+  } : null);
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
@@ -47,8 +53,8 @@ function App() {
 
 
   // Show loading while checking auth
-  console.log('Loading state:', loading, 'User:', !!user);
-  if (loading) {
+  console.log('Loading state:', loading, 'User:', !!effectiveUser);
+  if (loading && !effectiveUser) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -60,8 +66,8 @@ function App() {
   }
 
   // Show auth page if not authenticated
-  console.log('User authenticated:', !!user);
-  if (!user) {
+  console.log('User authenticated:', !!effectiveUser);
+  if (!effectiveUser) {
     return <AuthPage />;
   }
 

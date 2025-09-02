@@ -94,10 +94,20 @@ const AuthGate = () => {
   }
 
   if (devBypass) {
+    // Create a mock user session for development
+    const mockUser = {
+      id: 'dev-user-123',
+      email: 'dev@example.com',
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    };
+    
     return (
       <>
         <div className="fixed top-2 right-2 z-50 bg-primary/10 text-primary border border-primary/30 rounded-md px-3 py-2 text-xs shadow-sm">
-          Log Master override active
+          Development Mode Active
           <button className="ml-2 underline" onClick={disableLogMaster}>Disable</button>
         </div>
         <App />
