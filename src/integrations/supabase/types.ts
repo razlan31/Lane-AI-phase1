@@ -38,6 +38,50 @@ export type Database = {
         }
         Relationships: []
       }
+      blocks: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+          tags: string[] | null
+          updated_at: string
+          venture_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          venture_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          venture_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -115,6 +159,7 @@ export type Database = {
       kpis: {
         Row: {
           confidence: string | null
+          confidence_level: string | null
           created_at: string
           id: string
           name: string
@@ -124,6 +169,7 @@ export type Database = {
         }
         Insert: {
           confidence?: string | null
+          confidence_level?: string | null
           created_at?: string
           id?: string
           name: string
@@ -133,6 +179,7 @@ export type Database = {
         }
         Update: {
           confidence?: string | null
+          confidence_level?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -152,6 +199,7 @@ export type Database = {
       }
       notes: {
         Row: {
+          block_id: string | null
           content: string
           context_id: string | null
           context_type: string | null
@@ -163,6 +211,7 @@ export type Database = {
           venture_id: string | null
         }
         Insert: {
+          block_id?: string | null
           content: string
           context_id?: string | null
           context_type?: string | null
@@ -174,6 +223,7 @@ export type Database = {
           venture_id?: string | null
         }
         Update: {
+          block_id?: string | null
           content?: string
           context_id?: string | null
           context_type?: string | null
@@ -185,6 +235,13 @@ export type Database = {
           venture_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "notes_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "blocks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notes_user_id_fkey"
             columns: ["user_id"]
@@ -222,6 +279,27 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -301,6 +379,7 @@ export type Database = {
       }
       worksheets: {
         Row: {
+          confidence_level: string | null
           created_at: string | null
           id: string
           inputs: Json | null
@@ -310,6 +389,7 @@ export type Database = {
           venture_id: string | null
         }
         Insert: {
+          confidence_level?: string | null
           created_at?: string | null
           id?: string
           inputs?: Json | null
@@ -319,6 +399,7 @@ export type Database = {
           venture_id?: string | null
         }
         Update: {
+          confidence_level?: string | null
           created_at?: string | null
           id?: string
           inputs?: Json | null
