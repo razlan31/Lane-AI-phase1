@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 
+// AI Co-Pilot store for managing chat sessions
+
 /**
  * AI Co-Pilot Store Hook
  * - Manages multiple chat sessions
