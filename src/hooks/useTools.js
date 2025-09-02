@@ -78,26 +78,43 @@ export const useTools = () => {
     }
   };
 
-  // Calculate tool outputs based on inputs
+  // Enhanced calculation logic for all 18 tools
   const calculateToolOutputs = (tool, inputs) => {
-    const outputs = {};
-
     switch (tool.id) {
+      // Financial Tools
       case 'roi_calculator':
-        const profit = inputs.returns - inputs.initial_investment;
-        outputs.roi_percent = ((profit / inputs.initial_investment) * 100).toFixed(2);
-        outputs.profit = profit.toFixed(2);
-        break;
+        const investment = inputs.investment || 0;
+        const revenue = inputs.revenue || 0;
+        const timeframe = inputs.timeframe || 12;
+        const roi = investment > 0 ? ((revenue - investment) / investment) * 100 : 0;
+        const paybackPeriod = revenue > 0 ? (investment / (revenue / timeframe)) : 0;
+        return {
+          roi_percentage: Math.round(roi * 100) / 100,
+          payback_period: Math.round(paybackPeriod * 100) / 100,
+          net_profit: revenue - investment
+        };
 
       case 'runway_calculator':
-        outputs.runway_months = (inputs.cash_balance / inputs.monthly_burn).toFixed(1);
-        const runwayDate = new Date();
-        runwayDate.setMonth(runwayDate.getMonth() + parseFloat(outputs.runway_months));
-        outputs.runway_date = runwayDate.toISOString().split('T')[0];
-        break;
+        const currentCash = inputs.current_cash || 0;
+        const monthlyBurn = inputs.monthly_burn || 0;
+        const revenueGrowth = inputs.revenue_growth || 0;
+        const runwayMonths = monthlyBurn > 0 ? currentCash / monthlyBurn : Infinity;
+        const recommendations = [];
+        if (runwayMonths < 3) recommendations.push('Critical: Immediate funding needed');
+        if (runwayMonths < 6) recommendations.push('Consider reducing burn rate');
+        if (runwayMonths < 12) recommendations.push('Explore additional funding');
+        if (runwayMonths > 18) recommendations.push('Runway looks healthy');
+        return {
+          runway_months: runwayMonths === Infinity ? 999 : Math.round(runwayMonths * 100) / 100,
+          runway_date: runwayMonths === Infinity ? 'Indefinite' : new Date(Date.now() + runwayMonths * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          recommendations
+        };
 
       case 'breakeven_calculator':
-        const contributionMargin = inputs.price_per_unit - inputs.variable_cost_per_unit;
+        const fixedCosts = inputs.fixed_costs || 0;
+        const variableCost = inputs.variable_cost_per_unit || 0;
+        const pricePerUnit = inputs.price_per_unit || 0;
+        const contributionMargin = pricePerUnit - variableCost;
         outputs.breakeven_units = Math.ceil(inputs.fixed_costs / contributionMargin);
         outputs.breakeven_revenue = (outputs.breakeven_units * inputs.price_per_unit).toFixed(2);
         break;

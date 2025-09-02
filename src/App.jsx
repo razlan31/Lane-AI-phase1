@@ -339,7 +339,7 @@ function App() {
           )}
 
           {/* Auto-Promotion Flow Quick Dock */}
-          {/* <QuickDock /> */}
+          <QuickDock />
 
           {/* Legacy Quick Actions Dock - for backward compatibility */}
           <QuickDockOld 

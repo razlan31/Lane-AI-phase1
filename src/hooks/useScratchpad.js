@@ -150,24 +150,69 @@ export const useScratchpad = () => {
     }
   };
 
-  // AI suggestion helpers
+  // Enhanced AI suggestion helpers
   const suggestTools = (noteText) => {
+    // Enhanced pattern detection for tool suggestions
+    const text = noteText.toLowerCase();
     const suggestions = [];
-    
-    // Simple keyword matching for AI suggestions
-    if (noteText.toLowerCase().includes('spend') && noteText.toLowerCase().includes('customer')) {
-      suggestions.push({ tool: 'cac_calculator', reason: 'Looks like CAC calculation' });
+
+    // Financial patterns
+    if (text.includes('roi') || text.includes('return') || text.includes('investment')) {
+      suggestions.push({ toolId: 'roi_calculator', reason: 'Calculate return on investment', confidence: 0.9 });
     }
-    
-    if (noteText.toLowerCase().includes('runway') || noteText.toLowerCase().includes('burn')) {
-      suggestions.push({ tool: 'runway_calculator', reason: 'Looks like runway calculation' });
+    if (text.includes('runway') || text.includes('cash') || text.includes('burn')) {
+      suggestions.push({ toolId: 'runway_calculator', reason: 'Analyze cash runway', confidence: 0.85 });
     }
-    
-    if (noteText.toLowerCase().includes('roi') || noteText.toLowerCase().includes('return')) {
-      suggestions.push({ tool: 'roi_calculator', reason: 'Looks like ROI calculation' });
+    if (text.includes('break') && text.includes('even')) {
+      suggestions.push({ toolId: 'breakeven_calculator', reason: 'Calculate break-even point', confidence: 0.8 });
     }
-    
-    return suggestions;
+    if (text.includes('valuation') || text.includes('value') || text.includes('worth')) {
+      suggestions.push({ toolId: 'valuation_calculator', reason: 'Calculate company valuation', confidence: 0.75 });
+    }
+
+    // Marketing patterns  
+    if (text.includes('customer') && (text.includes('acquisition') || text.includes('cost') || text.includes('cac'))) {
+      suggestions.push({ toolId: 'cac_calculator', reason: 'Calculate customer acquisition cost', confidence: 0.9 });
+    }
+    if (text.includes('lifetime') && text.includes('value') || text.includes('ltv')) {
+      suggestions.push({ toolId: 'ltv_calculator', reason: 'Calculate customer lifetime value', confidence: 0.85 });
+    }
+    if (text.includes('conversion') || text.includes('funnel')) {
+      suggestions.push({ toolId: 'conversion_optimizer', reason: 'Optimize conversion rates', confidence: 0.8 });
+    }
+    if (text.includes('market') && text.includes('size') || text.includes('tam') || text.includes('sam')) {
+      suggestions.push({ toolId: 'market_sizer', reason: 'Calculate market size', confidence: 0.8 });
+    }
+
+    // Operations patterns
+    if (text.includes('capacity') || text.includes('scale') || text.includes('growth')) {
+      suggestions.push({ toolId: 'capacity_planner', reason: 'Plan operational capacity', confidence: 0.7 });
+    }
+    if (text.includes('inventory') || text.includes('stock')) {
+      suggestions.push({ toolId: 'inventory_optimizer', reason: 'Optimize inventory levels', confidence: 0.75 });
+    }
+    if (text.includes('process') || text.includes('efficiency')) {
+      suggestions.push({ toolId: 'process_optimizer', reason: 'Analyze process efficiency', confidence: 0.7 });
+    }
+    if (text.includes('risk') || text.includes('threat')) {
+      suggestions.push({ toolId: 'risk_assessor', reason: 'Assess business risks', confidence: 0.75 });
+    }
+
+    // Strategy patterns
+    if (text.includes('scenario') || text.includes('planning')) {
+      suggestions.push({ toolId: 'scenario_planner', reason: 'Model business scenarios', confidence: 0.7 });
+    }
+    if (text.includes('competitor') || text.includes('competition')) {
+      suggestions.push({ toolId: 'competitive_analyzer', reason: 'Analyze competitive landscape', confidence: 0.8 });
+    }
+    if (text.includes('swot') || text.includes('strength') || text.includes('weakness')) {
+      suggestions.push({ toolId: 'swot_analyzer', reason: 'Conduct SWOT analysis', confidence: 0.85 });
+    }
+    if (text.includes('goal') || text.includes('objective') || text.includes('kpi')) {
+      suggestions.push({ toolId: 'goal_tracker', reason: 'Track strategic goals', confidence: 0.75 });
+    }
+
+    return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
   };
 
   // Search and filter
