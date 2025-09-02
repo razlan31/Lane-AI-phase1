@@ -22,7 +22,7 @@ import { Activity, Play, Download, MessageCircle } from 'lucide-react';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
 import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
-import NewVentureModal from './components/modals/NewVentureModal';
+import NewVentureModalFixed from './components/modals/NewVentureModalFixed';
 import ExportModal from './components/export/ExportModal';
 import AICopilotPageFixed from './pages/AICopilotPageFixed';
 import { PersonalPage } from './pages/PersonalPage';
@@ -390,7 +390,7 @@ function App() {
             onClose={() => setCommandPaletteOpen(false)} 
           />
           
-          <NewVentureModal
+          <NewVentureModalFixed
             isOpen={newVentureModalOpen}
             onClose={() => setNewVentureModalOpen(false)}
             onCreateVenture={handleCreateVenture}
