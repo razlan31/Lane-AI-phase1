@@ -15,16 +15,16 @@ import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from '@/components/dock/QuickDock';
-import { GlobalOrbFixed } from './components/GlobalOrbFixed';
+import GlobalOrb from './components/GlobalOrb';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
 import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
-import NewVentureModalFixed from './components/modals/NewVentureModalFixed';
+import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
-import AICopilotPageFixed from './pages/AICopilotPageFixed';
+import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
@@ -203,7 +203,7 @@ function App() {
   const renderMainContent = () => {
     switch (currentView) {
       case 'copilot':
-        return <AICopilotPageFixed />;
+        return <AICopilotPage />;
       case 'personal':
         return <PersonalPage />;
       case 'portfolio':
@@ -377,7 +377,7 @@ function App() {
 
           {/* GlobalOrb with AI Copilot Integration */}
           {!showCoPilot && (
-            <GlobalOrbFixed 
+            <GlobalOrb 
               context={currentView.startsWith('venture-') ? 'venture' : currentView}
               ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
             />
@@ -390,7 +390,7 @@ function App() {
             onClose={() => setCommandPaletteOpen(false)} 
           />
           
-          <NewVentureModalFixed
+          <NewVentureModal
             isOpen={newVentureModalOpen}
             onClose={() => setNewVentureModalOpen(false)}
             onCreateVenture={handleCreateVenture}
