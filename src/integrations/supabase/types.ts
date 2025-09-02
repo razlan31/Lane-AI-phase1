@@ -38,6 +38,193 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+          venture_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          venture_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          venture_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_sessions_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpis: {
+        Row: {
+          confidence: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          value: number | null
+          venture_id: string
+        }
+        Insert: {
+          confidence?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          value?: number | null
+          venture_id: string
+        }
+        Update: {
+          confidence?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          value?: number | null
+          venture_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpis_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          content: string
+          context_id: string | null
+          context_type: string | null
+          created_at: string
+          id: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          venture_id: string | null
+        }
+        Insert: {
+          content: string
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          venture_id?: string | null
+        }
+        Update: {
+          content?: string
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          venture_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_venture_id_fkey"
+            columns: ["venture_id"]
+            isOneToOne: false
+            referencedRelation: "ventures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       timeline_events: {
         Row: {
           body: string | null
@@ -70,6 +257,47 @@ export type Database = {
           venture_id?: string | null
         }
         Relationships: []
+      }
+      ventures: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          stage: string | null
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          stage?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          stage?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ventures_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       worksheets: {
         Row: {
