@@ -21,6 +21,7 @@ import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
 import AICopilotPage from './pages/AICopilotPage';
+import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
 
@@ -159,7 +160,7 @@ function App() {
   // TopBar handlers
   const handleTopBarActions = {
     onSearchClick: () => setCommandPaletteOpen(true),
-    onProfileClick: () => setCurrentView('settings'),
+    onProfileClick: (section) => setCurrentView(section || 'settings'),
     onFounderMode: () => setShowFounderMode(true),
     onHomeClick: () => setCurrentView('hq')
   };
@@ -169,6 +170,8 @@ function App() {
     switch (currentView) {
       case 'copilot':
         return <AICopilotPage />;
+      case 'personal':
+        return <PersonalPage />;
       case 'portfolio':
         return <PortfolioDashboard />;
       case 'hq':
