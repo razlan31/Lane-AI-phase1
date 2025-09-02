@@ -78,96 +78,138 @@ export const useTools = () => {
     }
   };
 
-  // Enhanced calculation logic for all 18 tools
+  // Enhanced calculation logic with scoped variables per case
   const calculateToolOutputs = (tool, inputs) => {
     switch (tool.id) {
       // Financial Tools
-      case 'roi_calculator':
-        const investment = inputs.investment || 0;
-        const revenue = inputs.revenue || 0;
-        const timeframe = inputs.timeframe || 12;
+      case 'roi_calculator': {
+        const investment = Number(inputs.investment || 0);
+        const revenue = Number(inputs.revenue || 0);
+        const timeframe = Number(inputs.timeframe || 12);
         const roi = investment > 0 ? ((revenue - investment) / investment) * 100 : 0;
         const paybackPeriod = revenue > 0 ? (investment / (revenue / timeframe)) : 0;
         return {
           roi_percentage: Math.round(roi * 100) / 100,
           payback_period: Math.round(paybackPeriod * 100) / 100,
-          net_profit: revenue - investment
+          net_profit: Math.round((revenue - investment) * 100) / 100
         };
+      }
 
-      case 'runway_calculator':
-        const currentCash = inputs.current_cash || 0;
-        const monthlyBurn = inputs.monthly_burn || 0;
-        const revenueGrowth = inputs.revenue_growth || 0;
-        const runwayMonths = monthlyBurn > 0 ? currentCash / monthlyBurn : Infinity;
-        const recommendations = [];
-        if (runwayMonths < 3) recommendations.push('Critical: Immediate funding needed');
-        if (runwayMonths < 6) recommendations.push('Consider reducing burn rate');
-        if (runwayMonths < 12) recommendations.push('Explore additional funding');
-        if (runwayMonths > 18) recommendations.push('Runway looks healthy');
+      case 'runway_calculator': {
+        const runwayCurrentCash = Number(inputs.current_cash || 0);
+        const runwayMonthlyBurn = Number(inputs.monthly_burn || 0);
+        const runwayMonths = runwayMonthlyBurn > 0 ? runwayCurrentCash / runwayMonthlyBurn : Infinity;
+        const recs = [];
+        if (runwayMonths < 3) recs.push('Critical: Immediate funding needed');
+        if (runwayMonths < 6) recs.push('Consider reducing burn rate');
+        if (runwayMonths < 12) recs.push('Explore additional funding');
+        if (runwayMonths > 18) recs.push('Runway looks healthy');
         return {
           runway_months: runwayMonths === Infinity ? 999 : Math.round(runwayMonths * 100) / 100,
-          runway_date: runwayMonths === Infinity ? 'Indefinite' : new Date(Date.now() + runwayMonths * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-          recommendations
+          runway_date: runwayMonths === Infinity ? 'Indefinite' : new Date(Date.now() + runwayMonths * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          recommendations: recs
         };
+      }
 
-      case 'breakeven_calculator':
-        const fixedCosts = inputs.fixed_costs || 0;
-        const variableCost = inputs.variable_cost_per_unit || 0;
-        const pricePerUnit = inputs.price_per_unit || 0;
-        const contributionMargin = pricePerUnit - variableCost;
-        outputs.breakeven_units = Math.ceil(inputs.fixed_costs / contributionMargin);
-        outputs.breakeven_revenue = (outputs.breakeven_units * inputs.price_per_unit).toFixed(2);
-        break;
+      case 'breakeven_calculator': {
+        const beFixed = Number(inputs.fixed_costs || 0);
+        const beVarCost = Number(inputs.variable_cost_per_unit || 0);
+        const bePrice = Number(inputs.price_per_unit || 0);
+        const beContribution = bePrice - beVarCost;
+        const beUnits = beContribution > 0 ? beFixed / beContribution : 0;
+        return {
+          breakeven_units: Math.ceil(beUnits),
+          breakeven_revenue: Math.round(Math.ceil(beUnits) * bePrice),
+          contribution_margin: Math.round(beContribution * 100) / 100
+        };
+      }
 
-      case 'cac_calculator':
-        outputs.cac = (inputs.marketing_spend / inputs.customers_acquired).toFixed(2);
-        break;
+      // Marketing Tools
+      case 'cac_calculator': {
+        const cacSpend = Number(inputs.marketing_spend || 0);
+        const cacCustomers = Number(inputs.customers_acquired || 1);
+        const cacValue = cacSpend / cacCustomers;
+        const efficiency = cacValue < 50 ? 95 : cacValue < 150 ? 75 : cacValue < 300 ? 50 : 25;
+        return {
+          cac: Math.round(cacValue * 100) / 100,
+          cac_by_channel: { overall: Math.round(cacValue * 100) / 100 },
+          efficiency_score: efficiency
+        };
+      }
 
-      case 'ltv_calculator':
-        outputs.ltv = ((inputs.monthly_revenue * inputs.gross_margin) / inputs.churn_rate).toFixed(2);
-        break;
+      case 'ltv_calculator': {
+        const ltvAov = Number(inputs.avg_order_value || 0);
+        const ltvFreq = Number(inputs.purchase_frequency || 0);
+        const ltvLifespan = Number(inputs.customer_lifespan || 0);
+        const ltvMargin = Number(inputs.gross_margin || 0);
+        const annualValue = ltvAov * ltvFreq;
+        const ltv = annualValue * ltvLifespan;
+        const lifetimeProfit = ltv * (ltvMargin / 100);
+        return {
+          ltv: Math.round(ltv),
+          annual_value: Math.round(annualValue),
+          lifetime_profit: Math.round(lifetimeProfit)
+        };
+      }
 
-      case 'tam_sam_som':
-        outputs.tam = inputs.total_market;
-        outputs.sam = (inputs.total_market * inputs.addressable_percent / 100).toFixed(0);
-        outputs.som = (outputs.sam * inputs.obtainable_percent / 100).toFixed(0);
-        break;
+      case 'market_sizer':
+      case 'tam_sam_som': {
+        const totalMarket = Number(inputs.total_population || inputs.total_market || 0);
+        const targetPercent = Number(inputs.target_demographic_percent || inputs.addressable_percent || 0);
+        const avgSpending = Number(inputs.avg_spending || 0);
+        const obtainable = Number(inputs.obtainable_percent || inputs.market_penetration || 0);
+        const tam = totalMarket * avgSpending || Number(inputs.total_market || 0);
+        const sam = tam * (targetPercent / 100);
+        const som = sam * (obtainable / 100);
+        return { tam: Math.round(tam), sam: Math.round(sam), som: Math.round(som) };
+      }
 
-      case 'churn_simulator':
-        const churnRate = inputs.monthly_churn_rate / 100;
-        const remaining = inputs.customers * Math.pow(1 - churnRate, inputs.months);
-        outputs.remaining_customers = Math.floor(remaining);
-        outputs.customers_lost = inputs.customers - outputs.remaining_customers;
-        break;
+      case 'churn_simulator': {
+        const churnRate = Number(inputs.monthly_churn_rate || 0) / 100;
+        const startCustomers = Number(inputs.customers || 0);
+        const months = Number(inputs.months || 0);
+        const remaining = startCustomers * Math.pow(1 - churnRate, months);
+        return {
+          remaining_customers: Math.floor(remaining),
+          customers_lost: startCustomers - Math.floor(remaining)
+        };
+      }
 
-      case 'pricing_optimizer':
-        const elasticity = inputs.demand_elasticity;
-        const priceChange = inputs.price_change / 100;
+      case 'pricing_optimizer': {
+        const elasticity = Number(inputs.demand_elasticity || 0);
+        const priceChange = Number(inputs.price_change || 0) / 100;
         const demandChange = -elasticity * priceChange;
-        outputs.new_demand = ((1 + demandChange) * 100).toFixed(2);
-        outputs.revenue_impact = ((1 + priceChange) * (1 + demandChange) - 1) * 100;
-        break;
+        return {
+          new_demand: Math.round((1 + demandChange) * 10000) / 100,
+          revenue_impact: Math.round(((1 + priceChange) * (1 + demandChange) - 1) * 10000) / 100
+        };
+      }
 
-      case 'funding_calculator':
-        const targetRunway = inputs.target_runway;
-        const monthlyBurn = inputs.monthly_burn;
-        const revenueGrowth = inputs.revenue_growth / 100;
-        outputs.funding_needed = (targetRunway * monthlyBurn).toFixed(0);
-        outputs.target_revenue = (monthlyBurn * revenueGrowth * targetRunway).toFixed(0);
-        break;
+      case 'funding_calculator': {
+        const targetRunway = Number(inputs.target_runway || 0);
+        const fundingMonthlyBurn = Number(inputs.monthly_burn || 0);
+        const fundingRevenueGrowth = Number(inputs.revenue_growth || 0) / 100;
+        return {
+          funding_needed: Math.round(targetRunway * fundingMonthlyBurn),
+          target_revenue: Math.round(fundingMonthlyBurn * fundingRevenueGrowth * targetRunway)
+        };
+      }
 
-      case 'equity_calculator':
-        const postMoney = inputs.pre_money_valuation + inputs.investment_amount;
-        outputs.post_money_valuation = postMoney;
-        outputs.investor_ownership = ((inputs.investment_amount / postMoney) * 100).toFixed(2);
-        outputs.dilution_percent = outputs.investor_ownership;
-        break;
+      case 'equity_calculator': {
+        const preMoney = Number(inputs.pre_money_valuation || 0);
+        const investmentAmount = Number(inputs.investment_amount || 0);
+        const postMoney = preMoney + investmentAmount;
+        const investorOwnership = postMoney > 0 ? (investmentAmount / postMoney) * 100 : 0;
+        return {
+          post_money_valuation: Math.round(postMoney),
+          investor_ownership: Math.round(investorOwnership * 100) / 100,
+          dilution_percent: Math.round(investorOwnership * 100) / 100
+        };
+      }
 
       default:
-        outputs.result = 'Calculation not implemented';
+        return { result: 'Calculation not implemented' };
     }
-
-    return outputs;
   };
 
   // Link tool run to block/kpi/worksheet
