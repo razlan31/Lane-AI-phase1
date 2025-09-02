@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAICopilotStore } from "../../hooks/useAICopilotStore";
 import { useVentures } from "../../hooks/useVentures";
 import { useAutobuild } from "../../hooks/useAutobuild";

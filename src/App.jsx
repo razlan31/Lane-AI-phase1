@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './components/dashboards/HQDashboard';
 import { Toaster } from "sonner"
@@ -29,6 +29,7 @@ import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
 import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 import VentureHub from './components/workspaces/VentureHub';
+import ErrorBoundary from './components/ErrorBoundary';
 
 
 function App() {
@@ -186,7 +187,11 @@ function App() {
   const renderMainContent = () => {
     switch (currentView) {
       case 'copilot':
-        return <AICopilotPage />;
+        return (
+          <ErrorBoundary>
+            <AICopilotPage />
+          </ErrorBoundary>
+        );
       case 'personal':
         return <PersonalPage />;
       case 'portfolio':
@@ -356,14 +361,18 @@ function App() {
           )}
 
           {/* QuickDock - Main Auto-Promotion Flow */}
-          <QuickDock />
+          <ErrorBoundary>
+            <QuickDock />
+          </ErrorBoundary>
 
           {/* GlobalOrb with AI Copilot Integration */}
           {!showCoPilot && (
-            <GlobalOrb 
-              context={currentView.startsWith('venture-') ? 'venture' : currentView}
-              ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
-            />
+            <ErrorBoundary>
+              <GlobalOrb 
+                context={currentView.startsWith('venture-') ? 'venture' : currentView}
+                ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
+              />
+            </ErrorBoundary>
           )}
 
 
