@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import ScratchpadPanelFixed from '@/components/scratchpad/ScratchpadPanelFixed';
-import ToolsPanelFixed from '@/components/tools/ToolsPanelFixed';
+import ScratchpadPanel from '@/components/scratchpad/ScratchpadPanel';
+import ToolsPanel from '@/components/tools/ToolsPanel';
 import { FileText, Calculator, Layout, Target } from 'lucide-react';
 
 const QuickDock = ({ className = "" }) => {
@@ -73,11 +73,11 @@ const QuickDock = ({ className = "" }) => {
           })}
         </div>
 
-        <ScratchpadPanelFixed 
+        <ScratchpadPanel 
           isOpen={scratchpadOpen} 
           onClose={() => setScratchpadOpen(false)} 
         />
-        <ToolsPanelFixed 
+        <ToolsPanel 
           isOpen={toolsOpen} 
           onClose={() => setToolsOpen(false)} 
         />

@@ -15,7 +15,7 @@ import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from '@/components/dock/QuickDock';
-import GlobalOrb from './components/GlobalOrb';
+import { GlobalOrb } from './components/navigation/GlobalOrb';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
