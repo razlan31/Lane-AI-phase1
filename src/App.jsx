@@ -24,7 +24,7 @@ import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
-import AICopilotPage from './pages/AICopilotPage';
+import AICopilotPageFixed from './pages/AICopilotPageFixed';
 import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
@@ -203,13 +203,7 @@ function App() {
   const renderMainContent = () => {
     switch (currentView) {
       case 'copilot':
-        // Temporarily return simpler component to avoid React context issues
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">AI Co-Pilot</h1>
-            <p className="text-muted-foreground">AI assistance is temporarily disabled while fixing React context issues.</p>
-          </div>
-        );
+        return <AICopilotPageFixed />;
       case 'personal':
         return <PersonalPage />;
       case 'portfolio':
