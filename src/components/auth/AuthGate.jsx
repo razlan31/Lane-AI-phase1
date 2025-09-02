@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import App from "../../App.jsx";
 import AuthPage from "../../pages/AuthPage.jsx";
 import { supabase } from "@/integrations/supabase/client";
