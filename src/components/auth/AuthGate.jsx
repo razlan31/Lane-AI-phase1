@@ -14,17 +14,27 @@ const AuthGate = () => {
   };
 
   useEffect(() => {
+    console.log('AuthGate: Starting initialization');
+    
     try {
       const params = new URLSearchParams(window.location.search);
+      console.log('AuthGate: URL params:', params.toString());
+      
       if (params.get('logmaster') === '1') {
+        console.log('AuthGate: Setting LOG_MASTER from URL');
         localStorage.setItem('LOG_MASTER', '1');
         // Clean URL to avoid leaking the flag
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-    } catch {}
+    } catch (e) {
+      console.log('AuthGate: Error parsing URL params:', e);
+    }
 
     const isBypass = typeof window !== 'undefined' && localStorage.getItem('LOG_MASTER') === '1';
+    console.log('AuthGate: Checking bypass:', isBypass, localStorage.getItem('LOG_MASTER'));
+    
     if (isBypass) {
+      console.log('AuthGate: Using log master bypass');
       setDevBypass(true);
       setLoading(false);
       return;
