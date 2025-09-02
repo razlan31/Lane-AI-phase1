@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTools } from '@/hooks/useTools';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
+import { ToolResultsPanel } from './ToolResultsPanel';
 import { Calculator, TrendingUp, DollarSign, Users, AlertTriangle, User, X } from 'lucide-react';
 
 const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
@@ -294,6 +295,14 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
                   </Button>
 
                   {renderToolResult()}
+
+                  {/* Tool Results Panel with suggested blocks */}
+                  {toolResult && (
+                    <ToolResultsPanel 
+                      toolRun={toolResult} 
+                      suggestedBlocks={getSuggestedBlocks(selectedTool?.id, toolResult.outputs)}
+                    />
+                  )}
                 </div>
               )}
             </TabsContent>
