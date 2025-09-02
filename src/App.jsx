@@ -7,7 +7,6 @@ import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
-import { useAuth } from './hooks/useAuth';
 import AuthPage from './pages/AuthPage';
 
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
@@ -34,7 +33,6 @@ import VentureHub from './components/workspaces/VentureHub';
 
 function App() {
   console.log('App component rendering...');
-  const { user, loading } = useAuth();
   
   // All hooks must be called before any conditional returns
   const [currentView, setCurrentView] = useState('copilot');
@@ -67,11 +65,11 @@ function App() {
     }
   ]);
   
-  // Development override - create mock user if none exists
-  const effectiveUser = user || (window.location.hostname.includes('lovable') ? {
+  // Create mock user for development - AuthGate handles real auth
+  const effectiveUser = {
     id: 'dev-user-123',
     email: 'dev@example.com'
-  } : null);
+  };
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -99,23 +97,8 @@ function App() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [effectiveUser]);
 
-  // Early returns AFTER all hooks
-  console.log('Loading state:', loading, 'User:', !!effectiveUser);
-  if (loading && !effectiveUser) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // AuthGate handles authentication, so we always have a user here
   console.log('User authenticated:', !!effectiveUser);
-  if (!effectiveUser) {
-    return <AuthPage />;
-  }
 
 
   // Onboarding handlers
