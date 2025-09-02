@@ -29,6 +29,7 @@ import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
 import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
+import VentureHub from './components/workspaces/VentureHub';
 
 
 function App() {
@@ -288,7 +289,7 @@ function App() {
           </div>
         );
       case 'playground':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Playground</h1><p>Experimental canvas coming soon...</p></div>;
+        return <PlaygroundCanvas />;
       case 'scratchpads':
         return <ToolsScratchpads ventures={ventures} />;
       case 'reports':
