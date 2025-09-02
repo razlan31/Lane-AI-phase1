@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAICopilotStore } from "../../hooks/useAICopilotStore";
 import { useVentures } from "../../hooks/useVentures";
 import { useAutobuild } from "../../hooks/useAutobuild";
@@ -11,40 +11,147 @@ import VentureCardsFlow from "../venture/VentureCardsFlow";
  * - Quick Setup shows step-by-step venture creation flow
  */
 const NewVentureModal = ({ isOpen, onClose, onCreateVenture }) => {
-  console.log('NewVentureModal: Component starting, isOpen:', isOpen);
-  
-  if (!isOpen) {
-    console.log('NewVentureModal: Not open, returning null');
-    return null;
-  }
-  
-  console.log('NewVentureModal: About to call useState');
-  const [mode, setMode] = React.useState("ai-chat");
-  const [input, setInput] = React.useState("");
-  console.log('NewVentureModal: useState successful');
+  const { activeChatId, addMessage, chats } = useAICopilotStore();
+  const { createVenture } = useVentures();
+  const { autobuildVenture, loading: autobuildLoading } = useAutobuild();
+  const [mode, setMode] = useState("ai-chat"); // "ai-chat" | "quick-setup"
+  const [input, setInput] = useState("");
 
-   return (
-     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-       <div className="bg-background rounded-xl shadow-xl w-full max-w-lg p-6">
-         <h2 className="text-xl font-semibold mb-4">Create New Venture</h2>
-         <p>Modal is working! React hooks are functional.</p>
-         <div className="mt-4 flex gap-2">
-           <button 
-             onClick={onClose}
-             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-           >
-             Close
-           </button>
-           <button 
-             onClick={() => setMode(mode === "ai-chat" ? "quick-setup" : "ai-chat")}
-             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-           >
-             Toggle Mode: {mode}
-           </button>
-         </div>
-       </div>
-     </div>
-   );
+  if (!isOpen) return null;
+
+  const currentChat = activeChatId ? chats[activeChatId] : null;
+
+  const handleSendMessage = () => {
+    if (!input.trim() || !activeChatId) return;
+    
+    addMessage(activeChatId, {
+      role: "user",
+      content: input,
+    });
+    
+    // Add AI response
+    addMessage(activeChatId, {
+      role: "assistant", 
+      content: "I'll help you create your venture. Let me ask a few questions to get started...",
+    });
+    
+    setInput("");
+  };
+
+  const handleQuickSetupComplete = async (ventureData) => {
+    const result = await autobuildVenture(ventureData);
+    if (result.success) {
+      onCreateVenture?.(result.data);
+      onClose();
+    } else {
+      console.error("Failed to create venture:", result.error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-background rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🚀</span>
+            <h2 className="text-xl font-semibold">Create New Venture</h2>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Mode Toggle */}
+            <div className="flex bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setMode("ai-chat")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  mode === "ai-chat"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                AI Chat
+              </button>
+              <button
+                onClick={() => setMode("quick-setup")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  mode === "quick-setup"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Quick Setup
+              </button>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground text-xl"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* AI Chat Mode */}
+        {mode === "ai-chat" && (
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {currentChat?.messages?.length > 0 ? (
+                <div className="space-y-4">
+                  {currentChat.messages.map((message, index) => (
+                    <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === "user" 
+                          ? "bg-primary text-primary-foreground" 
+                          : "bg-muted"
+                      }`}>
+                        {message.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <span className="text-2xl mb-2 block">🚀</span>
+                  <p>Let's create your new venture! Do you already have all the necessary data to set up this venture, or should we use mock data and let you edit later?</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Chat Input */}
+            <div className="border-t p-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  placeholder="Ask me anything about your venture..."
+                  className="flex-1 px-3 py-2 border rounded-lg bg-background"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!input.trim()}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Setup Mode */}
+        {mode === "quick-setup" && (
+          <div className="flex-1 overflow-y-auto">
+            <VentureCardsFlow
+              onContinue={handleQuickSetupComplete}
+              onCancel={onClose}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default NewVentureModal;

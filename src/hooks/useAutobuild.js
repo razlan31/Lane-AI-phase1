@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAutobuild = () => {
-  console.log('useAutobuild: Starting hook, React:', typeof useState);
   const [loading, setLoading] = useState(false);
 
   const autobuildVenture = async (ventureData) => {
