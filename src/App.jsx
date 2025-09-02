@@ -7,7 +7,8 @@ import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
 import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
-import AuthPage from './pages/AuthPage';
+import { useVentures } from './hooks/useVentures';
+import { supabase } from '@/integrations/supabase/client';
 
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
@@ -45,46 +46,25 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [ventures, setVentures] = useState([
-    { 
-      id: 1, 
-      name: "Coffee Kiosk", 
-      description: "Local coffee shop business",
-      runway: 8, 
-      cashflow: -2400, 
-      revenue: 8500, 
-      burnRate: 3200 
-    },
-    { 
-      id: 2, 
-      name: "Tech Startup", 
-      description: "SaaS platform for small businesses",
-      runway: 15, 
-      cashflow: 1200, 
-      revenue: 12000, 
-      burnRate: 5500 
-    }
-  ]);
-  
-  // Create mock user for development - AuthGate handles real auth
-  const effectiveUser = {
-    id: 'dev-user-123',
-    email: 'dev@example.com'
-  };
+  const { ventures, loading: venturesLoading, createVenture } = useVentures();
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Check onboarding status on mount
+  // Get current user and check onboarding status
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      if (!effectiveUser) return;
+    const setupUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
       
-      const onboarded = await userProfile.isOnboarded();
-      setIsOnboarded(onboarded);
-      if (onboarded) {
-        const { data } = await userProfile.getProfile();
-        setUserProfileData(data);
+      if (user) {
+        const onboarded = await userProfile.isOnboarded();
+        setIsOnboarded(onboarded);
+        if (onboarded) {
+          const { data } = await userProfile.getProfile();
+          setUserProfileData(data);
+        }
       }
     };
-    checkOnboardingStatus();
+    setupUser();
 
     // Global keyboard shortcuts
     const handleKeyDown = (e) => {
@@ -96,10 +76,9 @@ function App() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [effectiveUser]);
+  }, []);
 
-  // AuthGate handles authentication, so we always have a user here
-  console.log('User authenticated:', !!effectiveUser);
+  console.log('User authenticated:', !!currentUser);
 
 
   // Onboarding handlers
@@ -118,24 +97,23 @@ function App() {
     setUserProfileData(profileData);
     
     // Create initial venture based on profile
-    const initialVenture = {
-      id: Date.now(),
+    const initialVentureData = {
       name: getVentureNameFromProfile(profileData),
       description: getVentureDescriptionFromProfile(profileData),
-      runway: 12,
-      cashflow: -1500,
-      revenue: 5000,
-      burnRate: 2500
+      type: profileData.ventureType || 'startup',
+      stage: 'concept'
     };
     
-    setVentures([initialVenture]);
+    await createVenture(initialVentureData);
     setIsOnboarded(true);
     setCurrentView('copilot'); // Start with AI Co-Pilot
   };
 
-  const handleCreateVenture = (ventureData) => {
-    const newVentures = [...ventures, ventureData];
-    setVentures(newVentures);
+  const handleCreateVenture = async (ventureData) => {
+    const result = await createVenture(ventureData);
+    if (!result.success) {
+      console.error('Failed to create venture:', result.error);
+    }
   };
 
   const getVentureNameFromProfile = (profile) => {

@@ -8,15 +8,6 @@ const AuthPage = () => {
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Temporary dev bypass – "Log Master"
-  const enableLogMaster = () => {
-    try {
-      localStorage.setItem('LOG_MASTER', '1');
-      window.location.reload();
-    } catch (e) {
-      console.error('Failed to enable Log Master', e);
-    }
-  };
 
   const signIn = async () => {
     setError(null); setLoading(true);
@@ -75,8 +66,6 @@ const AuthPage = () => {
             <button onClick={signUp} disabled={loading} className="w-full py-2 rounded-md bg-primary text-primary-foreground">{loading ? 'Creating...' : 'Create account'}</button>
           )}
           <button onClick={signInWithGoogle} className="w-full py-2 rounded-md border border-border">Continue with Google</button>
-          
-          <button onClick={enableLogMaster} className="w-full py-2 rounded-md border border-dashed border-primary/40 text-primary">Continue as Dev (Log Master)</button>
         </div>
 
         <div className="mt-6 text-sm text-center text-muted-foreground">

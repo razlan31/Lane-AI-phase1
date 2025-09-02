@@ -1,32 +1,41 @@
-// User profile management with Supabase stub
 import { supabase } from '@/integrations/supabase/client';
-
-// Mock user state for prototype
-let mockUser = {
-  id: 'user-1',
-  profile: {
-    onboarded: false,
-    role: null,
-    venture_basics: null,
-    founder_dna: null,
-    default_mode: 'workspace'
-  }
-};
 
 export const userProfile = {
   // Get current user profile
   async getProfile() {
-    // TODO: Replace with actual Supabase call
-    // const { data, error } = await supabase.from('profiles').select('*').single();
-    return { data: mockUser.profile, error: null };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { data: null, error: 'Not authenticated' };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      return { data, error };
+    } catch (error) {
+      return { data: null, error };
+    }
   },
 
   // Update profile
   async updateProfile(updates) {
-    // TODO: Replace with actual Supabase call
-    // const { data, error } = await supabase.from('profiles').update(updates).single();
-    mockUser.profile = { ...mockUser.profile, ...updates };
-    return { data: mockUser.profile, error: null };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { data: null, error: 'Not authenticated' };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
+        .select()
+        .maybeSingle();
+
+      return { data, error };
+    } catch (error) {
+      return { data: null, error };
+    }
   },
 
   // Mark user as onboarded

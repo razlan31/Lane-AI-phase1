@@ -8,22 +8,11 @@ const AuthWrapper = () => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [devBypass, setDevBypass] = useState(false);
+  
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
-
-    // Dev bypass: if enabled, skip auth setup entirely
-    const logMaster = (() => {
-      try { return localStorage.getItem('LOG_MASTER') === '1'; } catch { return false; }
-    })();
-
-    if (logMaster) {
-      setDevBypass(true);
-      setLoading(false);
-      return () => { mounted = false; };
-    }
 
     const setupAuth = async () => {
       try {
@@ -121,10 +110,6 @@ const AuthWrapper = () => {
     );
   }
 
-  // Dev bypass: render app when enabled
-  if (devBypass) {
-    return <App />;
-  }
 
   // Show main app if authenticated
   if (session && user) {
