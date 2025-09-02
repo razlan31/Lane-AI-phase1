@@ -275,8 +275,8 @@ export const useTools = () => {
     }
   };
 
-  // Convert tool output to KPI
-  const convertToKPI = async (runId, ventureId, blockId) => {
+  // Convert tool output to KPI - ENHANCED IMPLEMENTATION
+  const convertToKPI = async (runId, ventureId, kpiName = null) => {
     try {
       const run = toolRuns.find(r => r.id === runId);
       if (!run) throw new Error('Tool run not found');
@@ -284,20 +284,23 @@ export const useTools = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create KPI from tool output
-      const primaryOutput = Object.keys(run.outputs)[0];
+      // Extract primary output and value
+      const outputKeys = Object.keys(run.outputs);
+      const primaryOutput = outputKeys[0];
       const value = run.outputs[primaryOutput];
 
+      // Determine KPI name
       const toolDef = tools.find(t => t.id === run.tool_id);
-      const kpiName = (toolDef?.name || run.tool_id).toUpperCase();
+      const finalKpiName = kpiName || getKPINameFromTool(run.tool_id, primaryOutput) || (toolDef?.name || run.tool_id).toUpperCase();
 
+      // Create KPI record
       const { data, error } = await supabase
         .from('kpis')
         .insert({
           venture_id: ventureId,
-          name: kpiName,
+          name: finalKpiName,
           value: parseFloat(value) || value,
-          confidence_level: 'estimate'
+          confidence_level: 'tool_generated'
         })
         .select()
         .single();
@@ -314,10 +317,37 @@ export const useTools = () => {
     }
   };
 
-  // Get suggested blocks for a tool
-  const getSuggestedBlocks = async (toolId) => {
+  // Helper function to map tool outputs to KPI names
+  const getKPINameFromTool = (toolId, outputKey) => {
+    const kpiMap = {
+      'tool_roi_calc': 'ROI Percentage',
+      'tool_runway_calc': 'Runway (Months)', 
+      'tool_cac_calc': 'Customer Acquisition Cost',
+      'tool_ltv_calc': 'Customer Lifetime Value',
+      'tool_breakeven_calc': 'Break-even Units',
+      'tool_cashflow_proj': 'Projected Cash Flow',
+      'tool_roas_calc': 'Return on Ad Spend',
+      'tool_funnel_dropoff': 'Conversion Rate',
+      'tool_valuation_est': 'Business Valuation',
+      'tool_debt_repay': 'Monthly Payment',
+      'tool_sensitivity': 'Sensitivity Range',
+      'tool_concentration_risk': 'Concentration Index',
+      'tool_portfolio_diversification': 'Diversification Score',
+      'tool_personal_runway': 'Personal Runway (Months)',
+      'tool_workload_balance': 'Work-Life Balance Score',
+      'tool_burnout_risk': 'Burnout Risk Percentage',
+      'tool_viral_coeff': 'Viral Coefficient',
+      'tool_pipeline_velocity': 'Pipeline Velocity'
+    };
+    
+    return kpiMap[toolId] || outputKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Get suggested blocks for a tool - ENHANCED IMPLEMENTATION
+  const getSuggestedBlocks = async (toolId, toolOutputs = null) => {
     try {
-      const { data, error } = await supabase
+      // Get direct tool-block mappings
+      const { data: directLinks, error } = await supabase
         .from('tool_block_links')
         .select(`
           block_id,
@@ -326,7 +356,52 @@ export const useTools = () => {
         .eq('tool_id', toolId);
 
       if (error) throw error;
-      return data.map(link => link.blocks);
+      
+      const directBlocks = directLinks.map(link => link.blocks);
+      
+      // If we have tool outputs, suggest additional blocks based on results
+      if (toolOutputs && directBlocks.length < 3) {
+        const additionalBlocks = await getContextualBlockSuggestions(toolId, toolOutputs);
+        return [...directBlocks, ...additionalBlocks].slice(0, 5);
+      }
+      
+      return directBlocks.slice(0, 5);
+    } catch (err) {
+      setError(err.message);
+      return [];
+    }
+  };
+
+  // Get contextual block suggestions based on tool outputs
+  const getContextualBlockSuggestions = async (toolId, outputs) => {
+    try {
+      // Map tools to relevant block categories for contextual suggestions
+      const toolToCategories = {
+        'tool_roi_calc': ['Financial', 'Marketing'],
+        'tool_runway_calc': ['Financial', 'Operations'], 
+        'tool_cac_calc': ['Marketing', 'Financial'],
+        'tool_ltv_calc': ['Marketing', 'Growth'],
+        'tool_breakeven_calc': ['Financial', 'Operations'],
+        'tool_valuation_est': ['Financial', 'Growth'],
+        'tool_roas_calc': ['Marketing', 'Financial'],
+        'tool_funnel_dropoff': ['Marketing', 'Growth'],
+        'tool_cashflow_proj': ['Financial', 'Operations'],
+        'tool_sensitivity': ['Risk & Compliance', 'Financial'],
+        'tool_concentration_risk': ['Risk & Compliance', 'Portfolio'],
+        'tool_portfolio_diversification': ['Portfolio', 'Risk & Compliance']
+      };
+
+      const suggestedCategories = toolToCategories[toolId] || ['Operations'];
+      
+      const { data: blocks, error } = await supabase
+        .from('blocks')
+        .select('*')
+        .in('category', suggestedCategories)
+        .is('venture_id', null)
+        .limit(3);
+
+      if (error) throw error;
+      return blocks || [];
     } catch (err) {
       setError(err.message);
       return [];

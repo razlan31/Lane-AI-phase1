@@ -129,19 +129,19 @@ const PlaygroundCanvas = ({ className = "" }) => {
             <Badge variant="secondary">{blocks.length} blocks</Badge>
           </div>
 
-          <Tabs defaultValue="Business Model" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-auto">
-              {categories.slice(0, 6).map(category => {
+          <Tabs defaultValue="Financial" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 h-auto text-xs">
+              {categories.slice(0, 9).map(category => {
                 const Icon = category.icon;
                 const categoryBlocks = blocksByCategory[category.name] || [];
                 return (
                   <TabsTrigger 
                     key={category.name} 
                     value={category.name}
-                    className="flex flex-col gap-1 h-auto py-2"
+                    className="flex flex-col gap-1 h-auto py-2 px-1"
                   >
-                    <Icon className={`h-4 w-4 ${category.color}`} />
-                    <span className="text-xs">{category.name}</span>
+                    <Icon className={`h-3 w-3 ${category.color}`} />
+                    <span className="text-xs truncate">{category.name.split(' ')[0]}</span>
                     <Badge variant="outline" className="text-xs">
                       {categoryBlocks.length}
                     </Badge>
@@ -155,7 +155,7 @@ const PlaygroundCanvas = ({ className = "" }) => {
               if (categoryBlocks.length === 0) return null;
 
               return (
-                <TabsContent key={category.name} value={category.name} className="space-y-2">
+                <TabsContent key={category.name} value={category.name} className="space-y-2 max-h-96 overflow-auto">
                   {categoryBlocks.map(block => (
                     <Card
                       key={block.id}
@@ -168,8 +168,8 @@ const PlaygroundCanvas = ({ className = "" }) => {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{block.name}</h4>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {block.description}
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                              {block.description || 'No description available'}
                             </p>
                           </div>
                           <GripVertical className="h-4 w-4 text-muted-foreground" />

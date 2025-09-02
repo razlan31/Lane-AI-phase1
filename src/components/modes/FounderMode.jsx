@@ -18,6 +18,7 @@ import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { cn } from '../../lib/utils';
 import AICoPilot from '../chat/AICoPilot';
+import WarRoomBoard from '../founder-mode/WarRoomBoard';
 
 const FounderMode = ({ onClose, className }) => {
   const [activeTab, setActiveTab] = useState('war-room');
@@ -359,7 +360,12 @@ const FounderMode = ({ onClose, className }) => {
             </TabsContent>
 
             <TabsContent value="war-room" className="space-y-6">
-              {renderWarRoomBoard()}
+              <WarRoomBoard 
+                venture={{ id: 'current-venture', name: 'Current Venture' }}
+                onPromoteToScenario={(scenario) => console.log('Promote scenario:', scenario)}
+                onCreateWorksheet={(worksheet) => console.log('Create worksheet:', worksheet)}
+                onAnalyzeRisk={(risk) => console.log('Analyze risk:', risk)}
+              />
             </TabsContent>
           </Tabs>
         </div>
