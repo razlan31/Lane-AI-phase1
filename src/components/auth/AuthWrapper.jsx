@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import AuthPage from '../../pages/AuthPage';
 import App from '../../App';
 import { useToast } from '@/hooks/use-toast';
+import { TooltipProvider } from '../ui/tooltip';
+import { Toaster } from "sonner";
 
 const AuthWrapper = () => {
   const [session, setSession] = useState(null);
@@ -123,12 +125,22 @@ const AuthWrapper = () => {
 
   // Dev bypass: render app when enabled
   if (devBypass) {
-    return <App />;
+    return (
+      <TooltipProvider>
+        <App />
+        <Toaster />
+      </TooltipProvider>
+    );
   }
 
   // Show main app if authenticated
   if (session && user) {
-    return <App />;
+    return (
+      <TooltipProvider>
+        <App />
+        <Toaster />
+      </TooltipProvider>
+    );
   }
 
   // Show auth page for unauthenticated users
