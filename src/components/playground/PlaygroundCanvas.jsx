@@ -8,7 +8,7 @@ import { useBlocks } from '@/hooks/useBlocks';
 import AICopilot from '@/components/copilot/AICopilot';
 import { BlockDetailModal } from '@/components/blocks/BlockDetailModal';
 import { 
-  DragHandleDots2Icon, 
+  GripVertical, 
   Plus, 
   Save, 
   TrendingUp,
@@ -172,7 +172,7 @@ const PlaygroundCanvas = ({ className = "" }) => {
                               {block.description}
                             </p>
                           </div>
-                          <DragHandleDots2Icon className="h-4 w-4 text-muted-foreground" />
+                          <GripVertical className="h-4 w-4 text-muted-foreground" />
                         </div>
                         {block.tags && (
                           <div className="flex gap-1 mt-2">
