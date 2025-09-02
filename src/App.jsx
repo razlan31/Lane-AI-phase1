@@ -200,11 +200,16 @@ function App() {
     onHomeClick: () => setCurrentView('hq')
   };
 
-  // Render main content
   const renderMainContent = () => {
     switch (currentView) {
       case 'copilot':
-        return <AICopilotPage />;
+        // Temporarily return simpler component to avoid React context issues
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">AI Co-Pilot</h1>
+            <p className="text-muted-foreground">AI assistance is temporarily disabled while fixing React context issues.</p>
+          </div>
+        );
       case 'personal':
         return <PersonalPage />;
       case 'portfolio':
