@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, AlertTriangle, Users, Target, CreditCard } from 'lucide-react';
 
 // Supabase-ready hook for role-based KPI generation
