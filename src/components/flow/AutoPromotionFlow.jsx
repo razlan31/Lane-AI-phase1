@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
-import { AICopilot } from '@/components/copilot/AICopilot';
+import AICopilot from '@/components/copilot/AICopilot';
 
 const flowSteps = [
   {
