@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bot, Zap, Search, Command, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -7,9 +7,11 @@ import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 
 export const GlobalOrb = ({ context, ventureId }) => {
+  console.log('GlobalOrb: Starting component, React:', typeof useState);
   const [isExpanded, setIsExpanded] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const { activeSuggestion } = useCopilotManager();
+  // Temporarily disable custom hook
+  const activeSuggestion = null;
 
   // Mock notifications for demo
   useEffect(() => {
