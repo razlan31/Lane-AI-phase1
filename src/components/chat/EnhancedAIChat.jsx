@@ -1,0 +1,372 @@
+import { useState, useRef, useEffect } from 'react';
+import { 
+  MessageCircle, 
+  Send, 
+  Plus, 
+  Trash2, 
+  Edit3, 
+  Upload, 
+  Mic, 
+  History, 
+  Bot, 
+  User,
+  Paperclip,
+  FileText,
+  Image,
+  Check,
+  X
+} from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { cn } from '../../lib/utils';
+import { useEnhancedChat } from '../../hooks/useEnhancedChat';
+import { VoiceInputButton } from '../VoiceInputButton';
+
+const EnhancedAIChat = ({ 
+  isOpen = true, 
+  onToggle, 
+  context = 'global',
+  ventureId = null,
+  className 
+}) => {
+  const {
+    chatSessions,
+    activeChatId,
+    setActiveChatId,
+    messages,
+    activeChatInfo,
+    loading,
+    createNewChat,
+    addMessage,
+    renameChat,
+    deleteChat,
+    autoGenerateTitle
+  } = useEnhancedChat();
+
+  const [inputValue, setInputValue] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Initialize first chat if none exist
+  useEffect(() => {
+    if (!loading && chatSessions.length === 0) {
+      createNewChat('New Chat');
+    }
+  }, [loading, chatSessions.length, createNewChat]);
+
+  // Handle file upload
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    if (!files.length || !activeChatId) return;
+
+    const fileData = files.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type
+    }));
+
+    setUploadedFiles(prev => [...prev, ...fileData]);
+
+    // Send file upload message
+    await addMessage(
+      activeChatId,
+      `Uploaded ${files.length} file(s): ${files.map(f => f.name).join(', ')}`,
+      'user',
+      fileData
+    );
+
+    // Generate AI response
+    setTimeout(async () => {
+      const response = generateFileResponse(files);
+      await addMessage(activeChatId, response, 'assistant');
+    }, 1000);
+
+    event.target.value = '';
+  };
+
+  // Handle sending message
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || !activeChatId) return;
+
+    const userMessage = inputValue.trim();
+    setInputValue('');
+
+    // Add user message
+    await addMessage(activeChatId, userMessage, 'user');
+
+    // Auto-generate title if this is the first user message
+    const currentMessages = messages || [];
+    const userMessages = currentMessages.filter(m => m.role === 'user');
+    if (userMessages.length === 0) {
+      autoGenerateTitle(activeChatId, userMessage);
+    }
+
+    // Generate AI response
+    setTimeout(async () => {
+      const response = generateAIResponse(userMessage, context);
+      await addMessage(activeChatId, response, 'assistant');
+    }, 1000);
+  };
+
+  // Handle voice input
+  const handleVoiceTranscript = (transcript) => {
+    setInputValue(prev => prev + (prev ? ' ' : '') + transcript);
+  };
+
+  // Handle chat renaming
+  const handleStartRename = () => {
+    setNewTitle(activeChatInfo?.title || '');
+    setIsRenaming(true);
+  };
+
+  const handleSaveRename = async () => {
+    if (newTitle.trim() && activeChatId) {
+      await renameChat(activeChatId, newTitle.trim());
+    }
+    setIsRenaming(false);
+  };
+
+  const handleCancelRename = () => {
+    setIsRenaming(false);
+    setNewTitle('');
+  };
+
+  // Handle new chat creation
+  const handleNewChat = async () => {
+    await createNewChat();
+  };
+
+  // Handle chat deletion
+  const handleDeleteChat = async () => {
+    if (activeChatId && chatSessions.length > 1) {
+      await deleteChat(activeChatId);
+    }
+  };
+
+  // Generate AI responses
+  const generateAIResponse = (input, context) => {
+    const lowercaseInput = input.toLowerCase();
+    
+    if (lowercaseInput.includes('coffee') || lowercaseInput.includes('kiosk')) {
+      return "Great! I'll set up a Coffee Kiosk venture for you. I'm creating:\n\n• Revenue & Sales Dashboard\n• Daily Sales tracker\n• Inventory management\n• Customer analytics\n• Profit calculator\n\nShould I also add expense tracking worksheets?";
+    }
+    
+    if (lowercaseInput.includes('saas') || lowercaseInput.includes('software')) {
+      return "Perfect! Creating a SaaS business setup:\n\n• MRR Dashboard\n• Customer acquisition tracker\n• Churn analysis\n• Unit economics model\n• Runway calculator\n\nWould you like me to add subscription analytics?";
+    }
+    
+    return "I understand you want to work on that. Let me help by creating:\n\n• Custom dashboard for your needs\n• Relevant worksheets and calculators\n• Key performance indicators\n• Progress tracking tools\n\nCould you tell me more about your specific requirements?";
+  };
+
+  const generateFileResponse = (files) => {
+    const hasSpreadsheet = files.some(f => f.type.includes('csv') || f.type.includes('excel'));
+    const hasPDF = files.some(f => f.type.includes('pdf'));
+    
+    if (hasSpreadsheet) {
+      return "Perfect! I found financial data. Creating:\n\n📊 Revenue Dashboard\n📈 P&L Analysis\n💰 Cash Flow tracker\n📋 Monthly reports\n🎯 Key metrics\n\nProcessing your data now...";
+    }
+    
+    if (hasPDF) {
+      return "Analyzing your PDF documents. Creating:\n\n📊 Business insights\n📝 Key metrics extraction\n📈 Performance tracking\n📋 Document summary\n\nExtracting insights...";
+    }
+    
+    return "Files uploaded successfully! Analyzing to create relevant dashboards and worksheets...";
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <Card className={cn(
+        "fixed right-4 top-20 w-96 flex flex-col bg-card border-border shadow-lg z-40 h-[600px]",
+        className
+      )}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 border-b border-border bg-card/50">
+          <div className="flex items-center gap-2 flex-1">
+            <Bot className="h-4 w-4 text-primary" />
+            {isRenaming ? (
+              <div className="flex items-center gap-1 flex-1">
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="text-sm h-6 px-1"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSaveRename()}
+                  autoFocus
+                />
+                <Button size="sm" variant="ghost" onClick={handleSaveRename} className="h-6 w-6 p-0">
+                  <Check className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleCancelRename} className="h-6 w-6 p-0">
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span className="font-medium text-sm truncate flex-1">
+                  {activeChatInfo?.title || 'AI Co-Pilot'}
+                </span>
+                <Button size="sm" variant="ghost" onClick={handleStartRename} className="h-6 w-6 p-0">
+                  <Edit3 className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" onClick={() => setShowHistory(true)} className="h-6 w-6 p-0">
+              <History className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleNewChat} className="h-6 w-6 p-0">
+              <Plus className="h-3 w-3" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleDeleteChat} 
+              className="h-6 w-6 p-0"
+              disabled={chatSessions.length <= 1}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+            {onToggle && (
+              <Button size="sm" variant="ghost" onClick={onToggle} className="h-6 w-6 p-0">
+                ×
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 p-3 overflow-y-auto space-y-3">
+          {messages.map((message) => (
+            <div key={message.id} className={cn(
+              "flex gap-2",
+              message.role === 'user' ? "justify-end" : "justify-start"
+            )}>
+              {message.role === 'assistant' && (
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-3 w-3 text-primary" />
+                </div>
+              )}
+              <div className={cn(
+                "max-w-[80%] p-2 rounded-lg text-sm",
+                message.role === 'user' 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-muted text-foreground"
+              )}>
+                <div className="whitespace-pre-wrap">{message.content}</div>
+                {message.files && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {message.files.map((file, index) => (
+                      <div key={index} className="flex items-center gap-1 bg-background/20 px-2 py-1 rounded text-xs">
+                        {file.type.includes('csv') ? <FileText className="h-3 w-3" /> : 
+                         file.type.includes('image') ? <Image className="h-3 w-3" /> : 
+                         <Paperclip className="h-3 w-3" />}
+                        <span>{file.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {message.role === 'user' && (
+                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                  <User className="h-3 w-3" />
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="p-3 border-t border-border bg-card/50">
+          <div className="flex gap-2 mb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-8 w-8 p-0"
+            >
+              <Upload className="h-3 w-3" />
+            </Button>
+            <VoiceInputButton 
+              onTranscript={handleVoiceTranscript}
+              className="h-8 w-8 p-0"
+              size="sm"
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".csv,.xlsx,.xls,.pdf,.png,.jpg,.jpeg"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Upload files or describe your business..."
+              className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <Button
+              size="sm"
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim()}
+              className="h-8 w-8 p-0"
+            >
+              <Send className="h-3 w-3" />
+            </Button>
+          </div>
+          <div className="text-xs text-muted-foreground text-center">
+            Upload files, use voice input, or type to get started
+          </div>
+        </div>
+      </Card>
+
+      {/* Chat History Modal */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chat History</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {chatSessions.map((session) => (
+              <div
+                key={session.id}
+                className={cn(
+                  "p-3 border rounded-lg cursor-pointer hover:bg-muted/50",
+                  session.id === activeChatId && "bg-muted border-primary"
+                )}
+                onClick={() => {
+                  setActiveChatId(session.id);
+                  setShowHistory(false);
+                }}
+              >
+                <div className="font-medium text-sm">{session.title}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(session.updated_at).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default EnhancedAIChat;

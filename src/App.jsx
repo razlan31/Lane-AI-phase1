@@ -12,7 +12,7 @@ import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from './components/navigation/QuickDock';
-import AICoPilot from './components/chat/AICoPilot';
+import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
@@ -21,10 +21,9 @@ import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
 import AICopilotPage from './pages/AICopilotPage';
-import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
-import { GlobalOrb } from './components/GlobalOrb';
+
 
 function App() {
   const [currentView, setCurrentView] = useState('copilot'); // AI Co-Pilot first per spec
@@ -170,8 +169,6 @@ function App() {
     switch (currentView) {
       case 'copilot':
         return <AICopilotPage />;
-      case 'personal':
-        return <PersonalPage />;
       case 'portfolio':
         return <PortfolioDashboard />;
       case 'hq':
@@ -265,8 +262,6 @@ function App() {
         return <ToolsScratchpads ventures={ventures} />;
       case 'reports':
         return <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p>Global reports coming soon...</p></div>;
-      case 'personal':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Personal Dashboard</h1><p>Personal metrics coming soon...</p></div>;
       case 'settings':
         return <SettingsPage userProfile={userProfileData} />;
       // Dynamic venture views
@@ -324,9 +319,9 @@ function App() {
             </div>
           </div>
 
-          {/* AI Co-Pilot - Always Available */}
+          {/* AI Co-Pilot - Enhanced Version */}
           {showCoPilot && (
-            <AICoPilot 
+            <EnhancedAIChat 
               isOpen={showCoPilot}
               onToggle={() => setShowCoPilot(!showCoPilot)}
               context={currentView.startsWith('venture-') ? 'venture' : 'global'}
@@ -354,8 +349,6 @@ function App() {
             onChat={handleQuickActions.onChat}
           />
 
-          {/* Global AI Orb */}
-          <GlobalOrb />
 
           {/* Global Modals */}
           <CommandPalette 

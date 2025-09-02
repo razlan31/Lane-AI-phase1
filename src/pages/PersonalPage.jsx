@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import KpiCard from '@/components/primitives/KpiCard';
 import { PlusCircle, Save, TrendingUp, DollarSign, Clock, Target, Calendar, Zap } from 'lucide-react';
 
-export const PersonalPage = () => {
+export const PersonalPage = ({ isEmbedded = false }) => {
   const { personal, loading, createOrUpdatePersonal, generatePersonalKPIs } = usePersonal();
   const [isEditing, setIsEditing] = useState(!personal);
   const [formData, setFormData] = useState({
@@ -55,6 +55,61 @@ export const PersonalPage = () => {
 
   if (loading) {
     return <div className="flex items-center justify-center h-64">Loading personal data...</div>;
+  }
+
+  if (isEmbedded) {
+    return (
+      <div className="p-4 space-y-4">
+        {/* Personal KPIs */}
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">Personal Metrics</h4>
+          {loading ? (
+            <div className="space-y-2">
+              {[1, 2].map(i => (
+                <div key={i} className="h-16 bg-muted animate-pulse rounded"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {personalKpis.slice(0, 3).map((kpi, index) => (
+                <div key={index} className="p-2 border rounded-lg bg-card">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="text-sm font-medium">{kpi.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {kpi.unit === 'currency' ? `$${kpi.value.toLocaleString()}` :
+                         kpi.unit === 'hours' ? `${kpi.value}h` :
+                         kpi.unit === 'months' ? `${kpi.value}m` :
+                         kpi.unit === 'score' ? `${kpi.value}/100` :
+                         kpi.value}
+                      </div>
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded ${
+                      kpi.confidence === 'real' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {kpi.confidence}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">Quick Actions</h4>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" className="text-xs">
+              Update Info
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs">
+              View Full
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

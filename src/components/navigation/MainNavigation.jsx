@@ -12,10 +12,13 @@ import {
   ChevronRight,
   Plus,
   Gamepad2,
-  Upload
+  Upload,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { PersonalPage } from '../../pages/PersonalPage';
 
 const MainNavigation = ({ 
   currentView, 
@@ -26,6 +29,7 @@ const MainNavigation = ({
   onAddVenture,
   className 
 }) => {
+  const [personalExpanded, setPersonalExpanded] = useState(false);
   // Primary navigation items in correct order per spec
   const primaryItems = [
     { 
@@ -75,7 +79,8 @@ const MainNavigation = ({
       id: 'personal', 
       label: 'Personal', 
       icon: User, 
-      description: 'Your personal dashboard and life metrics' 
+      description: 'Your personal dashboard and life metrics',
+      isPersonal: true
     }
   ];
 
@@ -89,6 +94,36 @@ const MainNavigation = ({
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = currentView === item.id;
+        
+        if (item.isPersonal) {
+          return (
+            <div key={item.id} className="space-y-1">
+              <Button
+                variant={personalExpanded ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-between",
+                  isCollapsed && "px-2",
+                  personalExpanded && "bg-muted"
+                )}
+                onClick={() => setPersonalExpanded(!personalExpanded)}
+                title={isCollapsed ? `${item.label}: ${item.description}` : undefined}
+              >
+                <div className="flex items-center">
+                  <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                  {!isCollapsed && item.label}
+                </div>
+                {!isCollapsed && (
+                  personalExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+              {personalExpanded && !isCollapsed && (
+                <div className="ml-2 border-l-2 border-border pl-2">
+                  <PersonalPage isEmbedded={true} />
+                </div>
+              )}
+            </div>
+          );
+        }
         
         return (
           <Button
