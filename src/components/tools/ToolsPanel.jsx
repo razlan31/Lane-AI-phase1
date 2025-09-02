@@ -27,11 +27,12 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
   const { activeSuggestion, generateSuggestion, dismissSuggestion } = useCopilotManager();
 
   const toolCategories = [
-    { id: 'Finance', icon: DollarSign, color: 'text-green-600' },
-    { id: 'Marketing', icon: TrendingUp, color: 'text-blue-600' },
-    { id: 'Risk', icon: AlertTriangle, color: 'text-red-600' },
-    { id: 'Operations', icon: Users, color: 'text-purple-600' },
-    { id: 'Personal', icon: User, color: 'text-orange-600' }
+    { id: 'financial', icon: DollarSign, color: 'text-green-600' },
+    { id: 'marketing', icon: TrendingUp, color: 'text-blue-600' },
+    { id: 'risk', icon: AlertTriangle, color: 'text-red-600' },
+    { id: 'operations', icon: Users, color: 'text-purple-600' },
+    { id: 'personal', icon: User, color: 'text-orange-600' },
+    { id: 'growth', icon: TrendingUp, color: 'text-emerald-600' }
   ];
 
   const handleRunTool = async () => {

@@ -12,7 +12,10 @@ const categoryConfig = {
   financial: { label: 'Financial', color: 'green', icon: Calculator },
   marketing: { label: 'Marketing', color: 'purple', icon: BarChart3 },
   operations: { label: 'Operations', color: 'orange', icon: Settings },
-  strategy: { label: 'Strategy', color: 'blue', icon: Target }
+  strategy: { label: 'Strategy', color: 'blue', icon: Target },
+  risk: { label: 'Risk', color: 'red', icon: Settings },
+  personal: { label: 'Personal', color: 'indigo', icon: Settings },
+  growth: { label: 'Growth', color: 'emerald', icon: BarChart3 }
 };
 
 export const ToolsCatalog = ({ onToolSelect }) => {
