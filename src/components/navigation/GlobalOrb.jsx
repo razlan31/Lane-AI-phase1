@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 
-export const GlobalOrb = () => {
+export const GlobalOrb = ({ context, ventureId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const { activeSuggestion } = useCopilotManager();
@@ -153,3 +153,5 @@ export const GlobalOrb = () => {
     </div>
   );
 };
+
+export default GlobalOrb;
