@@ -400,6 +400,66 @@ export type Database = {
           },
         ]
       }
+      playground_links: {
+        Row: {
+          block_id: string | null
+          created_at: string
+          id: string
+          kpi_id: string | null
+          position: Json | null
+          session_id: string
+          worksheet_id: string | null
+        }
+        Insert: {
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          kpi_id?: string | null
+          position?: Json | null
+          session_id: string
+          worksheet_id?: string | null
+        }
+        Update: {
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          kpi_id?: string | null
+          position?: Json | null
+          session_id?: string
+          worksheet_id?: string | null
+        }
+        Relationships: []
+      }
+      playground_sessions: {
+        Row: {
+          canvas: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_metrics: {
         Row: {
           calculated_at: string
@@ -471,6 +531,33 @@ export type Database = {
         }
         Relationships: []
       }
+      scratchpad_notes: {
+        Row: {
+          created_at: string
+          id: string
+          linked_context: Json | null
+          tags: string[] | null
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linked_context?: Json | null
+          tags?: string[] | null
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linked_context?: Json | null
+          tags?: string[] | null
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           count: number
@@ -522,6 +609,66 @@ export type Database = {
           title?: string | null
           user_id?: string | null
           venture_id?: string | null
+        }
+        Relationships: []
+      }
+      tool_runs: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json | null
+          linked_context: Json | null
+          outputs: Json | null
+          tool_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs?: Json | null
+          linked_context?: Json | null
+          outputs?: Json | null
+          tool_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json | null
+          linked_context?: Json | null
+          outputs?: Json | null
+          tool_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tools: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          input_schema: Json | null
+          name: string
+          output_schema: Json | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id: string
+          input_schema?: Json | null
+          name: string
+          output_schema?: Json | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          input_schema?: Json | null
+          name?: string
+          output_schema?: Json | null
         }
         Relationships: []
       }
