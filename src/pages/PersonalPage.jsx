@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { KpiCard } from '@/components/primitives/KpiCard';
+import KpiCard from '@/components/primitives/KpiCard';
 import { PlusCircle, Save, TrendingUp, DollarSign, Clock, Target, Calendar, Zap } from 'lucide-react';
 
 export const PersonalPage = () => {
