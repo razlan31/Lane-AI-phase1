@@ -40,8 +40,31 @@ const AuthGate = () => {
       return;
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
+      
+      // Create sample data for new users
+      if (event === 'SIGNED_IN' && session?.user) {
+        setTimeout(async () => {
+          try {
+            // Check if user already has data
+            const { data: existingVentures } = await supabase
+              .from('ventures')
+              .select('id')
+              .eq('user_id', session.user.id)
+              .limit(1);
+            
+            // If no ventures exist, create sample data
+            if (!existingVentures || existingVentures.length === 0) {
+              await supabase.rpc('create_sample_data_for_user', { 
+                user_id: session.user.id 
+              });
+            }
+          } catch (error) {
+            console.error('Error creating sample data:', error);
+          }
+        }, 1000);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
