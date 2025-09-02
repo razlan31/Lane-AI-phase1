@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Supabase-ready hook for worksheets management
 export const useWorksheets = (ventureId = null) => {

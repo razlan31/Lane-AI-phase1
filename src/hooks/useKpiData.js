@@ -1,5 +1,5 @@
 // Mock data hooks - Supabase-ready structure
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Generate role-based KPIs based on user profile
 export const useRoleBasedKpis = (userRole, ventureType) => {
