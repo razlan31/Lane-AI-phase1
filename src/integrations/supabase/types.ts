@@ -612,6 +612,27 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_block_links: {
+        Row: {
+          block_id: string | null
+          created_at: string
+          id: string
+          tool_id: string
+        }
+        Insert: {
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          tool_id: string
+        }
+        Update: {
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          tool_id?: string
+        }
+        Relationships: []
+      }
       tool_runs: {
         Row: {
           created_at: string

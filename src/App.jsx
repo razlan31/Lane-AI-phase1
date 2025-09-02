@@ -11,7 +11,8 @@ import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
 import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
-import QuickDock from './components/navigation/QuickDock';
+import QuickDockOld from './components/navigation/QuickDock';
+import QuickDock from '@/components/dock/QuickDock';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
@@ -337,8 +338,11 @@ function App() {
             <FounderMode onClose={() => setShowFounderMode(false)} />
           )}
 
-          {/* Quick Actions Dock */}
-          <QuickDock 
+          {/* Auto-Promotion Flow Quick Dock */}
+          <QuickDock />
+
+          {/* Legacy Quick Actions Dock - for backward compatibility */}
+          <QuickDockOld 
             currentView={currentView}
             onAddWorksheet={handleQuickActions.onAddWorksheet}
             onAddDashboard={handleQuickActions.onAddDashboard}
@@ -350,6 +354,7 @@ function App() {
             onRunFlow={handleQuickActions.onRunFlow}
             onExport={handleQuickActions.onExport}
             onChat={handleQuickActions.onChat}
+            className="bottom-6 left-6"
           />
 
 
