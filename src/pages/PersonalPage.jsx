@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { usePersonal } from '@/hooks/usePersonal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export const PersonalPage = ({ isEmbedded = false }) => {
   const [newActivity, setNewActivity] = useState('');
   const [newGoal, setNewGoal] = useState('');
 
+  // Get personal KPIs
   const personalKPIs = generatePersonalKPIs();
 
   const handleSave = async () => {
