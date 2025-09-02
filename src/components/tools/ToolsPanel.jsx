@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTools } from '@/hooks/useTools';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import AICopilot from '@/components/copilot/AICopilot';
 import { ToolResultsPanel } from './ToolResultsPanel';
+import ToolInputForm from './ToolInputForm';
+import { useToast } from '@/hooks/use-toast';
 import { Calculator, TrendingUp, DollarSign, Users, AlertTriangle, User, X } from 'lucide-react';
 
 const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [selectedTool, setSelectedTool] = useState(null);
   const [toolInputs, setToolInputs] = useState({});
   const [toolResult, setToolResult] = useState(null);
@@ -18,7 +21,7 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
   const {
     tools,
     toolRuns,
-    loading,
+    loading: toolsLoading,
     runTool,
     convertToKPI,
     getSuggestedBlocks,
@@ -33,20 +36,45 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
     { id: 'risk', icon: AlertTriangle, color: 'text-red-600' },
     { id: 'operations', icon: Users, color: 'text-purple-600' },
     { id: 'personal', icon: User, color: 'text-orange-600' },
-    { id: 'growth', icon: TrendingUp, color: 'text-emerald-600' }
+    { id: 'growth', icon: TrendingUp, color: 'text-emerald-600' },
+    { id: 'strategy', icon: Calculator, color: 'text-indigo-600' }
   ];
 
   const handleRunTool = async () => {
     if (!selectedTool) return;
-
-    const result = await runTool(selectedTool.id, toolInputs);
-    if (result.success) {
-      setToolResult(result);
+    
+    setLoading(true);
+    try {
+      const result = await runTool(selectedTool.id, toolInputs);
       
-      await generateSuggestion(
-        { type: 'tool', sourceId: selectedTool.id },
-        { toolId: selectedTool.id, outputs: result.outputs }
-      );
+      if (result.success) {
+        setToolResult(result);
+        toast({
+          title: "Tool completed successfully",
+          description: `${selectedTool.name} has finished processing your inputs.`,
+        });
+
+        // Generate AI suggestion for this tool run
+        await generateSuggestion('tool', {
+          toolId: selectedTool.id,
+          outputs: result.outputs
+        });
+      } else {
+        toast({
+          title: "Tool execution failed", 
+          description: result.error || "An error occurred while running the tool.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error running tool:', error);
+      toast({
+        title: "Error",
+        description: "Failed to execute tool. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,137 +91,36 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
     await dismissSuggestion(suggestion.id, action.action !== 'dismiss');
   };
 
-  const renderToolInput = (field, type) => {
-    switch (type) {
-      case 'number':
-        return (
-          <Input
-            type="number"
-            placeholder={`Enter ${field.replace('_', ' ')}`}
-            value={toolInputs[field] || ''}
-            onChange={(e) => setToolInputs(prev => ({
-              ...prev,
-              [field]: parseFloat(e.target.value) || 0
-            }))}
-            className="w-full"
-          />
-        );
-      default:
-        return (
-          <Input
-            placeholder={`Enter ${field.replace('_', ' ')}`}
-            value={toolInputs[field] || ''}
-            onChange={(e) => setToolInputs(prev => ({
-              ...prev,
-              [field]: e.target.value
-            }))}
-            className="w-full"
-          />
-        );
-    }
-  };
-
   // Enhanced result handling with functional buttons
   const handleConvertToKPI = async () => {
     if (!toolResult?.data?.id) return;
     
     try {
-      // This would normally get venture ID from context, using mock for now
-      const ventureId = 'sample-venture-id'; // Replace with actual venture selection
-      const result = await convertToKPI(toolResult.data.id, ventureId, null);
+      setLoading(true);
+      const result = await convertToKPI(toolResult.data.id, null, 'Generated KPI');
       
       if (result) {
-        console.log('Successfully converted to KPI:', result);
-        // Show success notification
+        toast({
+          title: "KPI Created",
+          description: `Successfully converted tool output to KPI: ${result.name}`,
+        });
+      } else {
+        toast({
+          title: "KPI Creation Failed",
+          description: "Could not create KPI from tool output.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error converting to KPI:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create KPI. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleLinkToBlock = async () => {
-    if (!toolResult?.data?.id) return;
-    
-    try {
-      // Get suggested blocks for this tool
-      const suggestedBlocks = await getSuggestedBlocks(selectedTool.id);
-      
-      if (suggestedBlocks.length > 0) {
-        // For demo, link to first suggested block
-        const blockId = suggestedBlocks[0].id;
-        console.log('Linking to block:', blockId);
-        // This would open a block selection modal in a real implementation
-      }
-    } catch (error) {
-      console.error('Error linking to block:', error);
-    }
-  };
-
-  const renderToolResult = () => {
-    if (!toolResult) return null;
-
-    return (
-      <Card className="mt-4 bg-accent/50">
-        <CardHeader>
-          <CardTitle className="text-sm">Results</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {/* Results Display */}
-          <div className="space-y-2">
-            {Object.entries(toolResult.outputs).map(([key, value]) => (
-              <div key={key} className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground capitalize">
-                  {key.replace('_', ' ')}:
-                </span>
-                <Badge variant="secondary">{Array.isArray(value) ? value.join(', ') : value}</Badge>
-              </div>
-            ))}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="flex-1"
-              onClick={handleConvertToKPI}
-              disabled={!toolResult?.data?.id}
-            >
-              Convert to KPI
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="flex-1"
-              onClick={handleLinkToBlock}
-              disabled={!toolResult?.data?.id}
-            >
-              Link to Block
-            </Button>
-          </div>
-
-          {/* Additional suggestion if available */}
-          {activeSuggestion && activeSuggestion.context.sourceId === selectedTool?.id && (
-            <div className="mt-3 p-2 bg-blue-50 rounded text-xs">
-              <p className="text-blue-700 font-medium">{activeSuggestion.message}</p>
-              <div className="flex gap-1 mt-1">
-                {activeSuggestion.actions?.map((action, index) => (
-                  <Button
-                    key={index}
-                    size="sm"
-                    variant={action.primary ? "default" : "ghost"}
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleSuggestionAction(activeSuggestion, action)}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
   };
 
   if (!isOpen) return null;
@@ -212,7 +139,7 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
         </CardHeader>
 
         <CardContent className="flex-1 overflow-hidden">
-          {activeSuggestion && activeSuggestion.context.type === 'tool' && (
+          {activeSuggestion && activeSuggestion.context === 'tool' && (
             <AICopilot
               context={activeSuggestion.context}
               suggestion={activeSuggestion}
@@ -240,7 +167,7 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
                       <div key={category.id} className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${category.color}`} />
-                          <h3 className="font-medium text-sm">{category.id}</h3>
+                          <h3 className="font-medium text-sm capitalize">{category.id}</h3>
                           <Badge variant="secondary" className="text-xs">
                             {categoryTools.length}
                           </Badge>
@@ -279,28 +206,25 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
                     <h3 className="font-medium">{selectedTool.name}</h3>
                   </div>
 
-                  <div className="space-y-3">
-                    {selectedTool.input_schema && Object.entries(selectedTool.input_schema.properties || {}).map(([field, schema]) => (
-                      <div key={field} className="space-y-1">
-                        <label className="text-sm font-medium capitalize">
-                          {field.replace('_', ' ')}
-                        </label>
-                        {renderToolInput(field, schema.type)}
-                      </div>
-                    ))}
-                  </div>
+                  {/* Enhanced Tool Input Form */}
+                  <ToolInputForm
+                    tool={selectedTool}
+                    inputs={toolInputs}
+                    onInputChange={(field, value) => setToolInputs(prev => ({
+                      ...prev,
+                      [field]: value
+                    }))}
+                    onRun={handleRunTool}
+                    loading={loading}
+                  />
 
-                  <Button onClick={handleRunTool} className="w-full">
-                    Calculate
-                  </Button>
-
-                  {renderToolResult()}
-
-                  {/* Tool Results Panel with suggested blocks */}
+                  {/* Tool Results with Enhanced Integration */}
                   {toolResult && (
                     <ToolResultsPanel 
-                      toolRun={toolResult} 
-                      suggestedBlocks={getSuggestedBlocks(selectedTool?.id, toolResult.outputs)}
+                      toolRun={toolResult.data || toolResult} 
+                      suggestedBlocks={getSuggestedBlocks(selectedTool?.id, toolResult?.outputs)}
+                      onConvertToKPI={handleConvertToKPI}
+                      loading={loading}
                     />
                   )}
                 </div>

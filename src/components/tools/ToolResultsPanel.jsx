@@ -6,7 +6,7 @@ import { ArrowRight, Link, BarChart3 } from 'lucide-react';
 import { useBlocks } from '@/hooks/useBlocks';
 import { supabase } from '@/integrations/supabase/client';
 
-export const ToolResultsPanel = ({ toolRun, suggestedBlocks = [] }) => {
+export const ToolResultsPanel = ({ toolRun, suggestedBlocks = [], onConvertToKPI, loading = false }) => {
   const { createBlock, generateWorksheetFromBlocks } = useBlocks();
 
   // Handle linking to a block (enhanced with database integration)
@@ -133,9 +133,13 @@ export const ToolResultsPanel = ({ toolRun, suggestedBlocks = [] }) => {
 
         {/* Quick Actions */}
         <div className="flex gap-2">
-          <Button size="sm" onClick={handleConvertToKPI}>
+          <Button 
+            size="sm" 
+            onClick={onConvertToKPI || handleConvertToKPI}
+            disabled={loading}
+          >
             <BarChart3 className="h-4 w-4 mr-1" />
-            Convert to KPI
+            {loading ? 'Creating...' : 'Convert to KPI'}
           </Button>
           <Button size="sm" variant="outline">
             <Link className="h-4 w-4 mr-1" />

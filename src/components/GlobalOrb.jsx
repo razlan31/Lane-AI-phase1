@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Bot, MessageSquare, X, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useChatSessions } from '@/hooks/useChatSessions';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import { VoiceInputButton } from '@/components/VoiceInputButton';
 import AICopilot from '@/components/copilot/AICopilot';
+import { useToast } from '@/hooks/use-toast';
 
 export const GlobalOrb = ({ className = "", context = null, ventureId = null }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [input, setInput] = useState('');
+  const { toast } = useToast();
   
   const { 
     sessions, 

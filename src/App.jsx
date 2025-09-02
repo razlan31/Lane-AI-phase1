@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './components/dashboards/HQDashboard';
-import VentureHub from './components/workspaces/VentureHub';
+import { Toaster } from "sonner"
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
@@ -393,6 +393,7 @@ function App() {
             isOpen={exportModalOpen}
             onClose={() => setExportModalOpen(false)}
           />
+          <Toaster />
         </div>
       </TooltipProvider>
     </DisplaySettingsProvider>

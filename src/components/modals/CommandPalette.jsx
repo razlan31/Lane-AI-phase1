@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Search, FileText, Building2, Calculator, BarChart3, Settings, Users, Zap } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const CommandPalette = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const { toast } = useToast();
 
   const commands = [
     {
@@ -15,7 +18,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
       title: 'Create New Venture',
       description: 'Start a new business venture',
       category: 'Create',
-      action: () => console.log('Create venture')
+      action: () => {
+        toast({ title: "Creating venture...", description: "Opening venture creation form" });
+        // Trigger venture creation modal
+        const event = new CustomEvent('openVentureModal');
+        window.dispatchEvent(event);
+        onClose();
+      }
     },
     {
       id: 'new-worksheet',
@@ -23,7 +32,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
       title: 'New Worksheet',
       description: 'Create financial model or calculator',
       category: 'Create',
-      action: () => console.log('Create worksheet')
+      action: () => {
+        toast({ title: "Creating worksheet...", description: "Opening worksheet builder" });
+        // Trigger worksheet creation
+        const event = new CustomEvent('openWorksheetModal');
+        window.dispatchEvent(event);
+        onClose();
+      }
     },
     {
       id: 'new-dashboard',
@@ -31,7 +46,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
       title: 'New Dashboard',
       description: 'Build custom analytics dashboard',
       category: 'Create',
-      action: () => console.log('Create dashboard')
+      action: () => {
+        toast({ title: "Creating dashboard...", description: "Opening dashboard builder" });
+        // Trigger dashboard creation
+        const event = new CustomEvent('openDashboardModal');
+        window.dispatchEvent(event);
+        onClose();
+      }
     },
     {
       id: 'import-data',
@@ -39,7 +60,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
       title: 'Import Data',
       description: 'Upload CSV, Excel, or PDF files',
       category: 'Data',
-      action: () => console.log('Import data')
+      action: () => {
+        toast({ title: "Opening import...", description: "Launching data import wizard" });
+        // Trigger import modal
+        const event = new CustomEvent('openImportModal');
+        window.dispatchEvent(event);
+        onClose();
+      }
     },
     {
       id: 'founder-mode',
@@ -47,7 +74,54 @@ const CommandPalette = ({ isOpen, onClose }) => {
       title: 'Founder Mode',
       description: 'Strategic decision war room',
       category: 'Tools',
-      action: () => console.log('Open Founder Mode')
+      action: () => {
+        toast({ title: "Launching Founder Mode...", description: "Opening strategic command center" });
+        // Trigger founder mode
+        const event = new CustomEvent('openFounderMode');
+        window.dispatchEvent(event);
+        onClose();
+      }
+    },
+    {
+      id: 'search-blocks',
+      icon: Search,
+      title: 'Search Blocks',
+      description: 'Find building blocks and templates',
+      category: 'Navigate',
+      action: () => {
+        toast({ title: "Searching blocks...", description: "Opening block browser" });
+        // Navigate to blocks
+        window.location.hash = '#blocks';
+        onClose();
+      }
+    },
+    {
+      id: 'view-ventures',
+      icon: Building2,
+      title: 'View All Ventures',
+      description: 'Browse your venture portfolio',
+      category: 'Navigate', 
+      action: () => {
+        toast({ title: "Opening ventures...", description: "Navigating to venture workspace" });
+        // Navigate to ventures
+        window.location.hash = '#workspace';
+        onClose();
+      }
+    },
+    {
+      id: 'settings',
+      icon: Settings,
+      title: 'Settings',
+      description: 'Configure your preferences',
+      category: 'System',
+      action: () => {
+        toast({ title: "Opening settings...", description: "Navigating to settings page" });
+        // Navigate to settings
+        window.location.hash = '#settings';
+        onClose();
+      }
+    }
+  ];
     },
     {
       id: 'settings',
