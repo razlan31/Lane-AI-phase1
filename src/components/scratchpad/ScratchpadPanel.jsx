@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useScratchpad } from '@/hooks/useScratchpad';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
+import { ScratchpadSuggestions } from './ScratchpadSuggestions';
 import AICopilot from '@/components/copilot/AICopilot';
 import { FileText, Plus, Search, Tag, X } from 'lucide-react';
 
@@ -81,6 +82,11 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
         </CardHeader>
 
         <CardContent className="flex-1 overflow-hidden flex flex-col space-y-4">
+          {/* AI Suggestions based on current text */}
+          {newNote && (
+            <ScratchpadSuggestions text={newNote} />
+          )}
+
           {activeSuggestion && activeSuggestion.context.type === 'scratchpad' && (
             <AICopilot
               context={activeSuggestion.context}
