@@ -8,21 +8,33 @@ const AuthWrapper = () => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [devBypass, setDevBypass] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
 
+    // Dev bypass: if enabled, skip auth setup entirely
+    const logMaster = (() => {
+      try { return localStorage.getItem('LOG_MASTER') === '1'; } catch { return false; }
+    })();
+
+    if (logMaster) {
+      setDevBypass(true);
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
     const setupAuth = async () => {
       try {
         // Set up auth state listener FIRST
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
+          (event, session) => {
             if (!mounted) return;
-            
+
             setSession(session);
             setUser(session?.user ?? null);
-            
+
             // Handle user sign-in events
             if (event === 'SIGNED_IN' && session?.user) {
               // Create profile if it doesn't exist
@@ -33,7 +45,7 @@ const AuthWrapper = () => {
                     .select('id')
                     .eq('id', session.user.id)
                     .maybeSingle();
-                  
+
                   if (!existingProfile) {
                     await supabase
                       .from('profiles')
@@ -43,19 +55,19 @@ const AuthWrapper = () => {
                         full_name: session.user.user_metadata?.full_name || null
                       });
                   }
-                  
+
                   // Create sample data only for new users
                   const { data: existingVentures } = await supabase
                     .from('ventures')
                     .select('id')
                     .eq('user_id', session.user.id)
                     .limit(1);
-                  
+
                   if (!existingVentures || existingVentures.length === 0) {
-                    await supabase.rpc('create_sample_data_for_user', { 
-                      user_id: session.user.id 
+                    await supabase.rpc('create_sample_data_for_user', {
+                      user_id: session.user.id
                     });
-                    
+
                     if (mounted) {
                       toast({
                         title: "Welcome to Lane AI!",
@@ -68,7 +80,7 @@ const AuthWrapper = () => {
                 }
               }, 1000);
             }
-            
+
             setLoading(false);
           }
         );
@@ -107,6 +119,11 @@ const AuthWrapper = () => {
         </div>
       </div>
     );
+  }
+
+  // Dev bypass: render app when enabled
+  if (devBypass) {
+    return <App />;
   }
 
   // Show main app if authenticated
