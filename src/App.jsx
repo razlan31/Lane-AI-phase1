@@ -13,6 +13,7 @@ import OnboardingComplete from './components/onboarding/OnboardingComplete';
 import MainNavigation from './components/navigation/MainNavigation';
 import QuickDockOld from './components/navigation/QuickDock';
 import QuickDock from '@/components/dock/QuickDock';
+import { GlobalOrb } from './components/GlobalOrb';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
 import FounderMode from './components/modes/FounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
@@ -25,6 +26,7 @@ import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
 import { PortfolioDashboard } from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
+import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 
 
 function App() {
@@ -338,10 +340,7 @@ function App() {
             <FounderMode onClose={() => setShowFounderMode(false)} />
           )}
 
-          {/* Auto-Promotion Flow Quick Dock */}
-          <QuickDock />
-
-          {/* Legacy Quick Actions Dock - for backward compatibility */}
+          {/* QuickDock - Main Auto-Promotion Flow */}
           <QuickDockOld 
             currentView={currentView}
             onAddWorksheet={handleQuickActions.onAddWorksheet}
@@ -354,8 +353,15 @@ function App() {
             onRunFlow={handleQuickActions.onRunFlow}
             onExport={handleQuickActions.onExport}
             onChat={handleQuickActions.onChat}
-            className="bottom-6 left-6"
           />
+
+          {/* GlobalOrb with AI Copilot Integration */}
+          {!showCoPilot && (
+            <GlobalOrb 
+              context={currentView.startsWith('venture-') ? 'venture' : currentView}
+              ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
+            />
+          )}
 
 
           {/* Global Modals */}

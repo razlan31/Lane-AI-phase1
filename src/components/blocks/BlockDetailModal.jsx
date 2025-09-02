@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle2, Circle, Clock, FileText, BarChart3, Calculator, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, FileText, BarChart3, Calculator, MessageSquare, Plus, Workflow } from 'lucide-react';
 import { useNotes } from '@/hooks/useNotes';
+import { useBlocks } from '@/hooks/useBlocks';
 import { QuickNoteModal } from '@/components/notes/QuickNoteModal';
 
 const STATUS_ICONS = {
@@ -22,9 +23,14 @@ const STATUS_OPTIONS = [
 export const BlockDetailModal = ({ block, isOpen, onClose, onStatusChange }) => {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const { notes } = useNotes('block', block.id);
+  const { generateWorksheetFromBlocks, getBlockDependencies } = useBlocks();
 
   const handleStatusChange = (newStatus) => {
     onStatusChange(block.id, newStatus);
+  };
+
+  const handleGenerateWorksheet = async () => {
+    await generateWorksheetFromBlocks([block.id], block.venture_id);
   };
 
   return (
@@ -80,6 +86,35 @@ export const BlockDetailModal = ({ block, isOpen, onClose, onStatusChange }) => 
                 </div>
               </div>
             )}
+
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleGenerateWorksheet}
+                className="flex items-center gap-2"
+              >
+                <Calculator className="w-4 h-4" />
+                Generate Worksheet
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add to Venture
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+              >
+                <Workflow className="w-4 h-4" />
+                View Dependencies
+              </Button>
+            </div>
 
             {/* Linked Content Tabs */}
             <Tabs defaultValue="notes" className="w-full">

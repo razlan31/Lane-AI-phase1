@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, MessageSquare, X } from 'lucide-react';
+import { Bot, MessageSquare, X, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useChatSessions } from '@/hooks/useChatSessions';
+import { useCopilotManager } from '@/hooks/useCopilotManager';
 import { VoiceInputButton } from '@/components/VoiceInputButton';
+import AICopilot from '@/components/copilot/AICopilot';
 
 export const GlobalOrb = ({ className = "", context = null, ventureId = null }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -15,6 +18,12 @@ export const GlobalOrb = ({ className = "", context = null, ventureId = null }) 
     createSession, 
     addMessage 
   } = useChatSessions(ventureId);
+
+  const { 
+    activeSuggestion, 
+    generateSuggestion, 
+    dismissSuggestion 
+  } = useCopilotManager();
 
   const [activeSessionId, setActiveSessionId] = useState(null);
 
@@ -73,13 +82,22 @@ export const GlobalOrb = ({ className = "", context = null, ventureId = null }) 
   return (
     <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
       {!isExpanded ? (
-        // Orb State
-        <Button
-          onClick={handleToggle}
-          className="w-14 h-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg transition-all duration-300 hover:scale-110"
-        >
-          <Bot className="w-6 h-6 text-primary-foreground" />
-        </Button>
+        // Orb State with Suggestion Indicator
+        <div className="relative">
+          <Button
+            onClick={handleToggle}
+            className="w-14 h-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg transition-all duration-300 hover:scale-110"
+          >
+            <Bot className="w-6 h-6 text-primary-foreground" />
+          </Button>
+          {activeSuggestion && (
+            <div className="absolute -top-2 -right-2">
+              <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center animate-pulse">
+                <Lightbulb className="w-3 h-3 text-white" />
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         // Expanded Chat Panel
         <div className="bg-background border border-border rounded-lg shadow-xl w-80 h-96 flex flex-col">
@@ -99,6 +117,24 @@ export const GlobalOrb = ({ className = "", context = null, ventureId = null }) 
             </Button>
           </div>
 
+          {/* AI Suggestion */}
+          {activeSuggestion && (
+            <div className="p-3 border-b">
+              <AICopilot 
+                suggestion={activeSuggestion}
+                context={context}
+                layout="strip"
+                onSuggestionAction={(action) => {
+                  if (action === 'accept') {
+                    dismissSuggestion(activeSuggestion.id, true);
+                  } else {
+                    dismissSuggestion(activeSuggestion.id, false);
+                  }
+                }}
+              />
+            </div>
+          )}
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {activeSessionId && messages[activeSessionId]?.map((message, index) => (
@@ -115,8 +151,9 @@ export const GlobalOrb = ({ className = "", context = null, ventureId = null }) 
             ))}
             
             {context && (
-              <div className="text-xs text-muted-foreground p-2 bg-blue-50 rounded">
-                Context: {context}
+              <div className="text-xs text-muted-foreground p-2 bg-accent/20 rounded border">
+                <Badge variant="secondary" className="text-xs">Context</Badge>
+                <span className="ml-2">{context}</span>
               </div>
             )}
           </div>
