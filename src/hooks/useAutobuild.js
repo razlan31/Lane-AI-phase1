@@ -1,22 +1,31 @@
 import React, { useState } from 'react';
-import { useVentures } from './useVentures';
-import { useBlocks } from './useBlocks';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAutobuild = () => {
   const [loading, setLoading] = useState(false);
-  const { createVenture } = useVentures();
 
   const autobuildVenture = async (ventureData) => {
     setLoading(true);
     try {
-      // 1. Create the venture
-      const ventureResult = await createVenture(ventureData);
-      if (!ventureResult.success) {
-        throw new Error('Failed to create venture');
-      }
+      // 1. Create the venture first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      const venture = ventureResult.data;
+      const ventureInsert = {
+        user_id: user.id,
+        name: ventureData.name,
+        description: ventureData.description || null,
+        type: ventureData.type || null,
+        stage: ventureData.stage || null
+      };
+
+      const { data: venture, error: ventureError } = await supabase
+        .from('ventures')
+        .insert(ventureInsert)
+        .select('*')
+        .single();
+
+      if (ventureError) throw ventureError;
 
       // 2. Generate KPIs with confidence levels
       const kpis = generateKPIs(ventureData);
@@ -30,7 +39,7 @@ export const useAutobuild = () => {
       const relevantBlocks = await getRelevantBlocks(ventureData);
       await assignBlocks(venture.id, relevantBlocks);
 
-      return { success: true, data: venture };
+      return { success: true, data: { ...venture, status: venture.stage ? 'active' : 'draft', kpis: [] } };
     } catch (error) {
       return { success: false, error };
     } finally {
@@ -148,9 +157,6 @@ export const useAutobuild = () => {
 
   const createKPIs = async (ventureId, kpis) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       const kpiInserts = kpis.map(kpi => ({
         venture_id: ventureId,
         name: kpi.name,
@@ -196,7 +202,7 @@ export const useAutobuild = () => {
       // Get blocks that are relevant to this venture type and stage
       const { data: blocks, error } = await supabase
         .from('blocks')
-        .select('id, category, name')
+        .select('id, category, name, description')
         .is('venture_id', null); // Only get template blocks
 
       if (error) throw error;
@@ -212,7 +218,7 @@ export const useAutobuild = () => {
         relevantCategories.push('Product', 'Marketing');
       }
 
-      return blocks.filter(block => 
+      return (blocks || []).filter(block => 
         relevantCategories.includes(block.category)
       ).slice(0, 20); // Limit to 20 most relevant blocks
     } catch (error) {
@@ -228,7 +234,7 @@ export const useAutobuild = () => {
         venture_id: ventureId,
         category: block.category,
         name: block.name,
-        description: `Auto-assigned: ${block.name}`,
+        description: block.description || `Auto-assigned: ${block.name}`,
         status: 'planned'
       }));
 

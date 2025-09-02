@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAICopilotStore } from "../../hooks/useAICopilotStore";
 import { useVentures } from "../../hooks/useVentures";
+import { useAutobuild } from "../../hooks/useAutobuild";
 import VentureCardsFlow from "../venture/VentureCardsFlow";
 
 /**
@@ -38,7 +39,7 @@ const NewVentureModal = ({ isOpen, onClose, onCreateVenture }) => {
   };
 
   const handleQuickSetupComplete = async (ventureData) => {
-    const result = await createVenture(ventureData);
+    const result = await autobuildVenture(ventureData);
     if (result.success) {
       onCreateVenture?.(result.data);
       onClose();
