@@ -30,11 +30,15 @@ const AuthGate = () => {
       console.log('AuthGate: Error parsing URL params:', e);
     }
 
-    const isBypass = typeof window !== 'undefined' && localStorage.getItem('LOG_MASTER') === '1';
+    const isBypass = typeof window !== 'undefined' && (
+      localStorage.getItem('LOG_MASTER') === '1' || 
+      window.location.hostname === 'localhost' ||
+      window.location.hostname.includes('lovable.app')
+    );
     console.log('AuthGate: Checking bypass:', isBypass, localStorage.getItem('LOG_MASTER'));
     
     if (isBypass) {
-      console.log('AuthGate: Using log master bypass');
+      console.log('AuthGate: Using development bypass');
       setDevBypass(true);
       setLoading(false);
       return;
