@@ -100,5 +100,5 @@ export const useVentures = () => {
     }
   };
 
-  return { ventures, loading, createVenture, updateVenture };
+  return { ventures, loading };
 };

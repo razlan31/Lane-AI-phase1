@@ -116,11 +116,11 @@ const AuthWrapper = ({ children }) => {
 
   // Show main app if authenticated
   if (session && user) {
-    return children;
+    return <>{children}</>;
   }
 
   // Show auth page for unauthenticated users
   return <AuthPage />;
 };
 
-export default AuthWrapper;
+export const AuthWrapper = AuthWrapper;

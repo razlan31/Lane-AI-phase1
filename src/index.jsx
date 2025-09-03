@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import AuthWrapper from "./components/auth/AuthWrapper.jsx";
+import { AuthWrapper } from "./components/auth/AuthWrapper.jsx";
 import ErrorBoundary from "./components/auth/ErrorBoundary.jsx";
 import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
 import { TooltipProvider } from "./components/ui/tooltip";
