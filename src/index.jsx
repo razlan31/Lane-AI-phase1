@@ -1,5 +1,5 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import AuthWrapper from "./components/auth/AuthWrapper.jsx";
@@ -8,8 +8,8 @@ import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from "sonner";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <ErrorBoundary>
       <DisplaySettingsProvider>
         <TooltipProvider>
@@ -20,5 +20,5 @@ createRoot(document.getElementById("root")).render(
         </TooltipProvider>
       </DisplaySettingsProvider>
     </ErrorBoundary>
-  </StrictMode>
+  </React.StrictMode>
 );

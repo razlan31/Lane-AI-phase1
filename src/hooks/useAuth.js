@@ -14,7 +14,9 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Generate sample data for new users
+        // Sample data creation disabled temporarily  
+        // TODO: Re-enable when create_sample_data_for_user RPC is available
+        /*
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             try {
@@ -27,6 +29,7 @@ export const useAuth = () => {
             }
           }, 1000);
         }
+        */
       }
     );
 

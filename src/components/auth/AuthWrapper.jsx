@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AuthPage from '../../pages/AuthPage';
 import { useToast } from '@/hooks/use-toast';
 
-const AuthWrapper = () => {
+const AuthWrapper = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -45,7 +45,9 @@ const AuthWrapper = () => {
                     });
                 }
 
-                // Create sample data only for new users
+                // Sample data creation disabled temporarily
+                // TODO: Re-enable when create_sample_data_for_user RPC is available
+                /*
                 const { data: existingVentures } = await supabase
                   .from('ventures')
                   .select('id')
@@ -64,6 +66,7 @@ const AuthWrapper = () => {
                     });
                   }
                 }
+                */
               } catch (error) {
                 console.error('Error setting up user data:', error);
               }
@@ -113,7 +116,7 @@ const AuthWrapper = () => {
 
   // Show main app if authenticated
   if (session && user) {
-    return <App />;
+    return children;
   }
 
   // Show auth page for unauthenticated users
