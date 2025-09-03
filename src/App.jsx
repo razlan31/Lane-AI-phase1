@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 // CACHE BUST v3: Force Vite rebuild after React import standardization
-import { TooltipProvider } from './components/ui/tooltip';
 import HQDashboard from './components/dashboards/HQDashboard';
 import { Toaster } from "sonner"
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
-import { DisplaySettingsProvider } from './hooks/useDisplaySettings.jsx';
+import { useDisplaySettings } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
 import { useVentures } from './hooks/useVentures';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +48,7 @@ function App() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { ventures, loading: venturesLoading, createVenture } = useVentures();
   const [currentUser, setCurrentUser] = useState(null);
+  const { showPlainExplanations } = useDisplaySettings();
 
   // Get current user and check onboarding status
   useEffect(() => {
@@ -292,89 +292,84 @@ function App() {
   }
 
   return (
-    <DisplaySettingsProvider>
-      <TooltipProvider>
-        <div className="min-h-screen bg-background w-full">
-          <div className="flex h-screen overflow-hidden">
-            {/* Main Navigation */}
-            <MainNavigation 
-              currentView={currentView}
-              onViewChange={setCurrentView}
-              ventures={ventures}
-              isCollapsed={sidebarCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-              onAddVenture={() => setNewVentureModalOpen(true)}
-            />
+    <div className="min-h-screen bg-background w-full">
+      <div className="flex h-screen overflow-hidden">
+        {/* Main Navigation */}
+        <MainNavigation 
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          ventures={ventures}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onAddVenture={() => setNewVentureModalOpen(true)}
+        />
 
-            {/* Main Content Area with TopBar */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* TopBar */}
-              <TopBar 
-                onSearchClick={handleTopBarActions.onSearchClick}
-                onProfileClick={handleTopBarActions.onProfileClick}
-                onFounderMode={handleTopBarActions.onFounderMode}
-                onHomeClick={handleTopBarActions.onHomeClick}
-                onToggleCoPilot={() => setShowCoPilot(!showCoPilot)}
-              />
-
-              {/* Main Content */}
-              <main className="flex-1 overflow-auto">
-                {renderMainContent()}
-              </main>
-            </div>
-          </div>
-
-          {/* AI Co-Pilot - Enhanced Version */}
-          {showCoPilot && (
-            <EnhancedAIChat 
-              isOpen={showCoPilot}
-              onToggle={() => setShowCoPilot(!showCoPilot)}
-              context={currentView.startsWith('venture-') ? 'venture' : 'global'}
-              ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
-            />
-          )}
-
-          {/* Founder Mode Overlay */}
-          {showFounderMode && (
-            <FounderMode onClose={() => setShowFounderMode(false)} />
-          )}
-
-          {/* QuickDock - Main Auto-Promotion Flow */}
-          <ErrorBoundary>
-            <QuickDock />
-          </ErrorBoundary>
-
-          {/* GlobalOrb with AI Copilot Integration */}
-          {!showCoPilot && (
-            <ErrorBoundary>
-              <GlobalOrb 
-                context={currentView.startsWith('venture-') ? 'venture' : currentView}
-                ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
-              />
-            </ErrorBoundary>
-          )}
-
-
-          {/* Global Modals */}
-          <CommandPalette 
-            isOpen={commandPaletteOpen} 
-            onClose={() => setCommandPaletteOpen(false)} 
+        {/* Main Content Area with TopBar */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* TopBar */}
+          <TopBar 
+            onSearchClick={handleTopBarActions.onSearchClick}
+            onProfileClick={handleTopBarActions.onProfileClick}
+            onFounderMode={handleTopBarActions.onFounderMode}
+            onHomeClick={handleTopBarActions.onHomeClick}
+            onToggleCoPilot={() => setShowCoPilot(!showCoPilot)}
           />
-          
-          <NewVentureModal
-            isOpen={newVentureModalOpen}
-            onClose={() => setNewVentureModalOpen(false)}
-            onCreateVenture={handleCreateVenture}
-          />
-          
-          <ExportModal
-            isOpen={exportModalOpen}
-            onClose={() => setExportModalOpen(false)}
-          />
-          <Toaster />
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto">
+            {renderMainContent()}
+          </main>
         </div>
-      </TooltipProvider>
-    </DisplaySettingsProvider>
+      </div>
+
+      {/* AI Co-Pilot - Enhanced Version */}
+      {showCoPilot && (
+        <EnhancedAIChat 
+          isOpen={showCoPilot}
+          onToggle={() => setShowCoPilot(!showCoPilot)}
+          context={currentView.startsWith('venture-') ? 'venture' : 'global'}
+          ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
+        />
+      )}
+
+      {/* Founder Mode Overlay */}
+      {showFounderMode && (
+        <FounderMode onClose={() => setShowFounderMode(false)} />
+      )}
+
+      {/* QuickDock - Main Auto-Promotion Flow */}
+      <ErrorBoundary>
+        <QuickDock />
+      </ErrorBoundary>
+
+      {/* GlobalOrb with AI Copilot Integration */}
+      {!showCoPilot && (
+        <ErrorBoundary>
+          <GlobalOrb 
+            context={currentView.startsWith('venture-') ? 'venture' : currentView}
+            ventureId={currentView.startsWith('venture-') ? currentView.split('-')[1] : null}
+          />
+        </ErrorBoundary>
+      )}
+
+      {/* Global Modals */}
+      <CommandPalette 
+        isOpen={commandPaletteOpen} 
+        onClose={() => setCommandPaletteOpen(false)} 
+      />
+      
+      <NewVentureModal
+        isOpen={newVentureModalOpen}
+        onClose={() => setNewVentureModalOpen(false)}
+        onCreateVenture={handleCreateVenture}
+      />
+      
+      <ExportModal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+      />
+      <Toaster />
+    </div>
   );
 }
 

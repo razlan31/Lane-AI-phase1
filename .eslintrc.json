@@ -14,7 +14,14 @@
         "patterns": [
           {
             "group": ["react"],
-            "message": "Do not import default React inside src/hooks/*.js. Only import hooks directly: import { useState } from 'react'."
+            "message": "In hooks, only import specific functions: import { useState } from 'react'. In components, import React only if JSX is used."
+          }
+        ],
+        "paths": [
+          {
+            "name": "react",
+            "importNames": ["default"],
+            "message": "Import React default only in JSX components. Use named imports for hooks: import { useState } from 'react'."
           }
         ]
       }
