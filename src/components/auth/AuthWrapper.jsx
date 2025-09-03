@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AuthPage from '../../pages/AuthPage';
-import { useToast } from '@/hooks/use-toast';
 
 export const AuthWrapper = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  
-  const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
@@ -59,12 +56,7 @@ export const AuthWrapper = ({ children }) => {
                     user_id: session.user.id
                   });
 
-                  if (mounted) {
-                    toast({
-                      title: "Welcome to Lane AI!",
-                      description: "Sample data has been created to get you started."
-                    });
-                  }
+                  console.log("Welcome to Lane AI! Sample data has been created to get you started.");
                 }
                 */
               } catch (error) {
@@ -100,7 +92,7 @@ export const AuthWrapper = ({ children }) => {
   return () => {
     mounted = false;
   };
-}, [toast]);
+}, []);
 
   if (loading) {
     return (
