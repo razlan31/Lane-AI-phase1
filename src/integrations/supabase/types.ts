@@ -538,23 +538,35 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          experience_level: string | null
           full_name: string | null
           id: string
+          onboarded: boolean | null
+          role: string | null
           updated_at: string
+          venture_type: string | null
         }
         Insert: {
           created_at?: string
           email: string
+          experience_level?: string | null
           full_name?: string | null
           id?: string
+          onboarded?: boolean | null
+          role?: string | null
           updated_at?: string
+          venture_type?: string | null
         }
         Update: {
           created_at?: string
           email?: string
+          experience_level?: string | null
           full_name?: string | null
           id?: string
+          onboarded?: boolean | null
+          role?: string | null
           updated_at?: string
+          venture_type?: string | null
         }
         Relationships: []
       }
