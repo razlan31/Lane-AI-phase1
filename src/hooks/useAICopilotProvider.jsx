@@ -1,24 +1,16 @@
 import React, { createContext, useContext } from 'react';
-import { useAICopilotStore as useZustandStore } from './useAICopilotStore.js';
 
-const AICopilotContext = createContext();
+// Zustand store doesn't need a React provider - it manages its own state
+// This is just a pass-through component for consistency with other providers
+const AICopilotContext = createContext(true);
 
 export const AICopilotProvider = ({ children }) => {
-  // Zustand store doesn't need a provider, but we create this wrapper for consistency
-  const store = useZustandStore();
-  
   return (
-    <AICopilotContext.Provider value={store}>
+    <AICopilotContext.Provider value={true}>
       {children}
     </AICopilotContext.Provider>
   );
 };
 
-export const useAICopilotStore = () => {
-  const context = useContext(AICopilotContext);
-  if (!context) {
-    console.error('useAICopilotStore called outside of AICopilotProvider! Component stack:', new Error().stack);
-    throw new Error('useAICopilotStore must be used within an AICopilotProvider. Check that your component is wrapped with AICopilotProvider in index.jsx');
-  }
-  return context;
-};
+// Re-export the actual Zustand store hook
+export { useAICopilotStore } from './useAICopilotStore.js';
