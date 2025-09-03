@@ -7,6 +7,7 @@ import TopBar from './components/navigation/TopBar';
 import { useDisplaySettings } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
 import { useVentures } from './hooks/useVentures';
+import { useRouter } from './hooks/useRouter';
 import { supabase } from '@/integrations/supabase/client';
 
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';

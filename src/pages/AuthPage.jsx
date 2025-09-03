@@ -105,13 +105,22 @@ const AuthPage = () => {
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${window.location.origin}/#/reset-password`
       });
       
       if (error) {
         setError(error.message);
+        toast({
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive"
+        });
       } else {
         setSuccess("Password reset email sent! Please check your inbox.");
+        toast({
+          title: "Reset Email Sent",
+          description: "Please check your email and follow the link to reset your password."
+        });
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
