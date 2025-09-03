@@ -2,8 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { AuthProvider } from "./hooks/useAuth.js";
-import { VenturesProvider } from "./hooks/useVentures.js";
+import { AuthProvider } from "./hooks/useAuth.jsx";
+import { VenturesProvider } from "./hooks/useVentures.jsx";
+import { AICopilotProvider } from "./hooks/useAICopilotProvider.jsx";
 import ErrorBoundary from "./components/auth/ErrorBoundary.jsx";
 import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <TooltipProvider>
           <AuthProvider>
             <VenturesProvider>
-              <App />
+              <AICopilotProvider>
+                <App />
+              </AICopilotProvider>
             </VenturesProvider>
           </AuthProvider>
           <Toaster />

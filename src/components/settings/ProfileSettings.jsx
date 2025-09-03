@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { User, Building2, TrendingUp, Brain, Target, DollarSign, Users, Zap, Mail } from 'lucide-react';
 import { sendTestEmail } from '../../lib/email';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.jsx';
 import { useToast } from '../../hooks/use-toast';
 
 const ProfileSettings = ({ userProfile }) => {

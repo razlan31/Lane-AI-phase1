@@ -27,8 +27,8 @@ export const DisplaySettingsProvider = ({ children }) => {
 export const useDisplaySettings = () => {
   const context = useContext(DisplaySettingsContext);
   if (!context) {
-    console.error('useDisplaySettings called outside of DisplaySettingsProvider!');
-    throw new Error('useDisplaySettings must be used within a DisplaySettingsProvider. Make sure the component is wrapped with DisplaySettingsProvider.');
+    console.error('useDisplaySettings called outside of DisplaySettingsProvider! Component stack:', new Error().stack);
+    throw new Error('useDisplaySettings must be used within a DisplaySettingsProvider. Check that your component is wrapped with DisplaySettingsProvider in index.jsx');
   }
   return context;
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useVentures } from '@/hooks/useVentures';
+import { useVentures } from '@/hooks/useVentures.jsx';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, TrendingUp, Target, Activity } from 'lucide-react';

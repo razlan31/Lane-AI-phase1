@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuth } from './useAuth.jsx';
 
 const VenturesContext = createContext();
 
@@ -162,7 +162,8 @@ export const VenturesProvider = ({ children }) => {
 export const useVentures = () => {
   const context = useContext(VenturesContext);
   if (!context) {
-    throw new Error('useVentures must be used within a VenturesProvider');
+    console.error('useVentures called outside of VenturesProvider! Component stack:', new Error().stack);
+    throw new Error('useVentures must be used within a VenturesProvider. Check that your component is wrapped with VenturesProvider in index.jsx');
   }
   return context;
 };

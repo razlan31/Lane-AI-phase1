@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 // CACHE BUST v4: Fixed circular imports and provider setup
 import HQDashboard from './components/dashboards/HQDashboard';
 import EnvChecker from './components/EnvChecker';
@@ -9,8 +9,8 @@ import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
 import { useDisplaySettings } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
-import { useVentures } from './hooks/useVentures';
-import { useAuth } from './hooks/useAuth';
+import { useVentures } from './hooks/useVentures.jsx';
+import { useAuth } from './hooks/useAuth.jsx';
 import { useRouter } from './hooks/useRouter';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,7 +38,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 
 function App() {
-  console.log('App component rendering...');
+  console.log('App component rendering...', { React: !!React, useState: !!React.useState });
   
   // All hooks must be called before any conditional returns
   const [currentView, setCurrentView] = useState('copilot');

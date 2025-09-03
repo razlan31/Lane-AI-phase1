@@ -143,7 +143,8 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    console.error('useAuth called outside of AuthProvider! Component stack:', new Error().stack);
+    throw new Error('useAuth must be used within an AuthProvider. Check that your component is wrapped with AuthProvider in index.jsx');
   }
   return context;
 };

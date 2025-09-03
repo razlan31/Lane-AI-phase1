@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.jsx';
 import AuthPage from '../../pages/AuthPage';
 
 export const AuthWrapper = ({ children }) => {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 // CACHE BUST: Force rebuild after React import standardization
-import { useAICopilotStore } from "../../hooks/useAICopilotStore";
-import { useVentures } from "../../hooks/useVentures";
+import { useAICopilotStore } from "../../hooks/useAICopilotProvider.jsx";
+import { useVentures } from "../../hooks/useVentures.jsx";
 import { useAutobuild } from "../../hooks/useAutobuild";
 import VentureCardsFlow from "../venture/VentureCardsFlow";
 

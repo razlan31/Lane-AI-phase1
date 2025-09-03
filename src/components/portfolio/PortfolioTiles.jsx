@@ -3,7 +3,7 @@ import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { formatNumber } from '../../lib/utils';
-import { useVentures } from '../../hooks/useVentures';
+import { useVentures } from '../../hooks/useVentures.jsx';
 
 const PortfolioTiles = ({ onVentureClick }) => {
   const { ventures, loading } = useVentures();

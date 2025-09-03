@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useBlocks } from '@/hooks/useBlocks';
 import { useTools } from '@/hooks/useTools';
-import { useVentures } from '@/hooks/useVentures';
+import { useVentures } from '@/hooks/useVentures.jsx';
 
 const commandCategories = {
   tools: { label: 'Tools', icon: Calculator, color: 'blue' },
