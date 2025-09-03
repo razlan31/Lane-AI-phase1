@@ -1,19 +1,19 @@
-import { useState, useCallback } from "react";
+import { create } from 'zustand';
 
-// CACHE BUST v2: Force Vite to rebuild React chunks after import standardization  
-// AI Co-Pilot store for managing chat sessions
-
-/**
- * AI Co-Pilot Store Hook
- * - Manages multiple chat sessions
- * - Shared across components (modals, pages)
- * - Persistent chat history
- */
-export const useAICopilotStore = () => {
-  const [chats, setChats] = useState({});
-  const [activeChatId, setActiveChatId] = useState(null);
-
-  const createNewChat = useCallback((initialMessage = null) => {
+export const useAICopilotStore = create((set) => ({
+  ventures: [],
+  chats: {},
+  activeChatId: null,
+  
+  // Venture management
+  addVenture: (venture) =>
+    set((state) => ({
+      ventures: [...state.ventures, venture],
+    })),
+  clearVentures: () => set({ ventures: [] }),
+  
+  // Chat management
+  createNewChat: (initialMessage = null) => {
     const chatId = `chat_${Date.now()}`;
     const defaultMessage = {
       role: "system",
@@ -27,56 +27,54 @@ export const useAICopilotStore = () => {
       createdAt: new Date(),
     };
 
-    setChats(prev => ({
-      ...prev,
-      [chatId]: newChat,
+    set((state) => ({
+      chats: {
+        ...state.chats,
+        [chatId]: newChat,
+      },
+      activeChatId: chatId,
     }));
-    setActiveChatId(chatId);
-    return chatId;
-  }, []);
-
-  const deleteChat = useCallback((chatId) => {
-    setChats(prev => {
-      const updated = { ...prev };
-      delete updated[chatId];
-      return updated;
-    });
     
-    if (activeChatId === chatId) {
-      const remainingChats = Object.keys(chats).filter(id => id !== chatId);
-      setActiveChatId(remainingChats.length > 0 ? remainingChats[0] : null);
-    }
-  }, [activeChatId, chats]);
-
-  const renameChat = useCallback((chatId, newName) => {
-    setChats(prev => ({
-      ...prev,
-      [chatId]: {
-        ...prev[chatId],
-        name: newName,
+    return chatId;
+  },
+  
+  deleteChat: (chatId) =>
+    set((state) => {
+      const updated = { ...state.chats };
+      delete updated[chatId];
+      
+      const remainingChats = Object.keys(updated);
+      const newActiveChatId = state.activeChatId === chatId 
+        ? (remainingChats.length > 0 ? remainingChats[0] : null)
+        : state.activeChatId;
+      
+      return {
+        chats: updated,
+        activeChatId: newActiveChatId,
+      };
+    }),
+  
+  renameChat: (chatId, newName) =>
+    set((state) => ({
+      chats: {
+        ...state.chats,
+        [chatId]: {
+          ...state.chats[chatId],
+          name: newName,
+        },
       },
-    }));
-  }, []);
-
-  const addMessage = useCallback((chatId, message) => {
-    setChats(prev => ({
-      ...prev,
-      [chatId]: {
-        ...prev[chatId],
-        messages: [...prev[chatId].messages, message],
+    })),
+  
+  addMessage: (chatId, message) =>
+    set((state) => ({
+      chats: {
+        ...state.chats,
+        [chatId]: {
+          ...state.chats[chatId],
+          messages: [...state.chats[chatId].messages, message],
+        },
       },
-    }));
-  }, []);
-
-  return {
-    chats,
-    activeChatId,
-    setActiveChatId,
-    createNewChat,
-    deleteChat,
-    renameChat,
-    addMessage,
-  };
-};
-
-export default useAICopilotStore;
+    })),
+  
+  setActiveChatId: (chatId) => set({ activeChatId: chatId }),
+}));

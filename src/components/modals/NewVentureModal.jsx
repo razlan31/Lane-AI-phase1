@@ -12,7 +12,7 @@ import VentureCardsFlow from "../venture/VentureCardsFlow";
  * - Quick Setup shows step-by-step venture creation flow
  */
 const NewVentureModal = ({ isOpen, onClose, onCreateVenture }) => {
-  const { activeChatId, addMessage, chats } = useAICopilotStore();
+  const { ventures, addVenture, activeChatId, addMessage, chats } = useAICopilotStore();
   const { createVenture } = useVentures();
   const { autobuildVenture, loading: autobuildLoading } = useAutobuild();
   const [mode, setMode] = useState("ai-chat"); // "ai-chat" | "quick-setup"

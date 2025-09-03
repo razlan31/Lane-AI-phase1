@@ -1,98 +1,9 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import AuthPage from '../../pages/AuthPage';
 
 export const AuthWrapper = ({ children }) => {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-  const setupAuth = async () => {
-    try {
-      // Set up auth state listener FIRST
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (!mounted) return;
-
-          setSession(session);
-          setUser(session?.user ?? null);
-
-          // Handle user sign-in events
-          if (event === 'SIGNED_IN' && session?.user) {
-            // Create profile if it doesn't exist
-            setTimeout(async () => {
-              try {
-                const { data: existingProfile } = await supabase
-                  .from('profiles')
-                  .select('id, onboarded')
-                  .eq('id', session.user.id)
-                  .maybeSingle();
-
-                if (!existingProfile) {
-                  await supabase
-                    .from('profiles')
-                    .insert({
-                      id: session.user.id,
-                      email: session.user.email,
-                      full_name: session.user.user_metadata?.full_name || null,
-                      onboarded: false
-                    });
-                }
-
-                // Sample data creation disabled temporarily
-                // TODO: Re-enable when create_sample_data_for_user RPC is available
-                /*
-                const { data: existingVentures } = await supabase
-                  .from('ventures')
-                  .select('id')
-                  .eq('user_id', session.user.id)
-                  .limit(1);
-
-                if (!existingVentures || existingVentures.length === 0) {
-                  await supabase.rpc('create_sample_data_for_user', {
-                    user_id: session.user.id
-                  });
-
-                  console.log("Welcome to Lane AI! Sample data has been created to get you started.");
-                }
-                */
-              } catch (error) {
-                console.error('Error setting up user data:', error);
-              }
-            }, 1000);
-          }
-
-          setLoading(false);
-        }
-      );
-
-      // THEN check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-
-      return () => {
-        mounted = false;
-        subscription.unsubscribe();
-      };
-    } catch (error) {
-      console.error('Auth setup error:', error);
-      if (mounted) setLoading(false);
-    }
-  };
-
-  setupAuth();
-
-  return () => {
-    mounted = false;
-  };
-}, []);
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -105,13 +16,10 @@ export const AuthWrapper = ({ children }) => {
     );
   }
 
-
-  // Show main app if authenticated
-  if (session && user) {
-    return <>{children}</>;
+  if (!user) {
+    return <AuthPage />;
   }
 
-  // Show auth page for unauthenticated users
-  return <AuthPage />;
+  return <>{children}</>;
 };
 
