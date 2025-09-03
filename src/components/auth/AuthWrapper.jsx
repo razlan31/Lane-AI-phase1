@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AuthPage from '../../pages/AuthPage';
-import App from '../../App';
 import { useToast } from '@/hooks/use-toast';
 
 const AuthWrapper = () => {

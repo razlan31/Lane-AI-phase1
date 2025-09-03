@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import App from "./App.jsx";
 import AuthWrapper from "./components/auth/AuthWrapper.jsx";
 import ErrorBoundary from "./components/auth/ErrorBoundary.jsx";
 import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
@@ -12,7 +13,9 @@ createRoot(document.getElementById("root")).render(
     <ErrorBoundary>
       <DisplaySettingsProvider>
         <TooltipProvider>
-          <AuthWrapper />
+          <AuthWrapper>
+            <App />
+          </AuthWrapper>
           <Toaster />
         </TooltipProvider>
       </DisplaySettingsProvider>
