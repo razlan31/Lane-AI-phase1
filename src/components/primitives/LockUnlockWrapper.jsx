@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Lock, Crown, Zap } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
 import { usePricingTier } from '../../hooks/usePricingTier';
 
@@ -94,65 +94,84 @@ const LockUnlockWrapper = ({
 
   if (showTooltip) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div>
-              <LockedContent />
-            </div>
-          </TooltipTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            className={`relative ${className} ${isUnlocked ? '' : 'opacity-60'}`}
+            onClick={isUnlocked ? undefined : () => setShowUpgradeModal(true)}
+          >
+            {/* Overlay for locked content */}
+            {!isUnlocked && (
+              <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg cursor-pointer">
+                <div className="text-center p-4">
+                  <LockIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">{unlockMessage}</p>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowUpgradeModal(true);
+                    }}
+                  >
+                    <UpgradeIcon className="h-4 w-4 mr-2" />
+                    {upgradeButtonText}
+                  </Button>
+                </div>
+              </div>
+            )}
+            {children}
+          </div>
+        </TooltipTrigger>
+        {!isUnlocked && (
           <TooltipContent>
-            <p>Upgrade to {tierInfo?.name} to unlock this feature</p>
+            <p>{tooltipMessage}</p>
           </TooltipContent>
-        </Tooltip>
+        )}
 
-        {/* Upsell Modal */}
-        <Dialog open={showUpsellModal} onOpenChange={setShowUpsellModal}>
-          <DialogContent className="max-w-md">
+        <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                {tierInfo?.icon && <tierInfo.icon className={cn("h-5 w-5", tierInfo.color)} />}
-                Upgrade to {tierInfo?.name}
+                <UpgradeIcon className="h-5 w-5 text-primary" />
+                Upgrade Required
               </DialogTitle>
+              <DialogDescription>
+                {upgradeMessage}
+              </DialogDescription>
             </DialogHeader>
-            
             <div className="space-y-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{tierInfo?.price}</p>
-                <p className="text-sm text-muted-foreground">Unlock all features</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-medium">What you'll get:</h4>
-                <ul className="space-y-1">
-                  {tierInfo?.features.map((feature, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">What you'll get:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <CheckIcon className="h-4 w-4 text-green-600" />
                       {feature}
                     </li>
                   ))}
                 </ul>
               </div>
-
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleUpgrade}
+                  onClick={() => setShowUpgradeModal(false)}
+                  variant="outline" 
                   className="flex-1"
-                  variant="default"
                 >
-                  Upgrade Now
+                  Maybe Later
                 </Button>
                 <Button 
-                  onClick={() => setShowUpsellModal(false)}
-                  variant="outline"
+                  onClick={onUpgrade}
+                  className="flex-1"
                 >
-                  Cancel
+                  <UpgradeIcon className="h-4 w-4 mr-2" />
+                  Upgrade Now
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
-      </TooltipProvider>
+      </Tooltip>
     );
   }
 

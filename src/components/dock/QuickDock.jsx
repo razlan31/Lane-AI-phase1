@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ScratchpadPanel from '@/components/scratchpad/ScratchpadPanel';
 import ToolsPanel from '@/components/tools/ToolsPanel';
 import { FileText, Calculator, Layout, Target } from 'lucide-react';
@@ -45,44 +45,41 @@ const QuickDock = ({ className = "" }) => {
   ];
 
   return (
-    <TooltipProvider>
-      <div className={`fixed bottom-4 right-4 z-40 ${className}`}>
-        <div className="bg-background/95 backdrop-blur-sm border border-border rounded-full p-2 shadow-lg">
-          {dockItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Tooltip key={item.id}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={item.action}
-                    className="h-10 w-10 rounded-full hover:bg-primary/10"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="flex items-center gap-2">
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                    <div className="text-xs text-muted-foreground">{item.description}</div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+    <div className={`fixed bottom-4 right-4 z-40 ${className}`}>
+      {/* Show scratchpad if active */}
+      {showScratchpad && (
+        <div className="absolute bottom-16 right-0 mb-4">
+          <ScratchpadPanel 
+            ventureId={ventureId}
+            onClose={() => setShowScratchpad(false)}
+          />
         </div>
+      )}
 
-        <ScratchpadPanel 
-          isOpen={scratchpadOpen} 
-          onClose={() => setScratchpadOpen(false)} 
-        />
-        <ToolsPanel 
-          isOpen={toolsOpen} 
-          onClose={() => setToolsOpen(false)} 
-        />
+      {/* Quick action buttons */}
+      <div className="flex flex-col gap-2">
+        {quickActions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <Tooltip key={action.id}>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant={action.variant || "outline"}
+                  className={`w-12 h-12 p-0 rounded-full shadow-lg border-2 ${action.className || ''}`}
+                  onClick={action.action}
+                >
+                  <Icon className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>{action.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </div>
-    </TooltipProvider>
+    </div>
   );
 };
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 // CACHE BUST v3: Force Vite rebuild after React import standardization
 import HQDashboard from './components/dashboards/HQDashboard';
-import { Toaster } from "sonner"
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
@@ -368,7 +367,6 @@ function App() {
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
       />
-      <Toaster />
     </div>
   );
 }

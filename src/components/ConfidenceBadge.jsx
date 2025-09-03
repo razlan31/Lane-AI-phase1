@@ -1,7 +1,7 @@
 // No React import needed
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, HelpCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const CONFIDENCE_CONFIG = {
   real: {
@@ -29,21 +29,19 @@ export const ConfidenceBadge = ({ level, className = '' }) => {
   const Icon = config.icon;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge 
-            variant="outline" 
-            className={`text-xs ${config.color} ${className}`}
-          >
-            <Icon className="w-3 h-3 mr-1" />
-            {config.label}
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{config.tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge 
+          variant="outline" 
+          className={`text-xs ${config.color} ${className}`}
+        >
+          <Icon className="w-3 h-3 mr-1" />
+          {config.label}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{config.tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };

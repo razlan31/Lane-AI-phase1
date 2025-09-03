@@ -1,7 +1,7 @@
 // No React import needed
 import { Plus, Activity, Play, Download, MessageCircle, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
 
 const QuickActionsDock = ({ 
@@ -60,36 +60,34 @@ const QuickActionsDock = ({
   ];
 
   return (
-    <TooltipProvider>
-      <div className={cn(
-        "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50",
-        "flex items-center gap-2 p-2 bg-background/95 backdrop-blur-sm",
-        "border border-border rounded-full shadow-lg",
-        className
-      )}>
-        {actions.map((action) => (
+    <div className={cn(
+      "fixed bottom-4 right-4 z-40 flex flex-col gap-2",
+      className
+    )}>
+      {actions.map((action) => {
+        const Icon = action.icon;
+        return (
           <Tooltip key={action.id}>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
                 size="sm"
-                onClick={action.onClick}
+                variant={action.variant || "outline"}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-accent",
-                  action.isPro && "text-amber-600 hover:bg-amber-50"
+                  "w-12 h-12 p-0 rounded-full shadow-lg border-2",
+                  action.className
                 )}
+                onClick={action.action}
               >
-                <action.icon className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm">{action.label}</span>
+                <Icon className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="left">
               <p>{action.tooltip}</p>
             </TooltipContent>
           </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
+        );
+      })}
+    </div>
   );
 };
 
