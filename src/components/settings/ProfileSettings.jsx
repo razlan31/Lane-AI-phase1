@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { User, Building2, TrendingUp, Brain, Target, DollarSign, Users, Zap } from 'lucide-react';
+import { User, Building2, TrendingUp, Brain, Target, DollarSign, Users, Zap, Mail } from 'lucide-react';
+import { sendTestEmail } from '../../lib/email';
+import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/use-toast';
 
 const ProfileSettings = ({ userProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [profileData, setProfileData] = useState({
     role: userProfile?.role || 'founder',
     ventureType: userProfile?.ventureType || 'tech_startup',
@@ -80,6 +86,35 @@ const ProfileSettings = ({ userProfile }) => {
   const handleCancel = () => {
     // Reset to original data
     setIsEditing(false);
+  };
+
+  const handleTestEmail = async () => {
+    if (!user?.email) {
+      toast({
+        title: "Error",
+        description: "No email address found for current user",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsTestingEmail(true);
+    try {
+      await sendTestEmail(user.email);
+      toast({
+        title: "Email sent!",
+        description: `Test email sent successfully to ${user.email}`,
+      });
+    } catch (error) {
+      console.error('Test email failed:', error);
+      toast({
+        title: "Email failed",
+        description: error.message || "Failed to send test email",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTestingEmail(false);
+    }
   };
 
   return (
@@ -261,6 +296,32 @@ const ProfileSettings = ({ userProfile }) => {
           </div>
         </Card>
       </div>
+
+      {/* Email Testing */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-medium">Test Email Integration</h4>
+            <p className="text-sm text-muted-foreground">
+              Send a test email to verify SendGrid integration is working
+            </p>
+            {user?.email && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Test email will be sent to: {user.email}
+              </p>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleTestEmail}
+            disabled={isTestingEmail || !user?.email}
+            className="flex items-center gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            {isTestingEmail ? 'Sending...' : 'Send Test Email'}
+          </Button>
+        </div>
+      </Card>
 
       {/* Contact Support */}
       <Card className="p-4">
