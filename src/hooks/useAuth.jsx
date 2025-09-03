@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sendWelcomeEmail } from '@/lib/email';
 
 const AuthContext = createContext();
 
@@ -26,23 +27,39 @@ export const AuthProvider = ({ children }) => {
 
         // Set up auth state listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
+          (event, session) => {
             if (!isMounted) return;
             
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
 
-            // Sample data creation disabled temporarily  
+            // Defer any async side-effects to avoid blocking the auth callback
+            if (event === 'SIGNED_IN' && session?.user) {
+              setTimeout(() => {
+                try {
+                  const key = `welcomeEmailSent:${session.user.id}`;
+                  if (!localStorage.getItem(key)) {
+                    const name = session.user.user_metadata?.full_name || session.user.email;
+                    // Fire-and-forget welcome email; errors are logged but won't block UX
+                    sendWelcomeEmail(session.user.email, name).catch((err) => {
+                      console.error('Failed to send welcome email:', err);
+                    });
+                    localStorage.setItem(key, '1');
+                  }
+                } catch (e) {
+                  console.error('Welcome email side-effect error:', e);
+                }
+              }, 0);
+            }
+
+            // Sample data creation disabled temporarily
             // TODO: Re-enable when create_sample_data_for_user RPC is available
             /*
             if (event === 'SIGNED_IN' && session?.user) {
               setTimeout(async () => {
                 try {
-                  // Call the function to create sample data
-                  await supabase.rpc('create_sample_data_for_user', {
-                    user_id: session.user.id
-                  });
+                  await supabase.rpc('create_sample_data_for_user', { user_id: session.user.id });
                 } catch (error) {
                   console.log('Sample data already exists or error creating:', error.message);
                 }
