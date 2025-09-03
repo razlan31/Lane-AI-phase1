@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// Debug log to check if React is imported correctly
+console.log('useVentures: React hooks available:', { useState: !!useState, useEffect: !!useEffect });
+
 // Supabase-ready hook for ventures management
 export const useVentures = () => {
   const [ventures, setVentures] = useState([]);

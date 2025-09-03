@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { testHook } from './test-react.js';
 // CACHE BUST v3: Force Vite rebuild after React import standardization
 import HQDashboard from './components/dashboards/HQDashboard';
 import ImportSeed from './pages/ImportSeed';
@@ -35,6 +36,14 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   console.log('App component rendering...');
+  
+  // Test React import
+  try {
+    const testResult = testHook();
+    console.log('Test hook result:', testResult);
+  } catch (error) {
+    console.error('Test hook failed in App:', error);
+  }
   
   // All hooks must be called before any conditional returns
   const [currentView, setCurrentView] = useState('copilot');
