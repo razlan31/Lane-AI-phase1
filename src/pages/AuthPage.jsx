@@ -24,8 +24,9 @@ const AuthPage = () => {
     setError(null);
     setLoading(true);
     try {
+      const normalizedEmail = (email || '').trim().toLowerCase();
       const { error } = await supabase.auth.signInWithPassword({ 
-        email, 
+        email: normalizedEmail, 
         password 
       });
       
@@ -49,7 +50,6 @@ const AuthPage = () => {
       setLoading(false);
     }
   };
-
   const signUp = async () => {
     setError(null);
     setSuccess(null);
@@ -57,8 +57,9 @@ const AuthPage = () => {
     
     try {
       const redirectUrl = `${window.location.origin}/`;
+      const normalizedEmail = (email || '').trim().toLowerCase();
       const { error, data } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password,
         options: { 
           data: { full_name: fullName }, 
@@ -104,7 +105,8 @@ const AuthPage = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const normalizedEmail = (email || '').trim().toLowerCase();
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
         redirectTo: `${window.location.origin}/#/reset-password`
       });
       
