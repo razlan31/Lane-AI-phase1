@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { cn } from '../../lib/utils';
 import { useEnhancedChat } from '../../hooks/useEnhancedChat';
+import { useOpenAIChat } from '../../hooks/useOpenAIChat';
 import { VoiceInputButton } from '../VoiceInputButton';
 
 const EnhancedAIChat = ({ 
@@ -44,6 +45,8 @@ const EnhancedAIChat = ({
     deleteChat,
     autoGenerateTitle
   } = useEnhancedChat();
+
+  const { sendMessage: sendOpenAIMessage, loading: aiLoading } = useOpenAIChat();
 
   const [inputValue, setInputValue] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
@@ -97,13 +100,10 @@ const EnhancedAIChat = ({
 
   // Handle sending message
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !activeChatId) return;
+    if (!inputValue.trim() || !activeChatId || aiLoading) return;
 
     const userMessage = inputValue.trim();
     setInputValue('');
-
-    // Add user message
-    await addMessage(activeChatId, userMessage, 'user');
 
     // Auto-generate title if this is the first user message
     const currentMessages = messages || [];
@@ -112,11 +112,19 @@ const EnhancedAIChat = ({
       autoGenerateTitle(activeChatId, userMessage);
     }
 
-    // Generate AI response
-    setTimeout(async () => {
-      const response = generateAIResponse(userMessage, context);
-      await addMessage(activeChatId, response, 'assistant');
-    }, 1000);
+    try {
+      // Send message to OpenAI
+      const result = await sendOpenAIMessage(userMessage, activeChatId, context);
+      
+      if (!result.success) {
+        // Re-enable input if there was an error
+        setInputValue(userMessage);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Re-enable input if there was an error
+      setInputValue(userMessage);
+    }
   };
 
   // Handle voice input
@@ -325,14 +333,14 @@ const EnhancedAIChat = ({
             <Button
               size="sm"
               onClick={handleSendMessage}
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || aiLoading}
               className="h-8 w-8 p-0"
             >
               <Send className="h-3 w-3" />
             </Button>
           </div>
           <div className="text-xs text-muted-foreground text-center">
-            Upload files, use voice input, or type to get started
+            {aiLoading ? "AI is thinking..." : "Upload files, use voice input, or type to get started"}
           </div>
         </div>
       </Card>

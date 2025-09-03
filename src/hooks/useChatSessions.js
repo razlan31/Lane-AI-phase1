@@ -188,6 +188,52 @@ export const useChatSessions = (ventureId = null) => {
     }
   };
 
+  const refreshMessages = async (sessionId) => {
+    try {
+      const { data: messagesData, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      setMessages(prev => ({
+        ...prev,
+        [sessionId]: messagesData || []
+      }));
+
+      return { success: true, data: messagesData };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  const refreshSessions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let query = supabase
+        .from('chat_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (ventureId) {
+        query = query.eq('venture_id', ventureId);
+      }
+
+      const { data: sessionsData, error } = await query;
+      if (error) throw error;
+
+      setSessions(sessionsData || []);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
   return {
     sessions,
     messages,
@@ -196,6 +242,8 @@ export const useChatSessions = (ventureId = null) => {
     createSession,
     addMessage,
     updateSession,
-    deleteSession
+    deleteSession,
+    refreshMessages,
+    refreshSessions
   };
 };

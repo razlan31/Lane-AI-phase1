@@ -1,12 +1,40 @@
-// No React import needed
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Calculator, FileText, Target, TrendingUp, Bot } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { useOpenAIChat } from '@/hooks/useOpenAIChat';
+import { Brain, Calculator, FileText, Target, TrendingUp, Bot, Loader2 } from 'lucide-react';
 
 const WhyModal = ({ isOpen, onClose, suggestion }) => {
-  if (!suggestion) return null;
+  const [explanation, setExplanation] = useState('');
+  const { explainConcept, loading } = useOpenAIChat();
+
+  useEffect(() => {
+    if (isOpen && suggestion) {
+      generateExplanation();
+    }
+  }, [isOpen, suggestion]);
+
+  const generateExplanation = async () => {
+    if (!suggestion) return;
+
+    const question = `Why did you suggest: "${suggestion.message}"?`;
+    const contextData = {
+      suggestion: suggestion.message,
+      context: suggestion.context,
+      confidence: suggestion.confidence,
+      priority: suggestion.priority
+    };
+
+    const result = await explainConcept(question, suggestion.context?.type || 'general', contextData);
+    
+    if (result.success) {
+      setExplanation(result.data.explanation);
+    } else {
+      setExplanation('Sorry, I could not generate an explanation at this time.');
+    }
+  };
 
   const getContextIcon = (type) => {
     switch (type) {
@@ -30,11 +58,10 @@ const WhyModal = ({ isOpen, onClose, suggestion }) => {
     }
   };
 
+  if (!suggestion) return null;
+
   const ContextIcon = getContextIcon(suggestion.context?.type);
   const confidencePercent = Math.round((suggestion.confidence || 0.8) * 100);
-  const confidenceLabel = confidencePercent >= 90 ? 'Very High' : 
-                         confidencePercent >= 70 ? 'High' : 
-                         confidencePercent >= 50 ? 'Medium' : 'Low';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -45,56 +72,61 @@ const WhyModal = ({ isOpen, onClose, suggestion }) => {
             Why this suggestion?
           </DialogTitle>
           <DialogDescription>
-            Understanding the AI's reasoning and data context
+            AI-powered explanation of the suggestion logic
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">AI Reasoning</h4>
-            <p className="text-sm text-muted-foreground bg-accent/50 p-3 rounded">
-              {suggestion.reasoning || 'Based on pattern analysis and context matching.'}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">Data Trace</h4>
-            <div className="flex items-center gap-2 p-2 bg-accent/30 rounded">
-              <ContextIcon className="h-4 w-4 text-primary" />
-              <span className="text-sm text-foreground">
-                {getContextLabel(suggestion.context?.type)} Context
-              </span>
-              <Badge variant="outline" className="text-xs">
-                {suggestion.context?.sourceId ? 'ID: ' + suggestion.context.sourceId.slice(0, 8) : 'Live'}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">Confidence Level</h4>
-            <div className="space-y-2">
-              <Progress value={confidencePercent} className="h-2" />
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">{confidencePercent}%</span>
-                <Badge variant={confidencePercent >= 70 ? "default" : "secondary"}>
-                  {confidenceLabel}
+          <Card className="p-4 bg-muted/30">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <ContextIcon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">AI Explanation</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Context: {getContextLabel(suggestion.context?.type)}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs ml-auto">
+                  {confidencePercent}% confidence
                 </Badge>
               </div>
+              
+              <div className="pl-2 border-l-2 border-primary/20">
+                <p className="text-sm font-medium text-foreground mb-2">
+                  "{suggestion.message}"
+                </p>
+                
+                {loading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating explanation...
+                  </div>
+                ) : explanation ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {explanation}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    Click "Explain Why" to get an AI-powered explanation
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">Suggestion</h4>
-            <p className="text-sm text-foreground bg-primary/5 p-3 rounded border border-primary/20">
-              {suggestion.message}
-            </p>
+          <div className="flex justify-end gap-2 pt-2">
+            {!explanation && !loading && (
+              <Button size="sm" variant="outline" onClick={generateExplanation}>
+                Explain Why
+              </Button>
+            )}
+            <Button size="sm" onClick={onClose}>
+              Got it
+            </Button>
           </div>
-        </div>
-
-        <div className="flex justify-end pt-4">
-          <Button onClick={onClose} variant="outline">
-            Got it
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

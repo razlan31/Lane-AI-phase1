@@ -1,183 +1,114 @@
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
+import { useChatSessions } from './useChatSessions';
 
-export const useEnhancedChat = () => {
-  const [chatSessions, setChatSessions] = useState([]);
+export const useEnhancedChat = (ventureId = null) => {
+  const {
+    sessions: chatSessions,
+    messages: allMessages,
+    loading,
+    error,
+    createSession,
+    deleteSession,
+    updateSession,
+    refreshMessages,
+    refreshSessions
+  } = useChatSessions(ventureId);
+
   const [activeChatId, setActiveChatId] = useState(null);
-  const [messages, setMessages] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch all chat sessions for the user
+  // Auto-select first session when sessions load
   useEffect(() => {
-    const fetchChatSessions = async () => {
-      setLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setChatSessions([]);
-          setLoading(false);
-          return;
-        }
+    if (!loading && chatSessions.length > 0 && !activeChatId) {
+      setActiveChatId(chatSessions[0].id);
+    }
+  }, [loading, chatSessions, activeChatId]);
 
-        // Mock data for now - replace with real Supabase query
-        const mockSessions = [
-          {
-            id: 'session_1',
-            title: 'Coffee Shop Analysis',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            user_id: user.id
-          }
-        ];
-
-        setChatSessions(mockSessions);
-        if (mockSessions.length > 0 && !activeChatId) {
-          setActiveChatId(mockSessions[0].id);
-        }
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChatSessions();
-  }, [activeChatId]);
+  // Refresh messages when active chat changes
+  useEffect(() => {
+    if (activeChatId) {
+      refreshMessages(activeChatId);
+    }
+  }, [activeChatId, refreshMessages]);
 
   // Create new chat session
-  const createNewChat = async (title = null) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const chatId = `chat_${Date.now()}`;
-      const autoTitle = title || `Chat ${new Date().toLocaleDateString()}`;
-      
-      const newSession = {
-        id: chatId,
-        title: autoTitle,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_id: user.id
-      };
-
-      setChatSessions(prev => [newSession, ...prev]);
-      setActiveChatId(chatId);
-      
-      // Initialize with welcome message
-      setMessages(prev => ({
-        ...prev,
-        [chatId]: [{
-          id: `msg_${Date.now()}`,
-          role: 'assistant',
-          content: "👋 Hi! I'm your AI Co-Pilot. Upload files (CSV, Excel, PDF) or tell me about your business, and I'll build dashboards and worksheets for you.",
-          created_at: new Date().toISOString()
-        }]
-      }));
-
-      return { success: true, chatId };
-    } catch (error) {
-      return { success: false, error };
+  const createNewChat = useCallback(async (title = null) => {
+    const defaultTitle = title || `Chat ${chatSessions.length + 1}`;
+    const result = await createSession(defaultTitle);
+    
+    if (result.success) {
+      setActiveChatId(result.data.id);
+      // Refresh sessions to get the latest data
+      await refreshSessions();
     }
-  };
+    
+    return result;
+  }, [createSession, chatSessions.length, refreshSessions]);
 
-  // Add message to chat
-  const addMessage = async (chatId, content, role = 'user', files = null) => {
-    try {
-      const messageId = `msg_${Date.now()}`;
-      const message = {
-        id: messageId,
-        role,
-        content,
-        files,
-        created_at: new Date().toISOString()
-      };
-
-      setMessages(prev => ({
-        ...prev,
-        [chatId]: [...(prev[chatId] || []), message]
-      }));
-
-      // Update session timestamp
-      setChatSessions(prev => prev.map(session => 
-        session.id === chatId 
-          ? { ...session, updated_at: new Date().toISOString() }
-          : session
-      ));
-
-      return { success: true, messageId };
-    } catch (error) {
-      return { success: false, error };
-    }
-  };
+  // Add message to session (already handled by useChatSessions)
+  const addMessage = useCallback(async (sessionId, content, role = 'user', references = null) => {
+    // This is handled by the OpenAI integration now
+    // Just refresh the messages to get the latest from the database
+    await refreshMessages(sessionId);
+  }, [refreshMessages]);
 
   // Rename chat session
-  const renameChat = async (chatId, newTitle) => {
-    try {
-      setChatSessions(prev => prev.map(session => 
-        session.id === chatId 
-          ? { ...session, title: newTitle, updated_at: new Date().toISOString() }
-          : session
-      ));
-      return { success: true };
-    } catch (error) {
-      return { success: false, error };
+  const renameChat = useCallback(async (sessionId, newTitle) => {
+    const result = await updateSession(sessionId, { title: newTitle });
+    
+    if (result.success) {
+      await refreshSessions();
     }
-  };
+    
+    return result;
+  }, [updateSession, refreshSessions]);
 
   // Delete chat session
-  const deleteChat = async (chatId) => {
-    try {
-      setChatSessions(prev => prev.filter(session => session.id !== chatId));
-      setMessages(prev => {
-        const updated = { ...prev };
-        delete updated[chatId];
-        return updated;
-      });
-      
-      if (activeChatId === chatId) {
-        const remainingSessions = chatSessions.filter(s => s.id !== chatId);
+  const deleteChat = useCallback(async (sessionId) => {
+    const result = await deleteSession(sessionId);
+    
+    if (result.success) {
+      // If we deleted the active session, select the first remaining one
+      if (sessionId === activeChatId) {
+        const remainingSessions = chatSessions.filter(s => s.id !== sessionId);
         setActiveChatId(remainingSessions.length > 0 ? remainingSessions[0].id : null);
       }
-      
-      return { success: true };
-    } catch (error) {
-      return { success: false, error };
+      // Refresh sessions to get the latest data
+      await refreshSessions();
     }
-  };
-
-  // Auto-generate title based on first user message
-  const autoGenerateTitle = async (chatId, firstMessage) => {
-    const title = firstMessage.length > 50 
-      ? firstMessage.substring(0, 47) + '...'
-      : firstMessage;
     
-    return await renameChat(chatId, title);
-  };
+    return result;
+  }, [deleteSession, activeChatId, chatSessions, refreshSessions]);
 
-  // Get active chat messages
-  const getActiveChatMessages = () => {
-    return activeChatId ? (messages[activeChatId] || []) : [];
-  };
+  // Auto-generate title based on first message
+  const autoGenerateTitle = useCallback(async (sessionId, firstMessage) => {
+    if (firstMessage && firstMessage.length > 5) {
+      const title = firstMessage.length > 30 
+        ? firstMessage.substring(0, 30) + '...' 
+        : firstMessage;
+      await renameChat(sessionId, title);
+    }
+  }, [renameChat]);
 
-  // Get active chat info
-  const getActiveChatInfo = () => {
-    return chatSessions.find(session => session.id === activeChatId) || null;
-  };
+  // Get current session info
+  const activeChatInfo = chatSessions.find(session => session.id === activeChatId);
+  
+  // Get messages for active chat
+  const messages = activeChatId ? (allMessages[activeChatId] || []) : [];
 
   return {
     chatSessions,
     activeChatId,
     setActiveChatId,
-    messages: getActiveChatMessages(),
-    activeChatInfo: getActiveChatInfo(),
+    messages,
+    activeChatInfo,
     loading,
     error,
     createNewChat,
     addMessage,
     renameChat,
     deleteChat,
-    autoGenerateTitle
+    autoGenerateTitle,
+    refreshMessages,
+    refreshSessions
   };
 };
