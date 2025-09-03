@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 // CACHE BUST v4: Fixed circular imports and provider setup
 import HQDashboard from './components/dashboards/HQDashboard';
+import EnvChecker from './components/EnvChecker';
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
@@ -292,8 +293,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full">
-      <div className="flex h-screen overflow-hidden">
+    <EnvChecker>
+      <div className="min-h-screen bg-background w-full">
+        <div className="flex h-screen overflow-hidden">
         {/* Main Navigation */}
         <MainNavigation 
           currentView={currentView}
@@ -368,7 +370,8 @@ function App() {
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
       />
-    </div>
+      </div>
+    </EnvChecker>
   );
 }
 
