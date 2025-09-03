@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import HQDashboard from './components/dashboards/HQDashboard';
 import EnvChecker from './components/EnvChecker';
 import ServiceChecker from './components/ServiceChecker';
+import { AuthWrapper } from './components/auth/AuthWrapper';
 import ImportSeed from './pages/ImportSeed';
 import ToolsScratchpads from './components/tools/ToolsScratchpads';
 import TopBar from './components/navigation/TopBar';
 import { useDisplaySettings } from './hooks/useDisplaySettings.jsx';
 import userProfile from './lib/userProfile';
 import { useVentures } from './hooks/useVentures';
+import { useAuth } from './hooks/useAuth';
 import { useRouter } from './hooks/useRouter';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,25 +51,32 @@ function App() {
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { ventures, loading: venturesLoading, createVenture } = useVentures();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
   const { showPlainExplanations } = useDisplaySettings();
 
-  // Get current user and check onboarding status
+  // Get user profile and check onboarding status
   useEffect(() => {
-    const setupUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-      
-      if (user) {
+    const setupUserProfile = async () => {
+      if (!currentUser) {
+        setUserProfileData(null);
+        setIsOnboarded(false);
+        return;
+      }
+
+      try {
         const onboarded = await userProfile.isOnboarded();
         setIsOnboarded(onboarded);
         if (onboarded) {
           const { data } = await userProfile.getProfile();
           setUserProfileData(data);
         }
+      } catch (error) {
+        console.error('Profile setup error:', error);
+        setIsOnboarded(false);
       }
     };
-    setupUser();
+
+    setupUserProfile();
 
     // Global keyboard shortcuts
     const handleKeyDown = (e) => {
@@ -79,7 +88,7 @@ function App() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [currentUser]);
 
   console.log('User authenticated:', !!currentUser);
 
@@ -294,9 +303,10 @@ function App() {
   }
 
   return (
-    <EnvChecker>
-      <ServiceChecker />
-      <div className="min-h-screen bg-background w-full">
+    <AuthWrapper>
+      <EnvChecker>
+        <ServiceChecker />
+        <div className="min-h-screen bg-background w-full">
         <div className="flex h-screen overflow-hidden">
         {/* Main Navigation */}
         <MainNavigation 
@@ -373,7 +383,8 @@ function App() {
         onClose={() => setExportModalOpen(false)}
       />
       </div>
-    </EnvChecker>
+      </EnvChecker>
+    </AuthWrapper>
   );
 }
 

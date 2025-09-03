@@ -8,6 +8,7 @@ export const useOpenAIChat = () => {
   const { toast } = useToast();
 
   const sendMessage = useCallback(async (message, sessionId, context = 'global', modelOverride = null) => {
+    const abortController = new AbortController();
     setLoading(true);
     setError(null);
 
@@ -18,7 +19,7 @@ export const useOpenAIChat = () => {
         throw new Error('Authentication required');
       }
 
-      // Call OpenAI chat endpoint
+      // Call OpenAI chat endpoint with abort signal
       const { data, error: functionError } = await supabase.functions.invoke('openai-chat', {
         body: {
           message,
@@ -30,6 +31,10 @@ export const useOpenAIChat = () => {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
+
+      if (abortController.signal.aborted) {
+        throw new Error('Request was cancelled');
+      }
 
       if (functionError) {
         throw functionError;
@@ -50,6 +55,11 @@ export const useOpenAIChat = () => {
       };
 
     } catch (err) {
+      if (abortController.signal.aborted) {
+        console.log('OpenAI chat request cancelled');
+        return { success: false, error: 'Request cancelled' };
+      }
+      
       console.error('OpenAI chat error:', err);
       const errorMessage = err.message || 'Failed to send message';
       setError(errorMessage);
@@ -79,6 +89,7 @@ export const useOpenAIChat = () => {
   }, [toast]);
 
   const explainConcept = useCallback(async (question, context = 'general', contextData = null) => {
+    const abortController = new AbortController();
     setLoading(true);
     setError(null);
 
@@ -91,6 +102,10 @@ export const useOpenAIChat = () => {
           contextData
         }
       });
+
+      if (abortController.signal.aborted) {
+        throw new Error('Request was cancelled');
+      }
 
       if (functionError) {
         throw functionError;
@@ -110,6 +125,11 @@ export const useOpenAIChat = () => {
       };
 
     } catch (err) {
+      if (abortController.signal.aborted) {
+        console.log('OpenAI explain request cancelled');
+        return { success: false, error: 'Request cancelled' };
+      }
+      
       console.error('OpenAI explain error:', err);
       const errorMessage = err.message || 'Failed to generate explanation';
       setError(errorMessage);

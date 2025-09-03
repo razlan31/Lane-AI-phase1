@@ -7,33 +7,64 @@ export const useUserProfile = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let isMounted = true;
+    let authSubscription = null;
+    const abortController = new AbortController();
 
     const load = async () => {
+      if (!isMounted) return;
+      
       setLoading(true);
+      setError(null);
+      
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setProfile(null); return; }
+        if (!user || !isMounted) { 
+          setProfile(null); 
+          setLoading(false);
+          return; 
+        }
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .maybeSingle();
+          .maybeSingle()
+          .abortSignal(abortController.signal);
+          
         if (error) throw error;
-        setProfile(data ?? null);
+        
+        if (isMounted && !abortController.signal.aborted) {
+          setProfile(data ?? null);
+        }
       } catch (err) {
-        if (!cancelled) setError(err);
+        if (!abortController.signal.aborted && isMounted) {
+          console.error('Profile load error:', err);
+          setError(err);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (isMounted && !abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     load();
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      setTimeout(load, 0);
+      if (isMounted) {
+        setTimeout(load, 100); // Small delay to prevent rapid calls
+      }
     });
+    authSubscription = subscription;
 
-    return () => { cancelled = true; subscription.unsubscribe(); };
+    return () => { 
+      isMounted = false;
+      abortController.abort();
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
   }, []);
 
   return { profile, loading, error, setProfile };
@@ -47,15 +78,21 @@ export const useUpdateProfile = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      
+      // Remove any fields that don't exist in the profiles table
+      const { skipped, ...validUpdates } = updates;
+      
       const { data, error } = await supabase
         .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ ...validUpdates, updated_at: new Date().toISOString() })
         .eq('id', user.id)
         .select()
         .maybeSingle();
+        
       if (error) throw error;
       return { success: true, data };
     } catch (error) {
+      console.error('Update profile error:', error);
       return { success: false, error };
     } finally {
       setLoading(false);
