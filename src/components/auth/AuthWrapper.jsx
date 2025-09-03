@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AuthPage from '../../pages/AuthPage';
 import { useToast } from '@/hooks/use-toast';
 
-const AuthWrapper = ({ children }) => {
+export const AuthWrapper = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -123,4 +123,3 @@ const AuthWrapper = ({ children }) => {
   return <AuthPage />;
 };
 
-export const AuthWrapper = AuthWrapper;
