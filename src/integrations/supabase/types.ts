@@ -541,6 +541,7 @@ export type Database = {
           experience_level: string | null
           full_name: string | null
           id: string
+          is_founder: boolean | null
           onboarded: boolean | null
           role: string | null
           updated_at: string
@@ -552,6 +553,7 @@ export type Database = {
           experience_level?: string | null
           full_name?: string | null
           id?: string
+          is_founder?: boolean | null
           onboarded?: boolean | null
           role?: string | null
           updated_at?: string
@@ -563,6 +565,7 @@ export type Database = {
           experience_level?: string | null
           full_name?: string | null
           id?: string
+          is_founder?: boolean | null
           onboarded?: boolean | null
           role?: string | null
           updated_at?: string

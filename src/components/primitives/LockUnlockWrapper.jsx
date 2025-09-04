@@ -8,14 +8,19 @@ import { usePricingTier } from '../../hooks/usePricingTier';
 
 const LockUnlockWrapper = ({ 
   children, 
-  feature,
+  feature, 
   requiredTier = 'pro',
   className,
   showTooltip = true,
-  blurWhenLocked = true 
+  blurWhenLocked = true
 }) => {
-  const { hasFeature, tier } = usePricingTier();
+  const { hasFeature, tier, isFounder } = usePricingTier();
   const [showUpsellModal, setShowUpsellModal] = useState(false);
+  
+  // Founder accounts bypass all feature locks
+  if (isFounder) {
+    return children;
+  }
   
   const isLocked = !hasFeature(feature);
 

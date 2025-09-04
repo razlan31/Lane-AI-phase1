@@ -4,8 +4,15 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Check, Zap, Star, Crown } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { usePricingTier } from '../../hooks/usePricingTier';
 
 const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
+  const { isFounder } = usePricingTier();
+  
+  // Don't show upgrade modal for founder accounts
+  if (isFounder) {
+    return null;
+  }
   const plans = [
     {
       id: 'founders',

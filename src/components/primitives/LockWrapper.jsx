@@ -10,7 +10,12 @@ const LockWrapper = ({
   showTooltip = true,
   className 
 }) => {
-  const { hasFeature, tier } = usePricingTier();
+  const { hasFeature, tier, isFounder } = usePricingTier();
+  
+  // Founder accounts bypass all feature locks
+  if (isFounder) {
+    return children;
+  }
   
   const isLocked = !hasFeature(feature);
   

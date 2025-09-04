@@ -6,6 +6,7 @@ export const usePricingTier = () => {
   const [tier, setTier] = useState('free'); // 'free' | 'pro' | 'enterprise'
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -14,6 +15,15 @@ export const usePricingTier = () => {
         setUser(user);
         
         if (user) {
+          // Fetch user profile to check founder status
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          setProfile(profileData);
+          
           // TODO: Replace with actual Supabase query to get user's subscription
           // const { data: subscription } = await supabase
           //   .from('subscriptions')
@@ -45,6 +55,11 @@ export const usePricingTier = () => {
   }, []);
 
   const hasFeature = (featureName) => {
+    // Founder accounts have access to all features
+    if (profile?.is_founder) {
+      return true;
+    }
+
     const features = {
       free: ['basic_dashboard', 'single_venture', 'core_worksheets'],
       pro: [
@@ -62,6 +77,11 @@ export const usePricingTier = () => {
   };
 
   const canAccessVentures = (count) => {
+    // Founder accounts have unlimited access
+    if (profile?.is_founder) {
+      return true;
+    }
+    
     if (tier === 'free') return count <= 1;
     return true; // Pro and Enterprise have unlimited
   };
@@ -70,8 +90,10 @@ export const usePricingTier = () => {
     tier,
     loading,
     user,
+    profile,
     hasFeature,
     canAccessVentures,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    isFounder: profile?.is_founder || false
   };
 };
