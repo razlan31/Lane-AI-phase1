@@ -536,6 +536,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_requests_reset_date: string | null
+          ai_requests_used: number | null
           created_at: string
           email: string
           experience_level: string | null
@@ -544,10 +546,16 @@ export type Database = {
           is_founder: boolean | null
           onboarded: boolean | null
           role: string | null
+          stripe_customer_id: string | null
+          subscription_current_period_end: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
           updated_at: string
           venture_type: string | null
         }
         Insert: {
+          ai_requests_reset_date?: string | null
+          ai_requests_used?: number | null
           created_at?: string
           email: string
           experience_level?: string | null
@@ -556,10 +564,16 @@ export type Database = {
           is_founder?: boolean | null
           onboarded?: boolean | null
           role?: string | null
+          stripe_customer_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
           updated_at?: string
           venture_type?: string | null
         }
         Update: {
+          ai_requests_reset_date?: string | null
+          ai_requests_used?: number | null
           created_at?: string
           email?: string
           experience_level?: string | null
@@ -568,6 +582,10 @@ export type Database = {
           is_founder?: boolean | null
           onboarded?: boolean | null
           role?: string | null
+          stripe_customer_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
           updated_at?: string
           venture_type?: string | null
         }
