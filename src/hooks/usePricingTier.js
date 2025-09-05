@@ -15,7 +15,7 @@ export const usePricingTier = () => {
         setUser(user);
         
         if (user) {
-          // Fetch user profile to check founder status
+          // Fetch user profile to check founder status and subscription
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
@@ -24,21 +24,38 @@ export const usePricingTier = () => {
           
           setProfile(profileData);
           
-          // TODO: Replace with actual Supabase query to get user's subscription
-          // const { data: subscription } = await supabase
-          //   .from('subscriptions')
-          //   .select('tier')
-          //   .eq('user_id', user.id)
-          //   .single();
+          // Set tier based on profile subscription plan
+          const userTier = profileData?.subscription_plan || 'free';
+          setTier(userTier);
           
-          // For now, mock the tier based on user email or default to free
-          const mockTier = user.email?.includes('pro') ? 'pro' : 'free';
-          setTier(mockTier);
+          // Auto-refresh subscription status
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 0);
         }
       } catch (error) {
         console.error('Error fetching user:', error);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const refreshSubscriptionStatus = async () => {
+      try {
+        await supabase.functions.invoke('check-subscription');
+        // Refetch profile after subscription check
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+          setProfile(profileData);
+          setTier(profileData?.subscription_plan || 'free');
+        }
+      } catch (error) {
+        console.error('Error refreshing subscription:', error);
       }
     };
 

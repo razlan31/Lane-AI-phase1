@@ -3,6 +3,7 @@ import { CreditCard, Download, ExternalLink, Crown, AlertCircle } from 'lucide-r
 import { Button } from '../ui/button';
 import { usePricingTier } from '../../hooks/usePricingTier';
 import { cn } from '../../lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const BillingTab = () => {
   const { tier, loading, user } = usePricingTier();
@@ -51,25 +52,38 @@ const BillingTab = () => {
   const handleManageSubscription = async () => {
     setLoadingPortal(true);
     try {
-      // In real app: call Stripe customer portal
-      console.log('Opening Stripe customer portal...');
-      // Example implementation:
-      // const { data } = await supabase.functions.invoke('customer-portal');
-      // window.open(data.url, '_blank');
+      const { data, error } = await supabase.functions.invoke('customer-portal');
       
-      // Mock delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Portal would open here');
+      if (error) {
+        console.error('Error opening customer portal:', error);
+        return;
+      }
+
+      // Open customer portal in a new tab
+      window.open(data.url, '_blank');
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      console.error('Error in manage subscription:', error);
     } finally {
       setLoadingPortal(false);
     }
   };
 
-  const handleUpgrade = () => {
-    // In real app: redirect to pricing page or open checkout
-    console.log('Redirecting to upgrade flow...');
+  const handleUpgrade = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType: 'pro-standard' }
+      });
+
+      if (error) {
+        console.error('Error creating checkout:', error);
+        return;
+      }
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error in upgrade:', error);
+    }
   };
 
   const handleDownloadInvoice = (invoice) => {

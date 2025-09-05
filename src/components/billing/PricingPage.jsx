@@ -3,13 +3,14 @@ import { Check, Zap, Crown, Building2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { usePricingTier } from '../../hooks/usePricingTier';
 import { cn } from '../../lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const PricingPage = () => {
   const { tier: currentTier, isAuthenticated } = usePricingTier();
 
   const plans = [
     {
-      id: 'free',
+      id: 'starter',
       name: 'Free / Starter',
       price: 0,
       billing: 'forever',
@@ -73,20 +74,42 @@ const PricingPage = () => {
     }
   ];
 
-  const handleUpgrade = (planId) => {
+  const handleUpgrade = async (planId) => {
+    console.log('Upgrading to:', planId);
+    
     if (!isAuthenticated) {
       console.log('User needs to sign in first');
       // In real app: redirect to login
       return;
     }
+    
+    try {
+      // Map plan selection to Stripe plan types
+      const planTypeMapping = {
+        'starter': 'weekly',
+        'pro': 'pro-standard',
+        'enterprise': 'pro-standard' // Enterprise uses same as pro for now
+      };
+      
+      const planType = planTypeMapping[planId];
+      if (!planType) {
+        console.error('Unknown plan type:', planId);
+        return;
+      }
 
-    if (planId === 'pro') {
-      // In real app: call Stripe checkout
-      console.log('Opening Stripe checkout for Pro plan');
-      // Example: window.open(stripeCheckoutUrl, '_blank');
-    } else if (planId === 'enterprise') {
-      console.log('Opening contact form for Enterprise');
-      // In real app: open contact form or redirect to sales page
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType }
+      });
+
+      if (error) {
+        console.error('Error creating checkout:', error);
+        return;
+      }
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error in plan upgrade:', error);
     }
   };
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Check, Zap, Star, Crown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { usePricingTier } from '../../hooks/usePricingTier';
+import { supabase } from '@/integrations/supabase/client';
 
 const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
   const { isFounder } = usePricingTier();
@@ -68,11 +69,38 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
     }
   ];
 
-  const handlePlanSelect = (planId) => {
-    // TODO: Integrate with Stripe - call stripeClientStub
-    console.log(`Selected plan: ${planId} for feature: ${targetFeature}`);
-    // Close modal after selection
-    onClose();
+  const handlePlanSelect = async (planId) => {
+    console.log('Selected plan:', planId, 'for feature:', targetFeature);
+    
+    try {
+      // Map plan selection to Stripe plan types
+      const planTypeMapping = {
+        'founders': 'pro-promo',
+        'pro': 'pro-standard',
+        'enterprise': 'pro-standard' // Enterprise uses same as pro for now
+      };
+      
+      const planType = planTypeMapping[planId];
+      if (!planType) {
+        console.error('Unknown plan type:', planId);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType }
+      });
+
+      if (error) {
+        console.error('Error creating checkout:', error);
+        return;
+      }
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+      onClose();
+    } catch (error) {
+      console.error('Error in plan selection:', error);
+    }
   };
 
   return (
