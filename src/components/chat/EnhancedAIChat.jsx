@@ -133,7 +133,15 @@ const EnhancedAIChat = ({
   // Handle sending message
   const handleSendMessage = async () => {
     console.log('handleSendMessage called', { inputValue, activeChatId, aiLoading });
-    if (!inputValue.trim() || !activeChatId || aiLoading) return;
+    
+    if (!inputValue.trim() || aiLoading) return;
+
+    // Create a new chat if none exists
+    if (!activeChatId) {
+      console.log('No active chat, creating new one...');
+      await createNewChat('New Chat');
+      return; // The effect will trigger and set activeChatId, then user can try again
+    }
 
     const userMessage = inputValue.trim();
     console.log('Sending message:', userMessage);
@@ -311,6 +319,8 @@ const EnhancedAIChat = ({
     return "Files uploaded successfully! Analyzing to create relevant dashboards and worksheets...";
   };
 
+  console.log('EnhancedAIChat render:', { isOpen, activeChatId, loading, chatSessions: chatSessions.length });
+
   if (!isOpen) return null;
 
   return (
@@ -423,6 +433,7 @@ const EnhancedAIChat = ({
         </div>
 
         {/* Input */}
+        {console.log('Rendering input area:', { activeChatId, inputValue })}
         <div className="p-3 border-t border-border bg-card/50">
           <div className="flex gap-2 mb-2">
             <Button
@@ -463,14 +474,14 @@ const EnhancedAIChat = ({
                 setInputValue(e.target.value);
               }}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-              placeholder="Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"
+              placeholder={loading ? "Setting up chat..." : !activeChatId ? "Creating chat session..." : "Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"}
               className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-              disabled={aiLoading || evaluating}
+              disabled={aiLoading || evaluating || loading}
             />
             <Button
               size="sm"
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || aiLoading || evaluating}
+              disabled={!inputValue.trim() || aiLoading || evaluating || loading || !activeChatId}
               className="h-8 w-8 p-0"
             >
               {evaluating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
