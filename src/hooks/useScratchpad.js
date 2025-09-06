@@ -232,11 +232,7 @@ export const useScratchpad = () => {
       const capabilities = getCapabilities(profile);
       
       if (!capabilities.scratchpad_reflect_ai) {
-        toast({
-          title: "Upgrade Required",
-          description: "AI reflection is available with paid plans. Get intelligent tagging and conversion suggestions!",
-          variant: "destructive"
-        });
+        toast.error("AI reflection is available with paid plans. Get intelligent tagging and conversion suggestions!");
         return null;
       }
 

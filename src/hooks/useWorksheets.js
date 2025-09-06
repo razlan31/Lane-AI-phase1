@@ -91,19 +91,12 @@ export const useWorksheets = (ventureId = null) => {
 
       setWorksheets(prev => [data, ...prev]);
       
-      toast({
-        title: "Worksheet Created",
-        description: "Your worksheet has been created successfully."
-      });
+      toast.success("Your worksheet has been created successfully.");
 
       return { success: true, data };
     } catch (error) {
       console.error('Error creating worksheet:', error);
-      toast({
-        title: "Creation Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(error.message);
       return { success: false, error: error.message };
     }
   };
@@ -129,11 +122,7 @@ export const useWorksheets = (ventureId = null) => {
       return { success: true, data };
     } catch (error) {
       console.error('Error updating worksheet:', error);
-      toast({
-        title: "Update Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(error.message);
       return { success: false, error: error.message };
     } finally {
       setSaving(false);
@@ -234,19 +223,12 @@ export const useWorksheets = (ventureId = null) => {
 
       setWorksheets(prev => prev.filter(w => w.id !== id));
       
-      toast({
-        title: "Worksheet Deleted",
-        description: "The worksheet has been deleted successfully."
-      });
+      toast.success("The worksheet has been deleted successfully.");
 
       return { success: true };
     } catch (error) {
       console.error('Error deleting worksheet:', error);
-      toast({
-        title: "Deletion Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(error.message);
       return { success: false, error: error.message };
     }
   };

@@ -31,11 +31,7 @@ export const useScenarios = () => {
       return { success: true, data };
     } catch (error) {
       console.error('Scenario evaluation error:', error);
-      toast({
-        title: "Evaluation Failed",
-        description: error.message || 'Failed to evaluate scenario',
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to evaluate scenario');
       return { success: false, error: error.message };
     } finally {
       setEvaluating(false);
@@ -64,19 +60,12 @@ export const useScenarios = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Calculation Saved",
-        description: "Scenario has been saved to your calculation log."
-      });
+      toast.success("Scenario has been saved to your calculation log.");
 
       return { success: true, data };
     } catch (error) {
       console.error('Save calculation error:', error);
-      toast({
-        title: "Save Failed",
-        description: error.message || 'Failed to save calculation',
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to save calculation');
       return { success: false, error: error.message };
     } finally {
       setSaving(false);
@@ -122,21 +111,14 @@ export const useScenarios = () => {
       if (error) throw error;
 
       if (data.applied) {
-        toast({
-          title: "Worksheet Created",
-          description: `Successfully created worksheet "${title}"`
-        });
+        toast.success(`Successfully created worksheet "${title}"`);
         return { success: true, data };
       } else {
         return { success: false, error: 'Worksheet creation was not confirmed' };
       }
     } catch (error) {
       console.error('Convert to worksheet error:', error);
-      toast({
-        title: "Conversion Failed",
-        description: error.message || 'Failed to create worksheet',
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to create worksheet');
       return { success: false, error: error.message };
     } finally {
       setSaving(false);

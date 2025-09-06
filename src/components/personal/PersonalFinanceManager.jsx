@@ -74,11 +74,7 @@ const PersonalFinanceManager = () => {
 
   const handleCreateEntry = async () => {
     if (!newEntry.category || !newEntry.amount) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in category and amount",
-        variant: "destructive"
-      });
+      toast.error("Please fill in category and amount");
       return;
     }
 
@@ -90,10 +86,7 @@ const PersonalFinanceManager = () => {
 
     const result = await createPersonalEntry(entryData);
     if (result.success) {
-      toast({
-        title: "Entry Added",
-        description: `${entryData.type} entry created successfully`
-      });
+      toast.success(`${entryData.type} entry created successfully`);
       
       // Reset form
       setNewEntry({
@@ -117,10 +110,7 @@ const PersonalFinanceManager = () => {
 
     const result = await updatePersonalEntry(editingEntry.id, editingEntry);
     if (result.success) {
-      toast({
-        title: "Entry Updated",
-        description: "Personal finance entry updated successfully"
-      });
+      toast.success("Personal finance entry updated successfully");
       setEditingEntry(null);
     }
   };
@@ -128,10 +118,7 @@ const PersonalFinanceManager = () => {
   const handleDeleteEntry = async (entryId) => {
     const result = await deletePersonalEntry(entryId);
     if (result.success) {
-      toast({
-        title: "Entry Deleted",
-        description: "Personal finance entry deleted successfully"
-      });
+      toast.success("Personal finance entry deleted successfully");
     }
   };
 

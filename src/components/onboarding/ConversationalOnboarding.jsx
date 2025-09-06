@@ -64,11 +64,7 @@ const ConversationalOnboarding = ({ onComplete }) => {
 
     } catch (error) {
       console.error('Onboarding chat error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process your message. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to process your message. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -141,19 +137,12 @@ const ConversationalOnboarding = ({ onComplete }) => {
 
       if (profileError) throw profileError;
 
-      toast({
-        title: "Welcome to Lane AI!",
-        description: "Your profile has been set up successfully.",
-      });
+      toast.success("Welcome to Lane AI! Your profile has been set up successfully.");
 
       onComplete();
     } catch (error) {
       console.error('Onboarding completion error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to complete onboarding. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to complete onboarding. Please try again.");
     }
   };
 

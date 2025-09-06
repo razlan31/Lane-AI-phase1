@@ -49,10 +49,7 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
       
       if (result.success) {
         setToolResult(result);
-        toast({
-          title: "Tool completed successfully",
-          description: `${selectedTool.name} has finished processing your inputs.`,
-        });
+        toast.success(`${selectedTool.name} has finished processing your inputs.`);
 
         // Generate AI suggestion for this tool run
         await generateSuggestion('tool', {
@@ -60,19 +57,11 @@ const ToolsPanel = ({ isOpen, onClose, className = "" }) => {
           outputs: result.outputs
         });
       } else {
-        toast({
-          title: "Tool execution failed", 
-          description: result.error || "An error occurred while running the tool.",
-          variant: "destructive"
-        });
+        toast.error(result.error || "An error occurred while running the tool.");
       }
     } catch (error) {
       console.error('Error running tool:', error);
-      toast({
-        title: "Error",
-        description: "Failed to execute tool. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to execute tool. Please try again.");
     } finally {
       setLoading(false);
     }
