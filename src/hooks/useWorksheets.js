@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { financialEngine } from '../utils/financialEngine';
+import financialEngine from '../utils/financialEngine';
 
 export const useWorksheets = (ventureId = null) => {
   const [worksheets, setWorksheets] = useState([]);

@@ -301,5 +301,5 @@ export class FinancialEngine {
   }
 }
 
-export const financialEngine = new FinancialEngine();
+const financialEngine = new FinancialEngine();
 export default financialEngine;

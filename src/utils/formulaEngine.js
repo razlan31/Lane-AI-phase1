@@ -178,5 +178,5 @@ export class FormulaEngine {
   }
 }
 
-export const formulaEngine = new FormulaEngine();
+const formulaEngine = new FormulaEngine();
 export default formulaEngine;

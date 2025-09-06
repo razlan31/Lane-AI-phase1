@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { formulaEngine } from '../../utils/formulaEngine';
+import formulaEngine from '../../utils/formulaEngine';
 import { Plus, Trash2, Calculator, AlertCircle } from 'lucide-react';
 
 export const WorksheetBuilder = ({ 

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorksheets } from '@/hooks/useWorksheets';
 import { useToast } from '@/hooks/use-toast';
-import { financialEngine } from '@/utils/financialEngine';
+import financialEngine from '@/utils/financialEngine';
 import { Calculator, TrendingUp, DollarSign, BarChart3, Settings, Download, FileText, Mail } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import DynamicFieldsManager from './DynamicFieldsManager';

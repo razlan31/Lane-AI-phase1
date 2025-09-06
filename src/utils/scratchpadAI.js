@@ -129,5 +129,5 @@ export class ScratchpadAIReflection {
   }
 }
 
-export const scratchpadAI = new ScratchpadAIReflection();
+const scratchpadAI = new ScratchpadAIReflection();
 export default scratchpadAI;

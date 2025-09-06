@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { scratchpadAI } from '@/utils/scratchpadAI';
+import scratchpadAI from '@/utils/scratchpadAI';
 import { getCapabilities } from '@/utils/capabilities';
 import { useToast } from '@/hooks/use-toast';
 
