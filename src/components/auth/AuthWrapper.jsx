@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import AuthPage from '../../pages/AuthPage';
+import UpgradeModal from '../modals/UpgradeModal';
 
 export const AuthWrapper = ({ children }) => {
   const { user, loading } = useAuth();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState(null);
+
+  // Listen for upgrade modal events
+  useEffect(() => {
+    const handleShowUpgradeModal = (event) => {
+      setUpgradeContext(event.detail);
+      setShowUpgradeModal(true);
+    };
+
+    window.addEventListener('showUpgradeModal', handleShowUpgradeModal);
+    return () => window.removeEventListener('showUpgradeModal', handleShowUpgradeModal);
+  }, []);
 
   if (loading) {
     return (
@@ -20,6 +34,15 @@ export const AuthWrapper = ({ children }) => {
     return <AuthPage />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <UpgradeModal 
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        targetFeature={upgradeContext?.feature}
+      />
+    </>
+  );
 };
 

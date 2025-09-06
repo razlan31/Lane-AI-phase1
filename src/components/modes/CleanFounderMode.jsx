@@ -1,21 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Crown, X, TrendingUp, DollarSign, Timer, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { cn } from '../../lib/utils';
+import { usePortfolioMetrics } from '../../hooks/usePortfolioMetrics';
+import { useVentures } from '../../hooks/useVentures';
 import EnhancedAIChat from '../chat/EnhancedAIChat';
 
 const CleanFounderMode = ({ onClose, className }) => {
   const [showAIChat, setShowAIChat] = useState(true);
+  const { portfolioMetrics, loading: metricsLoading } = usePortfolioMetrics();
+  const { ventures } = useVentures();
 
-  // Mock venture metrics - replace with real data
+  // Calculate real venture metrics from portfolio data
   const ventureMetrics = {
-    revenue: 48500,
-    growth: '+23%',
-    runway: '14 months',
-    burnRate: 12500,
-    cashflow: -8500,
-    alerts: 2
+    revenue: portfolioMetrics?.total_revenue || 0,
+    growth: portfolioMetrics?.revenue_growth || '+0%',
+    runway: portfolioMetrics?.average_runway || '0 months',
+    burnRate: portfolioMetrics?.total_burn_rate || 0,
+    cashflow: portfolioMetrics?.net_cashflow || 0,
+    alerts: portfolioMetrics?.risk_alerts || 0
   };
 
   const keyMetrics = [

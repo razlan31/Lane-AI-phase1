@@ -1,52 +1,45 @@
-import { useState } from 'react';
-import { CreditCard, Download, ExternalLink, Crown, AlertCircle } from 'lucide-react';
-import { Button } from '../ui/button';
-import { usePricingTier } from '../../hooks/usePricingTier';
-import { cn } from '../../lib/utils';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePricingTier } from '@/hooks/usePricingTier';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { CreditCard, Calendar, DollarSign, Settings, ExternalLink, AlertCircle, Crown, Check } from 'lucide-react';
 
 const BillingTab = () => {
-  const { tier, loading, user } = usePricingTier();
+  const { profile, isFounder, hasFeature } = usePricingTier();
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const { toast } = useToast();
 
-  // Mock billing data - in real app, this comes from Supabase/Stripe
-  const billingInfo = {
-    subscription: {
-      tier: tier,
-      status: 'active',
-      nextBilling: '2024-02-15',
-      amount: tier === 'pro' ? 15 : 0
-    },
-    paymentMethod: {
-      type: 'card',
-      last4: '4242',
-      brand: 'Visa',
-      expiryMonth: 12,
-      expiryYear: 2027
-    },
-    invoices: [
-      {
-        id: 'inv_001',
-        date: '2024-01-15',
-        amount: 15,
-        status: 'paid',
-        downloadUrl: '#'
-      },
-      {
-        id: 'inv_002',
-        date: '2023-12-15',
-        amount: 15,
-        status: 'paid',
-        downloadUrl: '#'
-      },
-      {
-        id: 'inv_003',
-        date: '2023-11-15',
-        amount: 15,
-        status: 'paid',
-        downloadUrl: '#'
+  useEffect(() => {
+    fetchSubscriptionData();
+  }, []);
+
+  const fetchSubscriptionData = async () => {
+    try {
+      if (!profile?.id) return;
+
+      const { data, error } = await supabase
+        .from('billing_subscriptions')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching subscription:', error);
+      } else {
+        setSubscription(data);
       }
-    ]
+    } catch (error) {
+      console.error('Error fetching subscription data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleManageSubscription = async () => {
@@ -54,118 +47,178 @@ const BillingTab = () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
       
-      if (error) {
-        console.error('Error opening customer portal:', error);
-        return;
-      }
-
-      // Open customer portal in a new tab
+      if (error) throw error;
+      
+      // Open customer portal in new tab
       window.open(data.url, '_blank');
     } catch (error) {
-      console.error('Error in manage subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoadingPortal(false);
     }
   };
 
-  const handleUpgrade = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { planType: 'pro-standard' }
-      });
+  const handleUpgrade = () => {
+    window.dispatchEvent(new CustomEvent('showUpgradeModal', { 
+      detail: { feature: 'billing' } 
+    }));
+  };
 
-      if (error) {
-        console.error('Error creating checkout:', error);
-        return;
-      }
-
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
-    } catch (error) {
-      console.error('Error in upgrade:', error);
+  const plans = [
+    {
+      id: 'free',
+      name: 'Free',
+      price: '$0',
+      period: '/month',
+      features: [
+        '1 venture',
+        '5 scratchpad notes',
+        '10 AI messages/month',
+        'Basic worksheets',
+        'Read-only mode'
+      ]
+    },
+    {
+      id: 'pro_promo',
+      name: 'Pro Promo',
+      price: '$9.90',
+      period: '/month',
+      popular: true,
+      features: [
+        'Unlimited ventures',
+        'Unlimited scratchpad notes',
+        '500 AI messages/month',
+        'All worksheet types',
+        'AI scratchpad reflection',
+        'PDF & CSV exports',
+        'Founder Mode AI'
+      ]
+    },
+    {
+      id: 'pro_standard',
+      name: 'Pro Standard',
+      price: '$15',
+      period: '/month',
+      features: [
+        'Everything in Pro Promo',
+        'Priority support',
+        'Early access to features'
+      ]
+    },
+    {
+      id: 'annual',
+      name: 'Annual',
+      price: '$150',
+      period: '/year',
+      features: [
+        'All Pro features',
+        '17% savings',
+        'Priority support'
+      ]
     }
-  };
+  ];
 
-  const handleDownloadInvoice = (invoice) => {
-    console.log('Downloading invoice:', invoice.id);
-    // In real app: download invoice PDF
-  };
-
-  const getTierIcon = (tierName) => {
-    switch (tierName) {
-      case 'pro':
-        return <Crown className="h-5 w-5 text-primary" />;
-      case 'enterprise':
-        return <Crown className="h-5 w-5 text-primary" />;
-      default:
-        return <div className="w-5 h-5 rounded bg-muted" />;
-    }
-  };
-
-  const getTierColor = (tierName) => {
-    switch (tierName) {
-      case 'pro':
-        return 'border-primary bg-primary/5';
-      case 'enterprise':
-        return 'border-primary bg-primary/5';
-      default:
-        return 'border-border bg-muted/20';
-    }
-  };
+  const currentPlan = profile?.plan || profile?.subscription_plan || 'free';
+  const isActive = subscription?.status === 'active' || isFounder;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">Loading billing information...</div>
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground mt-2">Loading billing information...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Current Plan */}
-      <section>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Current Plan</h2>
-        <div className={cn("border rounded-lg p-6", getTierColor(tier))}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Current Plan
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {getTierIcon(tier)}
+              {isFounder && <Crown className="h-5 w-5 text-amber-500" />}
               <div>
-                <h3 className="font-semibold text-foreground capitalize">
-                  {tier === 'free' ? 'Free / Starter' : tier} Plan
+                <h3 className="font-semibold">
+                  {isFounder ? 'Founder' : plans.find(p => p.id === currentPlan)?.name || 'Free'}
                 </h3>
-                {tier !== 'free' && (
-                  <p className="text-sm text-muted-foreground">
-                    ${billingInfo.subscription.amount}/month • Next billing: {new Date(billingInfo.subscription.nextBilling).toLocaleDateString()}
-                  </p>
-                )}
-                {tier === 'free' && (
-                  <p className="text-sm text-muted-foreground">
-                    Free forever • Limited features
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {isFounder ? 'Lifetime access to all features' : 
+                   isActive ? 'Active subscription' : 'Free tier'}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {tier === 'free' ? (
-                <Button onClick={handleUpgrade}>
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade to Pro
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline"
-                  onClick={handleManageSubscription}
-                  disabled={loadingPortal}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {loadingPortal ? 'Loading...' : 'Manage Subscription'}
-                </Button>
-              )}
+            <div className="text-right">
+              <p className="font-semibold">
+                {isFounder ? 'Free' : plans.find(p => p.id === currentPlan)?.price || '$0'}
+                {!isFounder && (
+                  <span className="text-sm text-muted-foreground">
+                    {plans.find(p => p.id === currentPlan)?.period || '/month'}
+                  </span>
+                )}
+              </p>
+              <Badge variant={isActive ? "default" : "secondary"}>
+                {isFounder ? 'Founder' : isActive ? 'Active' : 'Free'}
+              </Badge>
             </div>
           </div>
-        </div>
-      </section>
+
+          {subscription && !isFounder && (
+            <div className="space-y-2 pt-4 border-t">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Current period:</span>
+                <span>
+                  {new Date(subscription.current_period_start).toLocaleDateString()} - {' '}
+                  {new Date(subscription.current_period_end).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Next billing:</span>
+                <span>{new Date(subscription.current_period_end).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+                  {subscription.status}
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-4">
+            {!isFounder && currentPlan === 'free' && (
+              <Button onClick={handleUpgrade} className="flex-1">
+                Upgrade to Pro
+              </Button>
+            )}
+            
+            {subscription && !isFounder && (
+              <Button 
+                variant="outline" 
+                onClick={handleManageSubscription}
+                disabled={loadingPortal}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                {loadingPortal ? 'Loading...' : 'Manage Subscription'}
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Payment Method */}
       {tier !== 'free' && (
