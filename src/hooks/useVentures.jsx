@@ -293,12 +293,90 @@ export const VenturesProvider = ({ children }) => {
     }
   };
 
+  const deleteVenture = async (ventureId) => {
+    if (!user || !ventureId) {
+      return { success: false, error: new Error('Invalid parameters') };
+    }
+
+    try {
+      // First verify the venture belongs to the user
+      const { data: venture, error: ventureError } = await supabase
+        .from('ventures')
+        .select('id, name, user_id')
+        .eq('id', ventureId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (ventureError) throw ventureError;
+      if (!venture) {
+        return { success: false, error: new Error('Venture not found or access denied') };
+      }
+
+      // Delete in proper order to maintain referential integrity
+      const deletions = [
+        // Delete KPIs first
+        supabase.from('kpis').delete().eq('venture_id', ventureId),
+        
+        // Delete blocks
+        supabase.from('blocks').delete().eq('venture_id', ventureId),
+        
+        // Delete notes
+        supabase.from('notes').delete().eq('venture_id', ventureId),
+        
+        // Delete worksheets
+        supabase.from('worksheets').delete().eq('venture_id', ventureId),
+        
+        // Delete chat sessions
+        supabase.from('chat_sessions').delete().eq('venture_id', ventureId),
+        
+        // Delete timeline events
+        supabase.from('timeline_events').delete().eq('venture_id', ventureId),
+        
+        // Delete manual logs
+        supabase.from('manual_logs').delete().eq('venture_id', ventureId)
+      ];
+
+      // Execute all related deletions
+      const results = await Promise.allSettled(deletions);
+      
+      // Check for any failures in related data deletion
+      const failures = results.filter(r => r.status === 'rejected');
+      if (failures.length > 0) {
+        console.warn('Some related data deletions failed:', failures);
+        // Continue with venture deletion anyway
+      }
+
+      // Finally delete the venture itself
+      const { error: deleteError } = await supabase
+        .from('ventures')
+        .delete()
+        .eq('id', ventureId)
+        .eq('user_id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      // Update local state
+      setVentures(prev => prev.filter(v => v.id !== ventureId));
+
+      return { 
+        success: true, 
+        deletedVenture: venture.name,
+        relatedDataResults: results 
+      };
+
+    } catch (error) {
+      console.error('Delete venture error:', error);
+      return { success: false, error };
+    }
+  };
+
   const value = {
     ventures,
     loading,
     error,
     createVenture,
     updateVenture,
+    deleteVenture,
     seedTestVentures
   };
 

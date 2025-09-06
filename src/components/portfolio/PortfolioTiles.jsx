@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, AlertTriangle } from 'lucide-react';
+import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, AlertTriangle, Trash2, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { formatNumber } from '../../lib/utils';
@@ -31,7 +31,8 @@ const SeedTestVenturesButton = () => {
 };
 
 const PortfolioTiles = ({ onVentureClick }) => {
-  const { ventures, loading } = useVentures();
+  const { ventures, loading, deleteVenture } = useVentures();
+  const [deletingId, setDeletingId] = useState(null);
 
   if (loading) {
     return (
@@ -102,6 +103,31 @@ const PortfolioTiles = ({ onVentureClick }) => {
     return trendDirection === 'up' ? 'text-green-600' : 'text-red-600';
   };
 
+  const handleDeleteVenture = async (ventureId, ventureName) => {
+    if (deletingId) return; // Prevent multiple deletions
+    
+    if (!confirm(`Are you sure you want to delete "${ventureName}"? This will permanently remove all associated KPIs, worksheets, notes, and other data. This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingId(ventureId);
+    try {
+      const result = await deleteVenture(ventureId);
+      if (result.success) {
+        // Show success feedback - you might want to add a toast here
+        console.log(`Successfully deleted venture: ${result.deletedVenture}`);
+      } else {
+        console.error('Failed to delete venture:', result.error);
+        alert(`Failed to delete venture: ${result.error.message}`);
+      }
+    } catch (error) {
+      console.error('Unexpected error during deletion:', error);
+      alert('An unexpected error occurred while deleting the venture.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {ventures.map((venture) => {
@@ -111,24 +137,41 @@ const PortfolioTiles = ({ onVentureClick }) => {
             className="cursor-pointer hover:shadow-lg transition-all duration-200 border-0 shadow-md"
             onClick={() => onVentureClick?.(venture.id)}
           >
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl font-bold">{venture.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
-                  </div>
-                </div>
-                <Badge 
-                  className={`${getStatusColor(venture.status)} text-xs font-medium border`}
-                >
-                  {venture.status}
-                </Badge>
-              </div>
-            </CardHeader>
+             <CardHeader className="pb-4">
+               <div className="flex items-start justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                     <Building2 className="h-6 w-6 text-primary" />
+                   </div>
+                   <div>
+                     <CardTitle className="text-xl font-bold">{venture.name}</CardTitle>
+                     <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
+                   </div>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <Badge 
+                     className={`${getStatusColor(venture.status)} text-xs font-medium border`}
+                   >
+                     {venture.status}
+                   </Badge>
+                   <button
+                     className="p-1 hover:bg-destructive/10 rounded-md transition-colors"
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       handleDeleteVenture(venture.id, venture.name);
+                     }}
+                     disabled={deletingId === venture.id}
+                     title="Delete venture"
+                   >
+                     {deletingId === venture.id ? (
+                       <div className="w-4 h-4 animate-spin border-2 border-destructive border-t-transparent rounded-full" />
+                     ) : (
+                       <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/80" />
+                     )}
+                   </button>
+                 </div>
+               </div>
+             </CardHeader>
             
             <CardContent>
               {/* Key Metrics Grid */}
