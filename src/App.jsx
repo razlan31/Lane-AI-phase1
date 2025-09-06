@@ -353,7 +353,7 @@ function App() {
 
       {/* QuickDock - Main Auto-Promotion Flow */}
       <ErrorBoundary>
-        <QuickDock />
+        <QuickDock onNavigate={setCurrentView} />
       </ErrorBoundary>
 
       {/* GlobalOrb with AI Copilot Integration */}
