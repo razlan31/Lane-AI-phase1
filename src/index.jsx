@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
 // CRITICAL: Global React hooks check before any components load
@@ -7,9 +7,9 @@ console.log('🔍 CRITICAL - Global React check in index.jsx:', {
   React: !!React,
   ReactDOM: !!ReactDOM,
   ReactVersion: React.version,
-  useState: !!React.useState,
-  useCallback: !!React.useCallback,
-  useEffect: !!React.useEffect,
+  useState: !!useState,
+  useCallback: !!useCallback,
+  useEffect: !!useEffect,
   window: typeof window,
   document: typeof document,
   timestamp: new Date().toISOString()

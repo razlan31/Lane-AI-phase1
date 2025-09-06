@@ -1,9 +1,10 @@
 import * as React from 'react';
+import { useContext } from 'react';
 import { usePricingTier } from '@/hooks/usePricingTier';
 
 console.log('🔍 PricingProvider loading - React context available?', { 
   createContext: !!React.createContext, 
-  useContext: !!React.useContext,
+  useContext: !!useContext,
   timestamp: new Date().toISOString()
 });
 
@@ -40,7 +41,7 @@ export const usePricing = () => {
   console.log('🔍 usePricing called - checking context');
   
   try {
-    const ctx = React.useContext(PricingContext);
+    const ctx = useContext(PricingContext);
     console.log('🔍 usePricing - context value:', !!ctx);
     
     if (ctx === null) {
