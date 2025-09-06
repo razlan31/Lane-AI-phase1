@@ -60,6 +60,9 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
     clearInput 
   } = useDebouncedChatInput('', 750);
   
+  // Debug the hook
+  console.log('AICopilotPage hook values:', { inputValue, debouncedValue, isTyping });
+  
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [showHistory, setShowHistory] = useState(false);
@@ -90,10 +93,25 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
 
   // Initialize first chat if none exist
   useEffect(() => {
+    console.log('AICopilotPage useEffect:', { loading, chatSessionsLength: chatSessions.length, activeChatId });
     if (!loading && chatSessions.length === 0) {
+      console.log('Creating initial chat...');
       createNewChat('New Chat');
     }
   }, [loading, chatSessions.length, createNewChat]);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('AICopilotPage state:', { 
+      inputValue, 
+      activeChatId, 
+      loading, 
+      aiLoading, 
+      evaluating,
+      disabled: aiLoading || evaluating || loading,
+      chatSessionsCount: chatSessions.length 
+    });
+  }, [inputValue, activeChatId, loading, aiLoading, evaluating, chatSessions.length]);
 
   // Handle file upload
   const handleFileUpload = async (event) => {
@@ -498,13 +516,21 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
                 type="text"
                 value={inputValue}
                 onChange={(e) => {
-                  console.log('AICopilotPage input change:', e.target.value);
+                  console.log('🔥 INPUT CHANGE DETECTED:', e.target.value);
+                  console.log('🔥 Before setInputValue - inputValue:', inputValue);
                   setInputValue(e.target.value);
+                  console.log('🔥 After setInputValue called');
                 }}
+                onFocus={() => console.log('🔥 INPUT FOCUSED')}
+                onBlur={() => console.log('🔥 INPUT BLURRED')}
+                onClick={() => console.log('🔥 INPUT CLICKED')}
+                onKeyDown={(e) => console.log('🔥 KEY DOWN:', e.key)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                placeholder={loading ? "Setting up chat..." : !activeChatId ? "Creating chat session..." : "Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"}
-                className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={aiLoading || evaluating || loading}
+                placeholder={loading ? "Setting up chat..." : !activeChatId ? "Creating chat session..." : "Type your message here..."}
+                className="flex-1 p-3 border-2 border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
+                disabled={false}
+                style={{ pointerEvents: 'auto', zIndex: 1000, position: 'relative' }}
+                autoComplete="off"
               />
               <Button
                 onClick={handleSendMessage}
