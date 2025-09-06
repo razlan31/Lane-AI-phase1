@@ -568,27 +568,32 @@ When users request these actions, use the available functions to perform them im
       roleJustification = 'You wrote a personal entry; journal mode is appropriate.';
     }
 
+    // Function call support
+    let parsedFunctionName: string | null = null;
+    let parsedFunctionArgs: any = null;
+
     if (functionCall) {
-      console.log('Function call detected (preview only):', functionCall);
+      console.log('Function call detected:', functionCall);
       try {
-        const functionArgs = JSON.parse(functionCall.arguments || '{}');
-        // Map function to action without applying
+        parsedFunctionArgs = JSON.parse(functionCall.arguments || '{}');
+        parsedFunctionName = functionCall.name;
+        // Map function to action without applying (preview for UI)
         if (functionCall.name === 'create_venture') {
-          proposedAction = { action: 'update_venture', resourceType: 'ventures', payload: functionArgs };
+          proposedAction = { action: 'update_venture', resourceType: 'ventures', payload: parsedFunctionArgs };
         } else if (functionCall.name === 'create_complete_venture_with_worksheets') {
-          proposedAction = { action: 'create_complete_venture', resourceType: 'ventures', payload: functionArgs };
+          proposedAction = { action: 'create_complete_venture', resourceType: 'ventures', payload: parsedFunctionArgs };
           selectedRole = 'strategist';
         } else if (functionCall.name === 'create_personal_entry') {
-          proposedAction = { action: 'journal_entry', resourceType: 'personal_journal', payload: functionArgs };
+          proposedAction = { action: 'journal_entry', resourceType: 'personal_journal', payload: parsedFunctionArgs };
           selectedRole = 'journal';
         } else if (functionCall.name === 'modify_worksheet_fields') {
-          proposedAction = { action: 'create_worksheet', resourceType: 'worksheets', payload: functionArgs };
+          proposedAction = { action: 'create_worksheet', resourceType: 'worksheets', payload: parsedFunctionArgs };
           selectedRole = 'analyst';
         } else if (functionCall.name === 'create_scratchpad_note') {
-          proposedAction = { action: 'create_note', resourceType: 'scratchpad_notes', payload: functionArgs };
+          proposedAction = { action: 'create_note', resourceType: 'scratchpad_notes', payload: parsedFunctionArgs };
           selectedRole = selectedRole === 'assistant' ? 'guide' : selectedRole;
         } else if (functionCall.name === 'update_onboarding_progress') {
-          proposedAction = { action: 'workflow_guide', resourceType: 'profiles', payload: functionArgs };
+          proposedAction = { action: 'workflow_guide', resourceType: 'profiles', payload: parsedFunctionArgs };
           selectedRole = 'guide';
         }
       } catch (e) {
@@ -604,9 +609,27 @@ When users request these actions, use the available functions to perform them im
         .select('name, is_active')
         .eq('name', proposedAction.action)
         .maybeSingle();
-      validation = feature && feature.is_active !== false
-        ? { allowed: true, reason: 'Feature allowed' }
+      validation = (!feature || feature.is_active !== false)
+        ? { allowed: true, reason: feature ? 'Feature allowed' : 'No feature flag found; default allow' }
         : { allowed: false, reason: 'Feature not available or disabled' };
+    }
+
+    // Execute function call when allowed (no more preview-only)
+    if (typeof parsedFunctionName === 'string' && validation.allowed) {
+      console.log('Executing function call:', parsedFunctionName, 'with args:', parsedFunctionArgs);
+      try {
+        const execResult = await handleFunctionCall(parsedFunctionName, parsedFunctionArgs, userId, supabase);
+        if (execResult?.success) {
+          assistantText = execResult.message || assistantText || 'Action completed successfully.';
+        } else {
+          assistantText = `I tried to perform the action but ran into an error: ${execResult?.error || 'Unknown error'}.`;
+        }
+      } catch (execErr) {
+        console.error('Function execution error:', execErr);
+        assistantText = 'I attempted the action but encountered an unexpected error.';
+      }
+    } else if (typeof parsedFunctionName === 'string' && !validation.allowed) {
+      console.log('Function call blocked by feature flag:', parsedFunctionName, validation);
     }
 
     // Save assistant response
