@@ -29,7 +29,7 @@ import { PromptReuseChip } from '@/components/ui/prompt-reuse-chip';
 import { VoiceInputButton } from '@/components/VoiceInputButton';
 import { detectChatCommands, generateCommandResponse } from '@/utils/aiChatBuilder';
 import { getCapabilities } from '@/utils/capabilities';
-import { WorksheetBuilder } from '@/components/modals/WorksheetBuilder';
+import WorksheetBuilder from '@/components/modals/WorksheetBuilder';
 import { PersonalFieldModal } from '@/components/modals/PersonalFieldModal';
 import AIMutationPreviewModal from '@/components/modals/AIMutationPreviewModal';
 import ScenarioSandbox from '@/components/scenarios/ScenarioSandbox';
