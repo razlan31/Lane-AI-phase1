@@ -28,7 +28,7 @@ import { PromptReuseChip } from '../ui/prompt-reuse-chip';
 import { VoiceInputButton } from '../VoiceInputButton';
 import { detectChatCommands, generateCommandResponse } from '../../utils/aiChatBuilder';
 import { getCapabilities } from '../../utils/capabilities';
-import { WorksheetBuilder } from '../modals/WorksheetBuilder';
+import WorksheetBuilder from '../modals/WorksheetBuilder';
 import { PersonalFieldModal } from '../modals/PersonalFieldModal';
 import AIMutationPreviewModal from '../modals/AIMutationPreviewModal';
 import ScenarioSandbox from '../scenarios/ScenarioSandbox';
