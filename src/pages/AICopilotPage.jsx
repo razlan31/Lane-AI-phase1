@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useChatSessions } from '@/hooks/useChatSessions';
+import { useDebouncedChatInput } from '@/hooks/useDebounce';
 import { Bot, Plus, Trash2, ChevronDown, Send, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PromptReuseChip } from '@/components/ui/prompt-reuse-chip';
 import { VoiceInputButton } from '@/components/VoiceInputButton';
 
 const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
@@ -16,9 +18,17 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
     deleteSession
   } = useChatSessions(ventureId);
   
-  const [input, setInput] = useState('');
+  const { 
+    inputValue, 
+    debouncedValue, 
+    isTyping, 
+    setInputValue, 
+    clearInput 
+  } = useDebouncedChatInput('', 750);
+  
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [auditModal, setAuditModal] = useState(null);
+  const [lastUserPrompts, setLastUserPrompts] = useState([]);
 
   useEffect(() => {
     // Set active session to the most recent one
@@ -39,10 +49,16 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
   }, [loading, sessions.length, createSession, mode]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !activeSessionId) return;
+    if (!inputValue.trim() || !activeSessionId) return;
     
-    const userInput = input;
-    setInput('');
+    const userInput = inputValue.trim();
+    clearInput();
+
+    // Track recent prompts for reuse
+    setLastUserPrompts(prev => {
+      const updated = [userInput, ...prev.filter(p => p !== userInput)];
+      return updated.slice(0, 3); // Keep last 3 unique prompts
+    });
     
     // Add user message
     await addMessage(activeSessionId, userInput, 'user');
@@ -258,21 +274,40 @@ Would you like me to proceed with any of these suggestions?`,
             <div className="flex gap-3 max-w-4xl mx-auto">
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder="Type your message..."
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!activeSessionId}
               />
               <VoiceInputButton 
-                onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                onTranscript={(text) => setInputValue(prev => prev + (prev ? ' ' : '') + text)}
                 disabled={!activeSessionId}
               />
-              <Button onClick={sendMessage} disabled={!input.trim() || !activeSessionId}>
+              <Button onClick={sendMessage} disabled={!inputValue.trim() || !activeSessionId}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>
+            
+            {/* Prompt Reuse Chips */}
+            {lastUserPrompts.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto py-2 max-w-4xl mx-auto">
+                {lastUserPrompts.map((prompt, idx) => (
+                  <PromptReuseChip
+                    key={idx}
+                    prompt={prompt}
+                    onReuse={(reusedPrompt) => setInputValue(reusedPrompt)}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {isTyping && (
+              <div className="text-xs text-muted-foreground text-center max-w-4xl mx-auto">
+                Typing...
+              </div>
+            )}
           </div>
         </div>
       )}

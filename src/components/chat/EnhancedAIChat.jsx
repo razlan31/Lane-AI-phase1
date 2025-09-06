@@ -23,6 +23,8 @@ import { Input } from '../ui/input';
 import { cn } from '../../lib/utils';
 import { useEnhancedChat } from '../../hooks/useEnhancedChat';
 import { useOpenAIChat } from '../../hooks/useOpenAIChat';
+import { useDebouncedChatInput } from '../../hooks/useDebounce';
+import { PromptReuseChip } from '../ui/prompt-reuse-chip';
 import { VoiceInputButton } from '../VoiceInputButton';
 
 const EnhancedAIChat = ({ 
@@ -48,11 +50,19 @@ const EnhancedAIChat = ({
 
   const { sendMessage: sendOpenAIMessage, loading: aiLoading } = useOpenAIChat();
 
-  const [inputValue, setInputValue] = useState('');
+  const { 
+    inputValue, 
+    debouncedValue, 
+    isTyping, 
+    setInputValue, 
+    clearInput 
+  } = useDebouncedChatInput('', 750);
+  
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [lastUserPrompts, setLastUserPrompts] = useState([]);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -103,7 +113,13 @@ const EnhancedAIChat = ({
     if (!inputValue.trim() || !activeChatId || aiLoading) return;
 
     const userMessage = inputValue.trim();
-    setInputValue('');
+    clearInput();
+
+    // Track recent prompts for reuse
+    setLastUserPrompts(prev => {
+      const updated = [userMessage, ...prev.filter(p => p !== userMessage)];
+      return updated.slice(0, 3); // Keep last 3 unique prompts
+    });
 
     // Auto-generate title if this is the first user message
     const currentMessages = messages || [];
@@ -326,9 +342,10 @@ const EnhancedAIChat = ({
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
               placeholder="Upload files or describe your business..."
               className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={aiLoading}
             />
             <Button
               size="sm"
@@ -339,8 +356,22 @@ const EnhancedAIChat = ({
               <Send className="h-3 w-3" />
             </Button>
           </div>
+          
+          {/* Prompt Reuse Chips */}
+          {lastUserPrompts.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto py-2">
+              {lastUserPrompts.map((prompt, idx) => (
+                <PromptReuseChip
+                  key={idx}
+                  prompt={prompt}
+                  onReuse={(reusedPrompt) => setInputValue(reusedPrompt)}
+                />
+              ))}
+            </div>
+          )}
+          
           <div className="text-xs text-muted-foreground text-center">
-            {aiLoading ? "AI is thinking..." : "Upload files, use voice input, or type to get started"}
+            {isTyping ? "Typing..." : aiLoading ? "AI is thinking..." : "Upload files, use voice input, or type to get started"}
           </div>
         </div>
       </Card>
