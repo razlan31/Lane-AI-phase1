@@ -1,5 +1,5 @@
 // No React import needed
-import { Plus, Activity, Play, Download, MessageCircle, Crown } from 'lucide-react';
+import { Plus, Activity, Play, Download, Upload, MessageCircle, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
@@ -9,6 +9,7 @@ const QuickActionsDock = ({
   onSignals, 
   onRunFlow, 
   onExport, 
+  onImport,
   onChat,
   onFounderMode,
   className 
@@ -41,6 +42,13 @@ const QuickActionsDock = ({
       label: 'Export',
       onClick: onExport,
       tooltip: 'Export data and reports'
+    },
+    {
+      id: 'import',
+      icon: Upload,
+      label: 'Import',
+      onClick: onImport,
+      tooltip: 'Import data from file'
     },
     {
       id: 'chat',
@@ -76,7 +84,7 @@ const QuickActionsDock = ({
                   "w-12 h-12 p-0 rounded-full shadow-lg border-2",
                   action.className
                 )}
-                onClick={action.action}
+                onClick={action.onClick}
               >
                 <Icon className="h-5 w-5" />
               </Button>

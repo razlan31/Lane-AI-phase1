@@ -4,10 +4,16 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Download, FileText, Table, Image, Mail, Lock } from 'lucide-react';
 import LockWrapper from '../primitives/LockWrapper';
+import ExportEngine from '../../utils/exportEngine';
+import { useToast } from '../../hooks/use-toast';
 
 const ExportModal = ({ isOpen, onClose, data = {} }) => {
   const [selectedFormat, setSelectedFormat] = useState('csv');
   const [isExporting, setIsExporting] = useState(false);
+  const [includeTimestamps, setIncludeTimestamps] = useState(true);
+  const [includeCalculations, setIncludeCalculations] = useState(true);
+  const [rawDataOnly, setRawDataOnly] = useState(false);
+  const { toast } = useToast();
 
   const exportFormats = [
     {
@@ -18,11 +24,18 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
       available: true
     },
     {
+      id: 'json',
+      name: 'JSON Data',
+      description: 'Complete data backup format',
+      icon: FileText,
+      available: true
+    },
+    {
       id: 'pdf',
       name: 'PDF Report',
       description: 'Professional formatted report',
       icon: FileText,
-      available: false,
+      available: true,
       requiresPlan: 'pro'
     },
     {
@@ -30,39 +43,42 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
       name: 'PNG Image',
       description: 'Dashboard screenshot',
       icon: Image,
-      available: false,
+      available: true,
       requiresPlan: 'founders'
-    },
-    {
-      id: 'email',
-      name: 'Email Report',
-      description: 'Send to stakeholders',
-      icon: Mail,
-      available: false,
-      requiresPlan: 'pro'
     }
   ];
 
   const handleExport = async () => {
-    if (!exportFormats.find(f => f.id === selectedFormat)?.available) {
+    const format = exportFormats.find(f => f.id === selectedFormat);
+    if (!format?.available) {
       return;
     }
 
     setIsExporting(true);
     
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const options = {
+        includeTimestamps,
+        includeCalculations: includeCalculations && !rawDataOnly,
+        rawDataOnly,
+        data
+      };
+
+      const result = await ExportEngine.exportData(selectedFormat, options);
       
-      if (selectedFormat === 'csv') {
-        // Generate CSV data
-        const csvData = generateCSV(data);
-        downloadCSV(csvData, `laneai-export-${Date.now()}.csv`);
-      }
+      toast({
+        title: "Export Complete",
+        description: `Successfully exported as ${result.filename}`,
+      });
       
       onClose();
     } catch (error) {
       console.error('Export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: error.message || "An error occurred during export",
+        variant: "destructive"
+      });
     } finally {
       setIsExporting(false);
     }
@@ -159,21 +175,40 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
           </div>
 
           {/* Export Options */}
-          {selectedFormat === 'csv' && (
+          {(selectedFormat === 'csv' || selectedFormat === 'json') && (
             <div className="space-y-3">
               <h3 className="font-medium">Export options</h3>
               <div className="space-y-2">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
+                  <input 
+                    type="checkbox" 
+                    checked={includeCalculations && !rawDataOnly} 
+                    onChange={(e) => setIncludeCalculations(e.target.checked)}
+                    disabled={rawDataOnly}
+                    className="rounded" 
+                  />
                   <span className="text-sm">Include trends and calculations</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
+                  <input 
+                    type="checkbox" 
+                    checked={includeTimestamps} 
+                    onChange={(e) => setIncludeTimestamps(e.target.checked)}
+                    className="rounded" 
+                  />
                   <span className="text-sm">Include timestamps</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Include raw data only</span>
+                  <input 
+                    type="checkbox" 
+                    checked={rawDataOnly}
+                    onChange={(e) => {
+                      setRawDataOnly(e.target.checked);
+                      if (e.target.checked) setIncludeCalculations(false);
+                    }}
+                    className="rounded" 
+                  />
+                  <span className="text-sm">Raw data only (smaller file)</span>
                 </label>
               </div>
             </div>
@@ -183,10 +218,10 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
           <div className="bg-muted/50 p-3 rounded-lg">
             <div className="text-sm font-medium mb-2">Preview</div>
             <div className="text-xs text-muted-foreground">
-              {selectedFormat === 'csv' && 'Spreadsheet with 6 KPIs and trend data'}
+              {selectedFormat === 'csv' && 'Spreadsheet with KPIs, ventures, and worksheet data'}
+              {selectedFormat === 'json' && 'Complete data backup including all your business data'}
               {selectedFormat === 'pdf' && 'Professional report with charts and analysis'}
               {selectedFormat === 'image' && 'High-resolution dashboard screenshot'}
-              {selectedFormat === 'email' && 'Formatted report sent to specified recipients'}
             </div>
           </div>
 
