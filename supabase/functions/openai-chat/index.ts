@@ -229,7 +229,7 @@ serve(async (req) => {
     }
 
     // Prepare system context based on context type
-    let systemPrompt = "You are Lane AI, a helpful business intelligence assistant. Provide concise, actionable insights.";
+    let systemPrompt = "You are Lane AI, a helpful business intelligence assistant that specializes in creating complete business dashboards automatically.";
     
     if (context === 'venture') {
       systemPrompt = "You are Lane AI, a startup advisor. Help with venture building, business metrics, and strategic decisions. Be concise and practical.";
@@ -239,8 +239,40 @@ serve(async (req) => {
       systemPrompt = "You are Lane AI helping with business brainstorming. Help organize thoughts, identify patterns, and suggest next steps. Be encouraging and insightful.";
     }
 
-    // Enhanced system prompt with AI meta activities capabilities
-    systemPrompt += `\n\nYou have special capabilities to help users modify their workspace through conversation:
+    // Enhanced system prompt with venture creation magic moment
+    systemPrompt += `\n\n🚀 MAGIC MOMENT - VENTURE CREATION:
+
+When users mention ANY business idea (food truck, SaaS, consulting, retail, app, service, etc.), IMMEDIATELY trigger the magic moment:
+
+"🎯 Perfect! I can create a complete business dashboard for your [BUSINESS TYPE] with 5-7 worksheets automatically. Choose your approach:
+
+**A) 📊 Use Industry Benchmarks** - I'll create your venture with realistic mock data from industry averages that you can replace with real numbers later
+
+**B) 🎯 Provide Real Data** - I'll ask targeted questions to build your dashboard with your actual business data (you can skip any you don't have)"
+
+BUSINESS TYPE DETECTION:
+- Food truck/restaurant: Unit economics, daily sales, inventory, labor costs, location analysis
+- SaaS/Software: MRR, churn, CAC, LTV, user acquisition funnels, pricing tiers
+- Consulting: Hourly rates, client acquisition, project profitability, capacity planning
+- E-commerce: Product margins, shipping costs, conversion rates, inventory turnover
+- Local service: Service pricing, customer lifetime value, territory analysis, seasonal trends
+- Investment/Real Estate: Property analysis, cash flow, cap rates, portfolio metrics
+
+INDUSTRY MOCK DATA EXAMPLES:
+- Food truck: $300-800 daily revenue, 15-20% food costs, $50-100 daily labor
+- SaaS: $10-50 MRR per user, 5-10% monthly churn, $50-200 CAC
+- Consulting: $75-300/hour rates, 20-40 billable hours/week, 6-month client cycles
+
+COMPREHENSIVE QUESTION FLOW (Option B):
+1. Business model & revenue streams
+2. Current financial situation (revenue, expenses, projections)
+3. Market size and customer segments
+4. Key metrics and KPIs you track
+5. Major costs and expenses
+6. Growth plans and timeline
+7. Any existing data or spreadsheets
+
+Always create 5-7 relevant worksheets automatically based on business type.
 
 WORKSHEET OPERATIONS:
 - Add custom fields: "Add a marketing expense field to my ROI worksheet"
@@ -382,6 +414,38 @@ When users request these actions, use the available functions to perform them im
           },
           required: ["name", "description"]
         }
+      },
+      {
+        name: "create_complete_venture_with_worksheets",
+        description: "Create a venture with 5-7 worksheets automatically based on business type and data approach",
+        parameters: {
+          type: "object",
+          properties: {
+            venture: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                description: { type: "string" },
+                business_type: { type: "string", enum: ["food_truck", "restaurant", "saas", "software", "consulting", "ecommerce", "local_service", "investment", "real_estate", "retail", "app", "other"] },
+                type: { type: "string", enum: ["startup", "local_business", "side_project", "investment"] },
+                stage: { type: "string", enum: ["concept", "planning", "launch", "growth", "mature"] }
+              },
+              required: ["name", "description", "business_type"]
+            },
+            data_approach: { type: "string", enum: ["industry_benchmarks", "real_data"] },
+            user_data: {
+              type: "object",
+              properties: {
+                revenue: { type: "number" },
+                monthly_expenses: { type: "number" },
+                customer_count: { type: "number" },
+                pricing_model: { type: "string" },
+                key_metrics: { type: "object" }
+              }
+            }
+          },
+          required: ["venture", "data_approach"]
+        }
       }
     ];
 
@@ -424,11 +488,38 @@ When users request these actions, use the available functions to perform them im
     let selectedRole = 'assistant';
     let roleJustification = '';
 
-    // Simple role detection heuristics
+    // Enhanced role detection with business type recognition
     const lowerMsg = message.toLowerCase();
+    
+    // Business type detection for magic moment
+    const businessTypePatterns = {
+      food_truck: /(food truck|mobile food|street food|food cart)/,
+      restaurant: /(restaurant|cafe|coffee shop|bar|diner|bistro)/,
+      saas: /(saas|software.*service|web app|platform|subscription.*software)/,
+      software: /(app|software|mobile app|web.*app|application|tech.*product)/,
+      consulting: /(consulting|consultant|freelance|professional.*service|advisory)/,
+      ecommerce: /(ecommerce|e-commerce|online.*store|online.*shop|selling.*online)/,
+      local_service: /(service.*business|local.*business|repair.*shop|salon|spa|clinic)/,
+      real_estate: /(real estate|property|rental|investment.*property)/,
+      retail: /(retail|store|shop|boutique|selling.*products)/
+    };
+    
+    // Check for business mentions that should trigger venture creation
+    let detectedBusinessType = null;
+    for (const [type, pattern] of Object.entries(businessTypePatterns)) {
+      if (pattern.test(lowerMsg)) {
+        detectedBusinessType = type;
+        break;
+      }
+    }
+    
+    // Enhanced role detection
     if (/(explain|what is|definition|glossary)/.test(lowerMsg)) {
       selectedRole = 'explainer';
       roleJustification = 'You asked for an explanation of a concept.';
+    } else if (detectedBusinessType && /(starting|launch|create|build|open|begin|new|idea|thinking about)/.test(lowerMsg)) {
+      selectedRole = 'venture_creator';
+      roleJustification = `You mentioned starting a ${detectedBusinessType.replace('_', ' ')} business - perfect for creating a complete venture dashboard!`;
     } else if (/(idea|brainstorm|business|new product)/.test(lowerMsg)) {
       selectedRole = 'strategist';
       roleJustification = 'You asked about creating or refining a business idea.';
@@ -450,6 +541,9 @@ When users request these actions, use the available functions to perform them im
         // Map function to action without applying
         if (functionCall.name === 'create_venture') {
           proposedAction = { action: 'update_venture', resourceType: 'ventures', payload: functionArgs };
+        } else if (functionCall.name === 'create_complete_venture_with_worksheets') {
+          proposedAction = { action: 'create_complete_venture', resourceType: 'ventures', payload: functionArgs };
+          selectedRole = 'strategist';
         } else if (functionCall.name === 'create_personal_entry') {
           proposedAction = { action: 'journal_entry', resourceType: 'personal_journal', payload: functionArgs };
           selectedRole = 'journal';
@@ -561,6 +655,9 @@ async function handleFunctionCall(functionName: string, args: any, userId: strin
       
       case 'create_venture':
         return await createVenture(args, userId, supabase);
+      
+      case 'create_complete_venture_with_worksheets':
+        return await createCompleteVentureWithWorksheets(args, userId, supabase);
       
       default:
         return { success: false, error: 'Unknown function' };
@@ -785,4 +882,328 @@ async function createVenture(args: any, userId: string, supabase: any) {
     message: `Created new venture "${name}"! You can now start adding KPIs and worksheets to track its progress.`,
     data: venture
   };
+}
+
+async function createCompleteVentureWithWorksheets(args: any, userId: string, supabase: any) {
+  const { venture, data_approach, user_data } = args;
+  const { name, description, business_type, type, stage } = venture;
+  
+  console.log(`Creating complete venture with worksheets: ${name} (${business_type})`);
+  
+  // First create the venture
+  const { data: newVenture, error: ventureError } = await supabase
+    .from('ventures')
+    .insert({
+      user_id: userId,
+      name: name,
+      description: description,
+      type: type || 'startup',
+      stage: stage || 'concept'
+    })
+    .select()
+    .maybeSingle();
+  
+  if (ventureError) {
+    return { success: false, error: ventureError.message };
+  }
+  
+  const ventureId = newVenture.id;
+  
+  // Industry-specific worksheet templates and mock data
+  const worksheetTemplates = getWorksheetTemplates(business_type, data_approach, user_data);
+  
+  // Create worksheets
+  const createdWorksheets = [];
+  for (const template of worksheetTemplates) {
+    const { data: worksheet, error: worksheetError } = await supabase
+      .from('worksheets')
+      .insert({
+        user_id: userId,
+        venture_id: ventureId,
+        name: template.name,
+        type: template.type,
+        fields: template.fields,
+        kpis: template.kpis || []
+      })
+      .select()
+      .maybeSingle();
+    
+    if (!worksheetError && worksheet) {
+      createdWorksheets.push(worksheet);
+    }
+  }
+  
+  // Create sample KPIs based on business type
+  const kpis = getBusinessTypeKPIs(business_type, data_approach, user_data);
+  for (const kpi of kpis) {
+    await supabase
+      .from('kpis')
+      .insert({
+        venture_id: ventureId,
+        name: kpi.name,
+        value: kpi.value,
+        confidence_level: kpi.confidence_level || 'estimate'
+      });
+  }
+  
+  const approachText = data_approach === 'industry_benchmarks' 
+    ? 'with industry benchmark data that you can replace with real numbers later'
+    : 'with your provided data';
+    
+  return { 
+    success: true, 
+    message: `🎉 Created "${name}" ${approachText}! Generated ${createdWorksheets.length} worksheets: ${createdWorksheets.map(w => w.name).join(', ')}. Visit your HQ Dashboard to explore your complete business setup!`,
+    data: { 
+      venture: newVenture, 
+      worksheets: createdWorksheets,
+      business_type 
+    }
+  };
+}
+
+function getWorksheetTemplates(businessType: string, dataApproach: string, userData: any) {
+  const isRealData = dataApproach === 'real_data';
+  
+  const baseTemplates = {
+    food_truck: [
+      {
+        name: "Daily Revenue Tracker",
+        type: "financial",
+        fields: [
+          { label: "Daily Sales Target", type: "currency", value: isRealData ? (userData?.revenue || "500") : "650" },
+          { label: "Average Order Value", type: "currency", value: isRealData ? "0" : "12.50" },
+          { label: "Daily Customer Count", type: "number", value: isRealData ? (userData?.customer_count || "0") : "52" },
+          { label: "Food Cost %", type: "number", value: "28" },
+          { label: "Labor Cost %", type: "number", value: "25" }
+        ],
+        kpis: [
+          { name: "Daily Revenue", value: isRealData ? (userData?.revenue || 500) : 650 },
+          { name: "Food Cost %", value: 28 },
+          { name: "Profit Margin %", value: 35 }
+        ]
+      },
+      {
+        name: "Location Analysis",
+        type: "operations",
+        fields: [
+          { label: "Primary Location", type: "text", value: isRealData ? "" : "Downtown Business District" },
+          { label: "Peak Hours", type: "text", value: "11:30 AM - 2:00 PM, 5:00 PM - 8:00 PM" },
+          { label: "Foot Traffic Score", type: "number", value: isRealData ? "0" : "8" },
+          { label: "Monthly Permit Cost", type: "currency", value: isRealData ? "0" : "450" }
+        ]
+      },
+      {
+        name: "Menu & Inventory",
+        type: "operations",
+        fields: [
+          { label: "Menu Items Count", type: "number", value: isRealData ? "0" : "12" },
+          { label: "Top Selling Item", type: "text", value: isRealData ? "" : "Signature Burger" },
+          { label: "Inventory Turnover Days", type: "number", value: "3" },
+          { label: "Waste %", type: "number", value: "8" }
+        ]
+      },
+      {
+        name: "Unit Economics",
+        type: "financial",
+        fields: [
+          { label: "Cost per Customer", type: "currency", value: "8.20" },
+          { label: "Customer Lifetime Value", type: "currency", value: isRealData ? "0" : "125" },
+          { label: "Break-even Customers/Day", type: "number", value: "38" }
+        ]
+      },
+      {
+        name: "Growth Planning",
+        type: "strategic", 
+        fields: [
+          { label: "Target Locations", type: "number", value: isRealData ? "1" : "3" },
+          { label: "Marketing Budget %", type: "number", value: "12" },
+          { label: "Expansion Timeline", type: "text", value: isRealData ? "" : "6-12 months" }
+        ]
+      }
+    ],
+    saas: [
+      {
+        name: "MRR & Growth",
+        type: "financial",
+        fields: [
+          { label: "Monthly Recurring Revenue", type: "currency", value: isRealData ? (userData?.revenue || "0") : "25000" },
+          { label: "Active Subscribers", type: "number", value: isRealData ? (userData?.customer_count || "0") : "500" },
+          { label: "Average Revenue Per User", type: "currency", value: isRealData ? "0" : "50" },
+          { label: "Monthly Growth Rate %", type: "number", value: isRealData ? "0" : "15" },
+          { label: "Churn Rate %", type: "number", value: "8" }
+        ],
+        kpis: [
+          { name: "MRR", value: isRealData ? (userData?.revenue || 0) : 25000 },
+          { name: "Churn Rate %", value: 8 },
+          { name: "Growth Rate %", value: 15 }
+        ]
+      },
+      {
+        name: "Customer Acquisition",
+        type: "marketing",
+        fields: [
+          { label: "Customer Acquisition Cost", type: "currency", value: isRealData ? "0" : "120" },
+          { label: "Customer Lifetime Value", type: "currency", value: isRealData ? "0" : "850" },
+          { label: "LTV:CAC Ratio", type: "number", value: "7.1" },
+          { label: "Conversion Rate %", type: "number", value: isRealData ? "0" : "3.2" },
+          { label: "Trial to Paid %", type: "number", value: "18" }
+        ]
+      },
+      {
+        name: "Product Metrics",
+        type: "operations",
+        fields: [
+          { label: "Daily Active Users", type: "number", value: isRealData ? "0" : "280" },
+          { label: "Feature Adoption Rate %", type: "number", value: "65" },
+          { label: "Support Tickets/Month", type: "number", value: "45" },
+          { label: "Net Promoter Score", type: "number", value: "42" }
+        ]
+      },
+      {
+        name: "Pricing Tiers",
+        type: "strategic",
+        fields: [
+          { label: "Basic Plan Price", type: "currency", value: isRealData ? (userData?.key_metrics?.basic_price || "0") : "29" },
+          { label: "Pro Plan Price", type: "currency", value: isRealData ? (userData?.key_metrics?.pro_price || "0") : "79" },
+          { label: "Enterprise Plan Price", type: "currency", value: isRealData ? (userData?.key_metrics?.enterprise_price || "0") : "199" },
+          { label: "Most Popular Tier", type: "text", value: "Pro Plan" }
+        ]
+      },
+      {
+        name: "Cash Flow Forecast",
+        type: "financial",
+        fields: [
+          { label: "Monthly Operating Costs", type: "currency", value: isRealData ? (userData?.monthly_expenses || "0") : "18000" },
+          { label: "Runway Months", type: "number", value: isRealData ? "0" : "18" },
+          { label: "Break-even MRR", type: "currency", value: "22000" },
+          { label: "Next Funding Round", type: "currency", value: isRealData ? "0" : "500000" }
+        ]
+      }
+    ],
+    consulting: [
+      {
+        name: "Billable Hours & Rates",
+        type: "financial",
+        fields: [
+          { label: "Hourly Rate", type: "currency", value: isRealData ? (userData?.key_metrics?.hourly_rate || "0") : "150" },
+          { label: "Target Hours/Week", type: "number", value: isRealData ? "0" : "32" },
+          { label: "Current Utilization %", type: "number", value: isRealData ? "0" : "75" },
+          { label: "Monthly Revenue Target", type: "currency", value: isRealData ? (userData?.revenue || "0") : "19200" }
+        ],
+        kpis: [
+          { name: "Utilization Rate %", value: 75 },
+          { name: "Hourly Rate", value: isRealData ? (userData?.key_metrics?.hourly_rate || 150) : 150 },
+          { name: "Monthly Revenue", value: isRealData ? (userData?.revenue || 19200) : 19200 }
+        ]
+      },
+      {
+        name: "Client Portfolio",
+        type: "operations",
+        fields: [
+          { label: "Active Clients", type: "number", value: isRealData ? (userData?.customer_count || "0") : "6" },
+          { label: "Average Project Value", type: "currency", value: isRealData ? "0" : "12500" },
+          { label: "Client Retention Rate %", type: "number", value: "85" },
+          { label: "Largest Client % of Revenue", type: "number", value: "35" }
+        ]
+      },
+      {
+        name: "Pipeline & Proposals",
+        type: "marketing",
+        fields: [
+          { label: "Proposals Sent/Month", type: "number", value: isRealData ? "0" : "8" },
+          { label: "Proposal Win Rate %", type: "number", value: "40" },
+          { label: "Average Sales Cycle (Days)", type: "number", value: "21" },
+          { label: "Pipeline Value", type: "currency", value: isRealData ? "0" : "75000" }
+        ]
+      },
+      {
+        name: "Business Development",
+        type: "strategic",
+        fields: [
+          { label: "Referral Rate %", type: "number", value: "60" },
+          { label: "Marketing Budget/Month", type: "currency", value: isRealData ? "0" : "800" },
+          { label: "Networking Events/Month", type: "number", value: "4" },
+          { label: "Content Pieces/Month", type: "number", value: "6" }
+        ]
+      },
+      {
+        name: "Capacity Planning",
+        type: "operations",
+        fields: [
+          { label: "Max Billable Hours/Week", type: "number", value: "40" },
+          { label: "Admin Time %", type: "number", value: "20" },
+          { label: "Subcontractor Hours/Month", type: "number", value: isRealData ? "0" : "40" },
+          { label: "Team Growth Plan", type: "text", value: isRealData ? "" : "Hire 1 associate in Q3" }
+        ]
+      }
+    ]
+  };
+  
+  // Default template for unrecognized business types
+  const defaultTemplate = [
+    {
+      name: "Revenue Model",
+      type: "financial",
+      fields: [
+        { label: "Monthly Revenue", type: "currency", value: isRealData ? (userData?.revenue || "0") : "10000" },
+        { label: "Revenue Streams", type: "text", value: isRealData ? "" : "Primary service offering" },
+        { label: "Growth Rate %", type: "number", value: isRealData ? "0" : "12" }
+      ]
+    },
+    {
+      name: "Cost Structure",
+      type: "financial", 
+      fields: [
+        { label: "Monthly Operating Costs", type: "currency", value: isRealData ? (userData?.monthly_expenses || "0") : "6500" },
+        { label: "Fixed Costs", type: "currency", value: "4000" },
+        { label: "Variable Costs", type: "currency", value: "2500" }
+      ]
+    },
+    {
+      name: "Customer Metrics",
+      type: "marketing",
+      fields: [
+        { label: "Customer Count", type: "number", value: isRealData ? (userData?.customer_count || "0") : "150" },
+        { label: "Customer Acquisition Cost", type: "currency", value: "75" },
+        { label: "Customer Lifetime Value", type: "currency", value: "500" }
+      ]
+    }
+  ];
+  
+  return baseTemplates[businessType] || defaultTemplate;
+}
+
+function getBusinessTypeKPIs(businessType: string, dataApproach: string, userData: any) {
+  const isRealData = dataApproach === 'real_data';
+  
+  const kpiSets = {
+    food_truck: [
+      { name: "Daily Revenue", value: isRealData ? (userData?.revenue || 500) : 650, confidence_level: isRealData ? 'actual' : 'estimate' },
+      { name: "Food Cost %", value: 28, confidence_level: 'estimate' },
+      { name: "Customer Count/Day", value: isRealData ? (userData?.customer_count || 40) : 52, confidence_level: isRealData ? 'actual' : 'estimate' },
+      { name: "Average Order Value", value: 12.50, confidence_level: 'estimate' },
+      { name: "Profit Margin %", value: 35, confidence_level: 'estimate' }
+    ],
+    saas: [
+      { name: "Monthly Recurring Revenue", value: isRealData ? (userData?.revenue || 0) : 25000, confidence_level: isRealData ? 'actual' : 'estimate' },
+      { name: "Churn Rate %", value: 8, confidence_level: 'estimate' },
+      { name: "Customer Acquisition Cost", value: 120, confidence_level: 'estimate' },
+      { name: "Lifetime Value", value: 850, confidence_level: 'estimate' },
+      { name: "Monthly Growth %", value: 15, confidence_level: 'estimate' }
+    ],
+    consulting: [
+      { name: "Hourly Rate", value: isRealData ? (userData?.key_metrics?.hourly_rate || 150) : 150, confidence_level: isRealData ? 'actual' : 'estimate' },
+      { name: "Utilization Rate %", value: 75, confidence_level: 'estimate' },
+      { name: "Monthly Revenue", value: isRealData ? (userData?.revenue || 19200) : 19200, confidence_level: isRealData ? 'actual' : 'estimate' },
+      { name: "Client Retention %", value: 85, confidence_level: 'estimate' }
+    ]
+  };
+  
+  const defaultKPIs = [
+    { name: "Monthly Revenue", value: isRealData ? (userData?.revenue || 10000) : 10000, confidence_level: isRealData ? 'actual' : 'estimate' },
+    { name: "Customer Count", value: isRealData ? (userData?.customer_count || 100) : 150, confidence_level: isRealData ? 'actual' : 'estimate' },
+    { name: "Growth Rate %", value: 12, confidence_level: 'estimate' }
+  ];
+  
+  return kpiSets[businessType] || defaultKPIs;
 }
