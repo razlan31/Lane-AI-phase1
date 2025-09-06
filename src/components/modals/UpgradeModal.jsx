@@ -8,6 +8,13 @@ import { usePricing } from '../../contexts/PricingProvider';
 import { supabase } from '@/integrations/supabase/client';
 
 const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
+  console.log("🔍 Mount UpgradeModal - providers ok?", { 
+    isOpen, 
+    authReady: typeof window !== 'undefined',
+    pricingAvailable: typeof window !== 'undefined',
+    timestamp: new Date().toISOString()
+  });
+  
   const { isFounder } = usePricing();
   
   // Don't show upgrade modal for founder accounts
