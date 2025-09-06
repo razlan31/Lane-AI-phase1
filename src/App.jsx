@@ -303,7 +303,7 @@ function App() {
   }
 
   return (
-    <AuthWrapper>
+    <div className="min-h-screen bg-background w-full">
       <EnvChecker>
         <ServiceChecker />
         <div className="min-h-screen bg-background w-full">
@@ -384,7 +384,7 @@ function App() {
       />
       </div>
       </EnvChecker>
-    </AuthWrapper>
+    </div>
   );
 }
 
