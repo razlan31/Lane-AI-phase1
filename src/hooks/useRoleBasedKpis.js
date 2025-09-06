@@ -61,14 +61,13 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
           .eq('user_id', user.id);
         if (venturesError) throw venturesError;
 
-        // If no ventures, seed sample data
+        // If no ventures, return empty (no auto-seeding)
         if (!ventures || ventures.length === 0) {
-          await supabase.rpc('create_sample_data_for_user', { user_id: user.id });
-          const venturesRefetch = await supabase
-            .from('ventures')
-            .select('id, name')
-            .eq('user_id', user.id);
-          ventures = venturesRefetch.data || [];
+          if (!isCancelled) {
+            setKpis([]);
+            setLoading(false);
+          }
+          return;
         }
 
         // Remove profile AI quota KPIs; focus on venture data only
