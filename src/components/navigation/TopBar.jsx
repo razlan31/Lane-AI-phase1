@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Search, Bell, User, Command, Crown, Home, Bot } from 'lucide-react';
+import { Search, Bell, User, Command, Crown, Home, Bot, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
 
 const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onToggleCoPilot, className }) => {
+  const { signOut, user } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   
@@ -198,7 +200,14 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onT
                     Settings
                   </button>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                  <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-red-600 dark:text-red-400">
+                  <button 
+                    className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-red-600 dark:text-red-400 flex items-center gap-2"
+                    onClick={async () => {
+                      await signOut();
+                      window.location.reload();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
                     Sign Out
                   </button>
                 </div>

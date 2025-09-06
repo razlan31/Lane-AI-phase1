@@ -15,33 +15,25 @@ export const AuthProvider = ({ children }) => {
 
     const initializeAuth = async () => {
       try {
-        // Check for existing session first
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-
-        // Set up auth state listener
+        // Set up auth state listener FIRST to avoid missing events
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           (event, session) => {
             if (!isMounted) return;
             
+            console.log('Auth state change:', event, session?.user?.id);
+            
+            // Update state synchronously to prevent loops
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
 
-            // Defer any async side-effects to avoid blocking the auth callback
+            // Handle sign-in side effects with setTimeout to avoid blocking
             if (event === 'SIGNED_IN' && session?.user) {
               setTimeout(() => {
                 try {
                   const key = `welcomeEmailSent:${session.user.id}`;
                   if (!localStorage.getItem(key)) {
                     const name = session.user.user_metadata?.full_name || session.user.email;
-                    // Fire-and-forget welcome email; errors are logged but won't block UX
                     sendWelcomeEmail(session.user.email, name).catch((err) => {
                       console.error('Failed to send welcome email:', err);
                     });
@@ -53,25 +45,32 @@ export const AuthProvider = ({ children }) => {
               }, 0);
             }
 
-            // Sample data creation disabled temporarily
-            // TODO: Re-enable when create_sample_data_for_user RPC is available
-            /*
-            if (event === 'SIGNED_IN' && session?.user) {
-              setTimeout(async () => {
-                try {
-                  await supabase.rpc('create_sample_data_for_user', { user_id: session.user.id });
-                } catch (error) {
-                  console.log('Sample data already exists or error creating:', error.message);
-                }
-              }, 1000);
+            // Clear session data on sign out
+            if (event === 'SIGNED_OUT') {
+              localStorage.removeItem('supabase.auth.token');
+              // Clear any cached user data
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
             }
-            */
           }
         );
         authSubscription = subscription;
+
+        // THEN check for existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Auth initialization error:', error);
         if (isMounted) {
+          setSession(null);
+          setUser(null);
           setLoading(false);
         }
       }
@@ -85,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         authSubscription.unsubscribe();
       }
     };
-  }, []);
+  }, []); // Empty dependency array to prevent re-initialization
 
   const signIn = async (email, password) => {
     try {
@@ -118,9 +117,20 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
+      // Clear local storage first
+      localStorage.removeItem('supabase.auth.token');
+      
       const { error } = await supabase.auth.signOut();
+      
+      // Force clear state even if there's an error
+      setSession(null);
+      setUser(null);
+      
       return { error };
     } catch (error) {
+      // Still clear local state on error
+      setSession(null);
+      setUser(null);
       return { error };
     }
   };

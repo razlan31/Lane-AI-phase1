@@ -21,7 +21,7 @@ import MainNavigation from './components/navigation/MainNavigation';
 import QuickDock from '@/components/dock/QuickDock';
 import GlobalOrb from './components/navigation/GlobalOrb';
 import EnhancedAIChat from './components/chat/EnhancedAIChat';
-import FounderMode from './components/modes/FounderMode';
+import CleanFounderMode from './components/modes/CleanFounderMode';
 import { Activity, Play, Download, MessageCircle } from 'lucide-react';
 import EnhancedOnboardingFlow from './components/onboarding/EnhancedOnboardingFlow';
 import SettingsPage from './pages/SettingsPage';
@@ -348,7 +348,7 @@ function App() {
 
       {/* Founder Mode Overlay */}
       {showFounderMode && (
-        <FounderMode onClose={() => setShowFounderMode(false)} />
+        <CleanFounderMode onClose={() => setShowFounderMode(false)} />
       )}
 
       {/* QuickDock - Main Auto-Promotion Flow */}

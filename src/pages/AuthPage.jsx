@@ -140,12 +140,20 @@ const AuthPage = () => {
 
   const signInWithGoogle = async () => {
     setError(null);
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signInWithOAuth({ 
-      provider: 'google', 
-      options: { redirectTo: redirectUrl } 
-    });
-    if (error) setError(error.message);
+    setLoading(true);
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider: 'google', 
+        options: { redirectTo: redirectUrl } 
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

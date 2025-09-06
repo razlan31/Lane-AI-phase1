@@ -11,6 +11,7 @@ import {
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
+import CleanScratchpadPanel from '../scratchpad/CleanScratchpadPanel';
 // import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/dialog';
 
@@ -21,6 +22,7 @@ const ToolsScratchpads = ({
   const [activeTab, setActiveTab] = useState('scratchpads');
   const [selectedWorksheet, setSelectedWorksheet] = useState(null);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [showScratchpad, setShowScratchpad] = useState(false);
 
   // Custom scratchpad worksheets
   const scratchpadWorksheets = [
@@ -181,10 +183,15 @@ const ToolsScratchpads = ({
                     Custom worksheets and experiments
                   </p>
                 </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Scratchpad
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowScratchpad(true)}>
+                    Open Notepad
+                  </Button>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Scratchpad
+                  </Button>
+                </div>
               </div>
 
               {/* Scratchpad List */}
@@ -312,6 +319,12 @@ const ToolsScratchpads = ({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Clean Scratchpad Panel */}
+      <CleanScratchpadPanel 
+        isOpen={showScratchpad} 
+        onClose={() => setShowScratchpad(false)} 
+      />
     </div>
   );
 };
