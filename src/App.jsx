@@ -35,6 +35,7 @@ import { AlertsStrip } from './components/AlertsStrip';
 import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 import VentureHub from './components/workspaces/VentureHub';
 import ErrorBoundary from './components/ErrorBoundary';
+import GlobalUpgradeHandler from './components/gating/GlobalUpgradeHandler';
 
 
 function App() {
@@ -382,6 +383,8 @@ function App() {
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
       />
+
+      <GlobalUpgradeHandler />
       </div>
       </EnvChecker>
     </div>

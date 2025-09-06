@@ -21,13 +21,14 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
       icon: Zap,
       price: '$9.90',
       period: '/month',
-      description: 'Locked price for first 9 users until cancel',
+      description: 'Special rate for first 9 users forever',
       features: [
-        'Worksheets: full CRUD',
-        'Personal: full CRUD',
-        'Scratchpad Reflect (AI)',
+        'Unlimited ventures',
+        'Unlimited scratchpad notes',
+        '500 AI messages/month',
+        'AI scratchpad reflection',
         'Founder Mode AI',
-        'Export: PDF + CSV'
+        'PDF & CSV exports'
       ],
       popular: true
     },
@@ -37,11 +38,11 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
       icon: Star,
       price: '$15',
       period: '/month', 
-      description: 'Standard monthly plan',
+      description: 'Full-featured monthly plan',
       features: [
         'Everything in Pro Promo',
-        '500 AI prompts/month',
-        '2s AI cooldown'
+        'Priority support',
+        'Early access to new features'
       ]
     },
     {
@@ -50,10 +51,11 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
       icon: Crown,
       price: '$4',
       period: '/week',
-      description: 'Short-term access',
+      description: 'Try Pro features short-term',
       features: [
-        'All paid features',
-        'Billed weekly'
+        'All Pro features',
+        'No long-term commitment',
+        'Perfect for testing'
       ]
     },
     {
@@ -62,10 +64,11 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
       icon: Crown,
       price: '$150',
       period: '/year',
-      description: '12 months for the price of 10',
+      description: 'Save 2 months with annual billing',
       features: [
-        'All paid features',
-        'Best value'
+        'All Pro features',
+        'Best value (17% off)',
+        'Priority support'
       ]
     }
   ];

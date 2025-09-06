@@ -9,8 +9,19 @@ export const getCapabilities = (profile) => {
 
   return {
     plan,
-    // Core app sections (always accessible)
+    
+    // Venture limits
+    ventures_max: paid ? -1 : 1, // -1 = unlimited
     ventures_crud: true,
+
+    // Scratchpad limits
+    scratchpad_max_notes: paid ? -1 : 5, // -1 = unlimited
+    scratchpad_plain: true,
+    scratchpad_reflect_ai: !!paid,
+
+    // AI usage limits
+    ai_messages_monthly_limit: paid ? 500 : 10,
+    ai_messages_cooldown_ms: paid ? 2000 : 10000,
 
     // Worksheets
     worksheets_view: true,
@@ -20,21 +31,12 @@ export const getCapabilities = (profile) => {
     personal_view: true,
     personal_crud: !!paid,
 
-    // Scratchpad
-    scratchpad_plain: true,
-    scratchpad_reflect_ai: !!paid,
-
     // Founder Mode AI
     founder_mode_ai: !!paid,
 
     // Exporting
     export_enabled: !!paid,
     export_formats: paid ? ["pdf", "csv"] : [],
-
-    // AI usage
-    ai_limits: paid
-      ? { monthly_quota: 500, cooldown_ms: 2000 }
-      : { daily_quota: 10, cooldown_ms: 10000 },
 
     // Helper shortcuts
     is_paid: !!paid,

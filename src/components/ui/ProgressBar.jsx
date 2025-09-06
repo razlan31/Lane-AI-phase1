@@ -12,14 +12,41 @@ import { cn } from "../../lib/utils";
  * - className: optional extra classes
  */
 
-const ProgressBar = ({ value = 0, className = "" }) => {
-  const pct = Math.max(0, Math.min(100, Number(value || 0)));
+const ProgressBar = ({ 
+  value = 0, 
+  max = 100, 
+  className = "",
+  variant = 'default',
+  size = 'default'
+}) => {
+  const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
+
+  const variants = {
+    default: 'bg-primary',
+    destructive: 'bg-destructive',
+    warning: 'bg-orange-500',
+    success: 'bg-green-500'
+  };
+
+  const sizes = {
+    sm: 'h-1',
+    default: 'h-2',
+    lg: 'h-3'
+  };
+
   return (
-    <div className={cn("w-full bg-secondary rounded-full h-2", className)}>
-      <div
-        className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
-        style={{ width: `${pct}%` }}
-        aria-valuenow={pct}
+    <div className={cn(
+      'w-full bg-muted rounded-full overflow-hidden',
+      sizes[size],
+      className
+    )}>
+      <div 
+        className={cn(
+          'h-full transition-all duration-300 ease-out rounded-full',
+          variants[variant]
+        )}
+        style={{ width: `${percentage}%` }}
+        aria-valuenow={percentage}
         role="progressbar"
         aria-valuemin="0"
         aria-valuemax="100"
@@ -28,4 +55,5 @@ const ProgressBar = ({ value = 0, className = "" }) => {
   );
 };
 
+export { ProgressBar };
 export default ProgressBar;
