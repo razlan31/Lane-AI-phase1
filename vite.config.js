@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "zustand"],  // ✅ prebundle core dependencies
+    force: true, // Force re-optimization to clear any cached html-to-image references
   },
   css: {
     postcss: {
