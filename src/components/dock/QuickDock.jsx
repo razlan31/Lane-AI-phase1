@@ -37,7 +37,10 @@ const QuickDock = ({ className = "" }) => {
       icon: Layout,
       label: 'Playground',
       description: 'Visual builder',
-      action: () => console.log('Open Playground'),
+      action: () => {
+        console.log('Playground button clicked!');
+        console.log('Open Playground');
+      },
       shortcut: 'P'
     },
     {
@@ -45,7 +48,10 @@ const QuickDock = ({ className = "" }) => {
       icon: Target,
       label: 'Blocks',
       description: 'Browse all blocks',
-      action: () => console.log('Open Blocks'),
+      action: () => {
+        console.log('Blocks button clicked!');
+        console.log('Open Blocks');
+      },
       shortcut: 'B'
     }
   ];

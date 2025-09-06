@@ -132,7 +132,7 @@ const MainNavigation = ({
       )}
       
       <aside className={cn(
-        "flex flex-col border-r border-border bg-card/50 transition-all duration-300",
+        "flex flex-col border-r border-border bg-background transition-all duration-300",
         "fixed md:relative z-30 md:z-auto h-full",
         isCollapsed 
           ? "-translate-x-full md:translate-x-0 w-16" 

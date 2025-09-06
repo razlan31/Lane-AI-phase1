@@ -68,8 +68,8 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onT
           </button>
         </div>
 
-        {/* Search Bar - Center */}
-        <div className="flex-1 max-w-md mx-6">
+        {/* Search Bar - Center - Hide on mobile */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6">
           <Button
             variant="outline"
             className="w-full justify-start text-muted-foreground hover:bg-muted/50"
@@ -85,6 +85,15 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onT
 
         {/* Right Actions */}
         <div className="flex items-center gap-1">
+          {/* Mobile Search Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSearchClick}
+            className="md:hidden"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
           {/* AI Co-Pilot Button */}
           <Button 
             variant="outline" 
