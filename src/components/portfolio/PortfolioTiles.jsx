@@ -2,13 +2,34 @@ import { useState } from 'react';
 import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, AlertTriangle, Trash2, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { formatNumber } from '../../lib/utils';
 import { useVentures } from '../../hooks/useVentures.jsx';
-
+import { createTestVentures } from '../../utils/seedTestData';
 
 const PortfolioTiles = ({ onVentureClick }) => {
   const { ventures, loading, deleteVenture } = useVentures();
   const [deletingId, setDeletingId] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  console.log('🎯 PortfolioTiles state:', { 
+    venturesCount: ventures.length, 
+    loading,
+    ventures: ventures.map(v => ({ id: v.id, name: v.name }))
+  });
+
+  const handleCreateTestData = async () => {
+    setIsCreating(true);
+    try {
+      console.log('🚀 Manually creating test data from PortfolioTiles...');
+      await createTestVentures();
+      console.log('✅ Manual test data creation completed');
+    } catch (error) {
+      console.error('❌ Manual test data creation failed:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -29,14 +50,23 @@ const PortfolioTiles = ({ onVentureClick }) => {
           <p className="text-muted-foreground text-center mb-4">
             Create your first venture to start tracking metrics and building your portfolio
           </p>
-          <button 
-            className="text-sm text-primary hover:text-primary/80 font-medium"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('openNewVentureModal'));
-            }}
-          >
-            + Create Your First Venture
-          </button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleCreateTestData}
+              disabled={isCreating}
+            >
+              {isCreating ? 'Creating...' : 'Create Test Data'}
+            </Button>
+            <button 
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+              }}
+            >
+              + Create Your First Venture
+            </button>
+          </div>
         </CardContent>
       </Card>
     );

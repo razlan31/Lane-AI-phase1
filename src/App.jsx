@@ -73,6 +73,12 @@ function App() {
 
   // Create test ventures automatically
   useEffect(() => {
+    console.log('🔍 Ventures effect triggered:', { 
+      currentUser: !!currentUser, 
+      venturesLength: ventures.length, 
+      venturesLoading 
+    });
+
     const seedData = async () => {
       if (currentUser && ventures.length === 0 && !venturesLoading) {
         console.log('🌱 Triggering test ventures creation...');
@@ -82,6 +88,12 @@ function App() {
         } catch (error) {
           console.error('❌ Failed to create test ventures:', error);
         }
+      } else {
+        console.log('🚫 Not creating ventures:', {
+          hasUser: !!currentUser,
+          venturesCount: ventures.length,
+          isLoading: venturesLoading
+        });
       }
     };
     seedData();

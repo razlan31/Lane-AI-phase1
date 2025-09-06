@@ -21,6 +21,7 @@ export const VenturesProvider = ({ children }) => {
     const abortController = new AbortController();
 
     const fetchVentures = async () => {
+      console.log('🏢 Fetching ventures for user:', user?.id);
       setLoading(true);
       setError(null);
       
