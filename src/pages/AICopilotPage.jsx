@@ -602,14 +602,9 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
         onConfirm={() => console.log('Confirmed:', proposedAction)}
       />
       
-      <ScenarioSandbox
-        isOpen={showScenarioSandbox}
-        onClose={() => setShowScenarioSandbox(false)}
-        onEvaluate={(expression) => {
-          console.log('Evaluating:', expression);
-          setShowScenarioSandbox(false);
-        }}
-      />
+      {showScenarioSandbox && (
+        <ScenarioSandbox onClose={() => setShowScenarioSandbox(false)} />
+      )}
 
       {/* Audit Trail Modal */}
       <Dialog open={!!auditModal} onOpenChange={() => setAuditModal(null)}>
