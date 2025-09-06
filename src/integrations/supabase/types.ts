@@ -286,6 +286,45 @@ export type Database = {
           },
         ]
       }
+      calculations_log: {
+        Row: {
+          ai_interaction_id: string | null
+          assumptions: Json | null
+          confidence: number | null
+          created_at: string | null
+          explanation: string | null
+          id: string
+          result: Json | null
+          scenario_text: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_interaction_id?: string | null
+          assumptions?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          result?: Json | null
+          scenario_text: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_interaction_id?: string | null
+          assumptions?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          result?: Json | null
+          scenario_text?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string

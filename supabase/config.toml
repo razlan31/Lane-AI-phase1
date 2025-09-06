@@ -72,3 +72,9 @@ verify_jwt = true
 
 [functions.ai-meta-apply]
 verify_jwt = true
+
+[functions.scenario-eval]
+verify_jwt = true
+
+[functions.create-worksheet-from-scenario]
+verify_jwt = true

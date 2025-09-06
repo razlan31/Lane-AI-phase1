@@ -31,6 +31,8 @@ import { getCapabilities } from '../../utils/capabilities';
 import { WorksheetBuilder } from '../modals/WorksheetBuilder';
 import { PersonalFieldModal } from '../modals/PersonalFieldModal';
 import AIMutationPreviewModal from '../modals/AIMutationPreviewModal';
+import ScenarioSandbox from '../scenarios/ScenarioSandbox';
+import { useScenarios } from '@/hooks/useScenarios';
 
 const EnhancedAIChat = ({ 
   isOpen = true, 
@@ -73,8 +75,17 @@ const EnhancedAIChat = ({
   const [roleInfo, setRoleInfo] = useState({ role: null, reason: '' });
   const [proposedAction, setProposedAction] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showScenarioSandbox, setShowScenarioSandbox] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Scenario hook
+  const { 
+    evaluateScenario, 
+    detectScenarioIntent, 
+    currentScenario,
+    evaluating 
+  } = useScenarios();
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -123,6 +134,51 @@ const EnhancedAIChat = ({
     if (!inputValue.trim() || !activeChatId || aiLoading) return;
 
     const userMessage = inputValue.trim();
+    
+    // Check for scenario intent first
+    if (detectScenarioIntent(userMessage)) {
+      clearInput();
+      
+      // Track prompt for reuse
+      setLastUserPrompts(prev => {
+        const updated = [userMessage, ...prev.filter(p => p !== userMessage)];
+        return updated.slice(0, 3);
+      });
+
+      // Evaluate scenario immediately
+      await addMessage(activeChatId, userMessage, 'user');
+      
+      const result = await evaluateScenario(userMessage, { ventureId });
+      if (result.success) {
+        if (result.data.needs_clarification) {
+          const clarificationMsg = `I need more information:\n\n${result.data.questions.map(q => `• ${q}`).join('\n')}`;
+          await addMessage(activeChatId, clarificationMsg, 'assistant');
+        } else {
+          let responseMsg = `**Scenario Analysis Complete** 🧮\n\n`;
+          
+          if (result.data.computed_results) {
+            responseMsg += `**Key Results:**\n`;
+            Object.entries(result.data.computed_results).forEach(([key, value]) => {
+              if (typeof value === 'number') {
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const formattedValue = key.includes('cost') || key.includes('revenue') || key.includes('balance') ? 
+                  `$${value.toLocaleString()}` : value.toLocaleString();
+                responseMsg += `• ${label}: ${formattedValue}\n`;
+              }
+            });
+          }
+          
+          responseMsg += `\n**Confidence:** ${result.data.confidence_score >= 0.8 ? 'High' : result.data.confidence_score >= 0.6 ? 'Medium' : 'Low'}\n\n`;
+          responseMsg += `Would you like to save this as a calculation log or convert it to a structured worksheet?`;
+          
+          await addMessage(activeChatId, responseMsg, 'assistant');
+        }
+      } else {
+        await addMessage(activeChatId, 'I encountered an error evaluating your scenario. Please try rephrasing it.', 'assistant');
+      }
+      
+      return;
+    }
     
     // Check for chat builder commands before sending to AI
     const command = detectChatCommands(userMessage);
@@ -374,6 +430,15 @@ const EnhancedAIChat = ({
             >
               <Upload className="h-3 w-3" />
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowScenarioSandbox(true)}
+              className="h-8 px-2 text-xs"
+              title="Open Scenario Sandbox"
+            >
+              🧮
+            </Button>
             <VoiceInputButton 
               onTranscript={handleVoiceTranscript}
               className="h-8 w-8 p-0"
@@ -392,17 +457,17 @@ const EnhancedAIChat = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-              placeholder="Upload files or describe your business..."
+              placeholder="Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"
               className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-              disabled={aiLoading}
+              disabled={aiLoading || evaluating}
             />
             <Button
               size="sm"
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || aiLoading}
+              disabled={!inputValue.trim() || aiLoading || evaluating}
               className="h-8 w-8 p-0"
             >
-              <Send className="h-3 w-3" />
+              {evaluating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
             </Button>
           </div>
           
@@ -420,7 +485,10 @@ const EnhancedAIChat = ({
           )}
           
           <div className="text-xs text-muted-foreground text-center">
-            {isTyping ? "Typing..." : aiLoading ? "AI is thinking..." : "Upload files, use voice input, or type to get started"}
+            {isTyping ? "Typing..." : 
+             evaluating ? "Evaluating scenario..." :
+             aiLoading ? "AI is thinking..." : 
+             "Try scenario questions like 'What if I hire 3 people?' or upload files"}
           </div>
         </div>
       </Card>
@@ -472,6 +540,11 @@ const EnhancedAIChat = ({
           // TODO: Save to database
         }}
       />
+
+      {/* Scenario Sandbox Modal */}
+      {showScenarioSandbox && (
+        <ScenarioSandbox onClose={() => setShowScenarioSandbox(false)} />
+      )}
     </>
   );
 };
