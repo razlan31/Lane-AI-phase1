@@ -195,32 +195,14 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    console.log('🚀 Creating test data from HQ Dashboard...');
-                    try {
-                      const { createTestVentures } = await import('../../utils/seedTestData');
-                      await createTestVentures();
-                      console.log('✅ Test data created successfully');
-                    } catch (error) {
-                      console.error('❌ Failed to create test data:', error);
-                    }
-                  }}
-                >
-                  Create Test Data
-                </Button>
-                <button 
-                  className="text-sm text-primary hover:text-primary/80 font-medium"
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('openNewVentureModal'));
-                  }}
-                >
-                  + Add Venture
-                </button>
-              </div>
+              <button 
+                className="text-sm text-primary hover:text-primary/80 font-medium"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+                }}
+              >
+                + Add Venture
+              </button>
             </div>
             <PortfolioTiles 
               onVentureClick={(ventureId) => console.log('Navigate to venture:', ventureId)}
