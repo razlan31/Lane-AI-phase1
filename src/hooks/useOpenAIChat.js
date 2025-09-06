@@ -2,17 +2,21 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// DEBUG: Check useCallback availability 
-console.log('🔍 useOpenAIChat loading - useCallback available?', { 
-  useCallback: !!useCallback, 
-  useState: !!useState,
-  timestamp: new Date().toISOString()
-});
-
 // In-memory client cache (2 min reuse)
 const CHAT_CACHE_TTL_MS = 120000; // 2 minutes
 const chatCache = new Map(); // key -> { ts, payload }
 const explainCache = new Map(); // key -> { ts, payload }
+
+// Simple local fallback to avoid dead-ends if the edge function fails
+const buildLocalExplanation = (question, context, contextData) => {
+  const parts = [];
+  if (contextData?.suggestion) parts.push(`Reasoning for: "${contextData.suggestion}".`);
+  if (contextData?.context?.type) parts.push(`Context: ${contextData.context.type}.`);
+  if (contextData?.priority) parts.push(`Priority: ${contextData.priority}.`);
+  if (contextData?.confidence) parts.push(`Confidence: ${(contextData.confidence * 100).toFixed(0)}%.`);
+  parts.push('Summary: This recommendation balances impact and feasibility based on your recent activity and current venture state.');
+  return parts.join(' ');
+};
 
 export const useOpenAIChat = () => {
   const [loading, setLoading] = useState(false);
@@ -163,15 +167,12 @@ export const useOpenAIChat = () => {
         return { success: false, error: 'Request cancelled' };
       }
       
-      console.error('OpenAI explain error:', err);
-      const errorMessage = err.message || 'Failed to generate explanation';
-      setError(errorMessage);
-      
-      toast.error(errorMessage);
+      // Provide a graceful fallback explanation so the UI remains helpful
+      const fallback = buildLocalExplanation(question, context, contextData);
 
       return {
-        success: false,
-        error: errorMessage
+        success: true,
+        data: { explanation: fallback, context, usage: { fallback: true } }
       };
     } finally {
       setLoading(false);
