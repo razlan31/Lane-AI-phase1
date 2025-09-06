@@ -845,6 +845,42 @@ export type Database = {
           },
         ]
       }
+      versions: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          parent_id: string
+          parent_type: string
+          status: string
+          updated_at: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          parent_id: string
+          parent_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          version_number?: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          parent_id?: string
+          parent_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       worksheets: {
         Row: {
           confidence_level: string | null
