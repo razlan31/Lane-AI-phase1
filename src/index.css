@@ -85,35 +85,67 @@
 @layer components {
   /* State indicators */
   .state-draft {
-    @apply text-blue-600 bg-blue-50 border-blue-200;
+    @apply text-draft bg-draft/10 border-draft/20;
   }
   
   .state-live {
-    @apply text-green-600 bg-green-50 border-green-200;
+    @apply text-live bg-live/10 border-live/20;
   }
   
   .state-warning {
-    @apply text-yellow-600 bg-yellow-50 border-yellow-200;
+    @apply text-warning bg-warning/10 border-warning/20;
   }
   
   .state-alert {
-    @apply text-red-600 bg-red-50 border-red-200;
+    @apply text-alert bg-alert/10 border-alert/20;
   }
 
   /* Dark mode states */
   .dark .state-draft {
-    @apply text-blue-400 bg-blue-950 border-blue-800;
+    @apply text-draft bg-draft/20 border-draft/30;
   }
   
   .dark .state-live {
-    @apply text-green-400 bg-green-950 border-green-800;
+    @apply text-live bg-live/20 border-live/30;
   }
   
   .dark .state-warning {
-    @apply text-yellow-400 bg-yellow-950 border-yellow-800;
+    @apply text-warning bg-warning/20 border-warning/30;
   }
   
   .dark .state-alert {
-    @apply text-red-400 bg-red-950 border-red-800;
+    @apply text-alert bg-alert/20 border-alert/30;
+  }
+}
+
+@layer utilities {
+  /* Custom utility classes */
+  .story-link {
+    @apply relative inline-block;
+  }
+  .story-link::after {
+    content: '';
+    @apply absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary origin-bottom-right transition-transform duration-300;
+  }
+  .story-link:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-md;
+  }
+  
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .loading-shimmer {
+    background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
   }
 }

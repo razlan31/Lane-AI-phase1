@@ -119,7 +119,6 @@ export default {
         "enter": "fade-in 0.3s ease-out, scale-in 0.2s ease-out",
         "exit": "fade-out 0.3s ease-out, scale-out 0.2s ease-out",
       },
-      },
       screens: {
         'xs': '475px',
         'sm': '640px',
@@ -144,54 +143,5 @@ export default {
       },
     },
   },
-  plugins: [
-    function({ addUtilities }) {
-      const newUtilities = {
-        '.story-link': {
-          position: 'relative',
-          display: 'inline-block',
-          '&::after': {
-            content: "''",
-            position: 'absolute',
-            width: '100%',
-            transform: 'scaleX(0)',
-            height: '2px',
-            bottom: '0',
-            left: '0',
-            backgroundColor: 'hsl(var(--primary))',
-            transformOrigin: 'bottom right',
-            transition: 'transform 0.3s ease-out',
-          },
-          '&:hover::after': {
-            transform: 'scaleX(1)',
-            transformOrigin: 'bottom left',
-          },
-        },
-        '.hover-scale': {
-          transition: 'transform 0.2s ease-out',
-          '&:hover': {
-            transform: 'scale(1.05)',
-          },
-        },
-        '.hover-lift': {
-          transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          },
-        },
-        '.glass': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-        },
-        '.loading-shimmer': {
-          background: 'linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 100%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 2s linear infinite',
-        },
-      };
-      addUtilities(newUtilities);
-    },
-  ],
+  plugins: [],
 };
