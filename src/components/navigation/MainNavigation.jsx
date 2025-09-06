@@ -122,11 +122,12 @@ const MainNavigation = ({
 
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop - only show when sidebar is open on mobile */}
       {!isCollapsed && (
         <div 
           className="fixed inset-0 bg-black/50 z-20 md:hidden" 
           onClick={onToggleCollapse}
+          aria-hidden="true"
         />
       )}
       
@@ -134,8 +135,8 @@ const MainNavigation = ({
         "flex flex-col border-r border-border bg-card/50 transition-all duration-300",
         "fixed md:relative z-30 md:z-auto h-full",
         isCollapsed 
-          ? "w-16 -translate-x-full md:translate-x-0" 
-          : "w-80 translate-x-0 md:w-64",
+          ? "-translate-x-full md:translate-x-0 w-16" 
+          : "translate-x-0 w-80 md:w-64",
         className
       )}>
         {/* Mobile Close Button */}

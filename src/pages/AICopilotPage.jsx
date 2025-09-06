@@ -92,16 +92,16 @@ Would you like me to proceed with any of these suggestions?`,
     <div className="flex flex-col h-full">
       {/* Top Bar for Session Control */}
       <div className="flex items-center gap-4 p-4 border-b bg-background">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5" />
-          <span className="font-medium">AI Co-Pilot</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Bot className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium truncate">AI Co-Pilot</span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <select 
             value={activeSessionId || ''} 
             onChange={(e) => setActiveSessionId(e.target.value)}
-            className="bg-white border rounded px-3 py-2 min-w-[200px]"
+            className="bg-white border rounded px-3 py-2 min-w-0 flex-1 max-w-[200px]"
           >
             <option value="">Select Chat</option>
             {sessions.map(session => (
@@ -115,9 +115,10 @@ Would you like me to proceed with any of these suggestions?`,
             variant="outline" 
             size="sm"
             onClick={() => createSession('New Chat')}
+            className="flex-shrink-0"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            New Chat
+            <Plus className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">New Chat</span>
           </Button>
           
           <Button 
@@ -125,9 +126,10 @@ Would you like me to proceed with any of these suggestions?`,
             size="sm"
             onClick={() => activeSessionId && deleteSession(activeSessionId)}
             disabled={!activeSessionId}
+            className="flex-shrink-0"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
+            <Trash2 className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Delete</span>
           </Button>
         </div>
       </div>
