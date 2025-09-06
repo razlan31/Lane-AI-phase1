@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// DEBUG: React hooks availability check
-console.log('🔍 usePricingTier loading - React hooks available?', { 
+// DEBUG: Comprehensive React hooks availability check
+console.log('🔍 usePricingTier loading - ALL React hooks available?', { 
   useState: !!useState, 
   useEffect: !!useEffect,
+  currentReactInternals: typeof useState.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
   timestamp: new Date().toISOString()
 });
 

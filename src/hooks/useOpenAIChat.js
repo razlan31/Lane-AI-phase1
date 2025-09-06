@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// DEBUG: Check useCallback availability 
+console.log('🔍 useOpenAIChat loading - useCallback available?', { 
+  useCallback: !!useCallback, 
+  useState: !!useState,
+  timestamp: new Date().toISOString()
+});
+
 // In-memory client cache (2 min reuse)
 const CHAT_CACHE_TTL_MS = 120000; // 2 minutes
 const chatCache = new Map(); // key -> { ts, payload }
