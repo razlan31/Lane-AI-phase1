@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
+
+console.log('ExportEngine module loaded successfully - no html-to-image imports');
 // Export utilities for Lane AI data (CSV, PDF, JSON)
 
 export class ExportEngine {
