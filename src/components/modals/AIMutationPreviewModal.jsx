@@ -51,10 +51,10 @@ const AIMutationPreviewModal = ({
         throw new Error(error?.message || data?.error || 'Failed to apply');
       }
 
-      toast({ title: 'Applied', description: 'The AI suggestion was applied successfully.' });
+      toast.success('AI suggestion applied successfully');
       onOpenChange(false);
     } catch (e) {
-      toast({ title: 'Apply Failed', description: e.message, variant: 'destructive' });
+      toast.error(`Apply failed: ${e.message}`);
     } finally {
       setApplying(false);
     }

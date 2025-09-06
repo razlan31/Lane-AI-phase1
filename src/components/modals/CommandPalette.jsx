@@ -19,7 +19,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Start a new business venture',
       category: 'Create',
       action: () => {
-        toast({ title: "Creating venture...", description: "Opening venture creation form" });
+        toast.success("Creating venture...");
         // Trigger venture creation modal
         const event = new CustomEvent('openVentureModal');
         window.dispatchEvent(event);
@@ -33,7 +33,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Create financial model or calculator',
       category: 'Create',
       action: () => {
-        toast({ title: "Creating worksheet...", description: "Opening worksheet builder" });
+        toast.success("Creating worksheet...");
         // Trigger worksheet creation
         const event = new CustomEvent('openWorksheetModal');
         window.dispatchEvent(event);
@@ -47,7 +47,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Build custom analytics dashboard',
       category: 'Create',
       action: () => {
-        toast({ title: "Creating dashboard...", description: "Opening dashboard builder" });
+        toast.success("Creating dashboard...");
         // Trigger dashboard creation
         const event = new CustomEvent('openDashboardModal');
         window.dispatchEvent(event);
@@ -61,7 +61,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Upload CSV, Excel, or PDF files',
       category: 'Data',
       action: () => {
-        toast({ title: "Opening import...", description: "Launching data import wizard" });
+        toast.success("Opening import...");
         // Trigger import modal
         const event = new CustomEvent('openImportModal');
         window.dispatchEvent(event);
@@ -75,7 +75,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Strategic decision war room',
       category: 'Tools',
       action: () => {
-        toast({ title: "Launching Founder Mode...", description: "Opening strategic command center" });
+        toast.success("Launching Founder Mode...");
         // Trigger founder mode
         const event = new CustomEvent('openFounderMode');
         window.dispatchEvent(event);
@@ -89,7 +89,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Find building blocks and templates',
       category: 'Navigate',
       action: () => {
-        toast({ title: "Searching blocks...", description: "Opening block browser" });
+        toast.success("Searching blocks...");
         // Navigate to blocks
         window.location.hash = '#blocks';
         onClose();
@@ -102,7 +102,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Browse your venture portfolio',
       category: 'Navigate', 
       action: () => {
-        toast({ title: "Opening ventures...", description: "Navigating to venture workspace" });
+        toast.success("Opening ventures...");
         // Navigate to ventures
         window.location.hash = '#workspace';
         onClose();
@@ -115,7 +115,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       description: 'Configure your preferences',
       category: 'System',
       action: () => {
-        toast({ title: "Opening settings...", description: "Navigating to settings page" });
+        toast.success("Opening settings...");
         // Navigate to settings
         window.location.hash = '#settings';
         onClose();
