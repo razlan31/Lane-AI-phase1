@@ -1,7 +1,7 @@
 // No React import needed
 import { FileSpreadsheet, Workflow, Activity, FileText } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import WorksheetRenderer from '../worksheets/WorksheetRenderer';
+import { AutoWorksheetGenerator } from '../worksheets/AutoWorksheetGenerator';
 import ReportsList from '../reports/ReportsList';
 import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import KpiCard from '../primitives/KpiCard';
@@ -50,7 +50,7 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
               </button>
             </LockUnlockWrapper>
           </div>
-          <WorksheetRenderer ventureId={ventureId} />
+          <AutoWorksheetGenerator ventureId={ventureId} ventureName={ventureName} ventureType="general" />
         </div>
       )
     },
