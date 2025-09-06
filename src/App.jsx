@@ -39,14 +39,6 @@ import GlobalUpgradeHandler from './components/gating/GlobalUpgradeHandler';
 
 
 function App() {
-  console.log('🔍 App component - React hooks check:', { 
-    useState: !!useState,
-    useEffect: !!useEffect,
-    useCallback: typeof useCallback !== 'undefined' ? !!useCallback : 'not-imported',
-    timestamp: new Date().toISOString()
-  });
-  
-  console.log('App component rendering...', { useState: !!useState });
   
   // All hooks must be called before any conditional returns
   const [currentView, setCurrentView] = useState('copilot');

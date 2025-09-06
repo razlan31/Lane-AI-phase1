@@ -1,20 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
-// CRITICAL: Global React hooks check before any components load
-window.ReactDebug = { React, ReactDOM };
-console.log('🔍 CRITICAL - Global React check in index.jsx:', {
-  React: !!React,
-  ReactDOM: !!ReactDOM,
-  ReactVersion: React.version,
-  useState: !!useState,
-  useCallback: !!useCallback,
-  useEffect: !!useEffect,
-  window: typeof window,
-  document: typeof document,
-  timestamp: new Date().toISOString()
-});
-
 import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./hooks/useAuth.jsx";
@@ -27,13 +13,6 @@ import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { PricingProvider } from "./contexts/PricingProvider.jsx";
 import { Toaster } from "sonner";
-
-console.log('🔍 index.jsx - React versions check:', { 
-  React: !!React, 
-  ReactDOM: !!ReactDOM,
-  ReactVersion: React.version,
-  timestamp: new Date().toISOString()
-});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
