@@ -76,7 +76,17 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium">Venture Signals</h3>
             <LockUnlockWrapper feature="advanced_signals" requiredTier="pro">
-              <button className="text-sm text-primary hover:text-primary/80">
+              <button 
+                className="text-sm text-primary hover:text-primary/80"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                    detail: { 
+                      message: 'Help me configure smart alerts for my venture KPIs and metrics',
+                      context: 'alerts-configuration'
+                    }
+                  }));
+                }}
+              >
                 Configure Alerts
               </button>
             </LockUnlockWrapper>

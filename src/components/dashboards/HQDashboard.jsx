@@ -92,7 +92,18 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Signals Board</h2>
-              <button className="text-sm text-primary hover:text-primary/80">
+              <button 
+                className="text-sm text-primary hover:text-primary/80"
+                onClick={() => {
+                  // Trigger AI KPI generation
+                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                    detail: { 
+                      message: 'Generate 5 custom KPIs for my business based on my profile and industry',
+                      context: 'kpi-generation'
+                    }
+                  }));
+                }}
+              >
                 Auto-Generate KPIs →
               </button>
             </div>
@@ -121,7 +132,14 @@ const HQDashboard = () => {
                   title="Generate More KPIs"
                   description="Let AI create custom metrics for your business"
                   icon={Plus}
-                  action={() => console.log('Generate KPIs')}
+                  action={() => {
+                    window.dispatchEvent(new CustomEvent('openAIChat', {
+                      detail: { 
+                        message: 'Create additional KPIs for my venture based on my business model and goals',
+                        context: 'kpi-expansion'
+                      }
+                    }));
+                  }}
                   actionLabel="Generate"
                 />
               </ResponsiveGrid>
@@ -140,7 +158,12 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
-              <button className="text-sm text-primary hover:text-primary/80">
+              <button 
+                className="text-sm text-primary hover:text-primary/80"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+                }}
+              >
                 + Add Venture
               </button>
             </div>

@@ -102,13 +102,28 @@ function App() {
       setFeatureDiscoveryOpen(true);
     };
     const handleComprehensiveHelp = () => setComprehensiveHelpOpen(true);
+    const handleOpenAIChat = (e) => {
+      setShowCoPilot(true);
+      // Optional: pass context for AI chat initialization
+    };
+    const handleOpenNewVentureModal = () => setNewVentureModalOpen(true);
+    const handleOpenScenarioSandbox = () => {
+      // You can add scenario sandbox modal here if needed
+      setShowCoPilot(true);
+    };
 
     window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
     window.addEventListener('showComprehensiveHelp', handleComprehensiveHelp);
+    window.addEventListener('openAIChat', handleOpenAIChat);
+    window.addEventListener('openNewVentureModal', handleOpenNewVentureModal);
+    window.addEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
 
     return () => {
       window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
       window.removeEventListener('showComprehensiveHelp', handleComprehensiveHelp);
+      window.removeEventListener('openAIChat', handleOpenAIChat);
+      window.removeEventListener('openNewVentureModal', handleOpenNewVentureModal);
+      window.removeEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
     };
   }, []);
 

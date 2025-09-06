@@ -199,7 +199,17 @@ const ReportsList = ({ ventureId }) => {
             </div>
           </div>
         </div>
-        <Button size="sm">
+        <Button 
+          size="sm"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('openAIChat', {
+              detail: { 
+                message: 'Generate a comprehensive business report for my venture with current KPIs, financial data, and AI insights',
+                context: 'report-generation'
+              }
+            }));
+          }}
+        >
           <FileText className="h-4 w-4 mr-2" />
           New Report
         </Button>

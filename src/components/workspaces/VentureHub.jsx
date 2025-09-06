@@ -37,8 +37,12 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   };
 
   const handleChatBuild = () => {
-    console.log('Starting chat build for new worksheet');
-    // In real app: start AI chat workflow for worksheet creation
+    window.dispatchEvent(new CustomEvent('openAIChat', {
+      detail: { 
+        message: 'I want to create a new worksheet. Please guide me through the process.',
+        context: 'worksheet-creation'
+      }
+    }));
   };
 
   const handleChooseTemplate = () => {
@@ -46,8 +50,9 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   };
 
   const handleBlankWorksheet = () => {
-    console.log('Creating blank worksheet');
-    // In real app: create empty worksheet and open renderer
+    // Create a new blank worksheet
+    setIsWorksheetBuilderOpen(true);
+  };
   };
 
   const handleGenerateReport = () => {
@@ -208,8 +213,37 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={handleCreateWorksheet}>Create Worksheet</Button>
                 <Button variant="outline" size="sm" onClick={handleGenerateReport}>Generate Report</Button>
-                <Button variant="outline" size="sm">Export CSV</Button>
-                <Button variant="outline" size="sm">AI Insights</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    // Generate and download CSV export of venture data
+                    const csvData = "Name,Value,Date\nRevenue,25000,2024-01-01\nExpenses,18000,2024-01-01";
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `venture-data-${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  }}
+                >
+                  Export CSV
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('openAIChat', {
+                      detail: { 
+                        message: 'Generate AI insights and recommendations for my venture based on current data and market trends',
+                        context: 'ai-insights'
+                      }
+                    }));
+                  }}
+                >
+                  AI Insights
+                </Button>
               </div>
             </section>
           </TabsContent>
@@ -302,7 +336,14 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
           <TabsContent value="signals" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Pinned Signals</h3>
-              <Button>Configure Alerts</Button>
+              <Button onClick={() => {
+                window.dispatchEvent(new CustomEvent('openAIChat', {
+                  detail: { 
+                    message: 'Help me configure smart alerts for my venture KPIs and metrics',
+                    context: 'alerts-configuration'
+                  }
+                }));
+              }}>Configure Alerts</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ventureKpis.map((kpi, index) => (
