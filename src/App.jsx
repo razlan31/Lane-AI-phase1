@@ -136,6 +136,24 @@ function App() {
         alert(`Successfully generated ${count} new KPIs! Check your signals board.`);
       }, 1000);
     };
+    const handleOpenPersonalWorksheet = (e) => {
+      const { worksheetType, worksheetName, worksheetDescription } = e.detail;
+      console.log(`Opening personal worksheet: ${worksheetName}`);
+      
+      // For now, open AI chat to help create the personal worksheet
+      setShowCoPilot(true);
+      
+      // In a real implementation, you would open a dedicated personal worksheet component
+      // For demonstration, we'll trigger AI assistance
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('openAIChat', {
+          detail: { 
+            message: `Help me create and set up a ${worksheetName} worksheet. ${worksheetDescription}. Please guide me through the setup process and suggest what information I should track.`,
+            context: 'personal-worksheet-creation'
+          }
+        }));
+      }, 500);
+    };
 
     window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
     window.addEventListener('showComprehensiveHelp', handleComprehensiveHelp);
@@ -145,6 +163,7 @@ function App() {
     window.addEventListener('openWorksheetBuilder', handleOpenWorksheetBuilder);
     window.addEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
     window.addEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+    window.addEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
 
     return () => {
       window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
@@ -155,6 +174,7 @@ function App() {
       window.removeEventListener('openWorksheetBuilder', handleOpenWorksheetBuilder);
       window.removeEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
       window.removeEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+      window.removeEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
     };
   }, []);
 

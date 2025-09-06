@@ -404,11 +404,31 @@ export const PersonalPage = ({ isEmbedded = false }) => {
         <h2 className="text-xl font-semibold mb-4">Personal Worksheets</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { name: 'Budget Planner', description: 'Track income and expenses' },
-            { name: 'Savings Calculator', description: 'Plan your financial runway' },
-            { name: 'Time Allocation', description: 'Optimize your schedule' },
-            { name: 'Work-Life Balance', description: 'Monitor your wellbeing' },
-            { name: 'Personal-Venture Bridge', description: 'Align personal and business goals' }
+            { 
+              name: 'Budget Planner', 
+              description: 'Track income and expenses',
+              type: 'personal_budget'
+            },
+            { 
+              name: 'Savings Calculator', 
+              description: 'Plan your financial runway',
+              type: 'savings_calculator'
+            },
+            { 
+              name: 'Time Allocation', 
+              description: 'Optimize your schedule',
+              type: 'time_allocation'
+            },
+            { 
+              name: 'Work-Life Balance', 
+              description: 'Monitor your wellbeing',
+              type: 'work_life_balance'
+            },
+            { 
+              name: 'Personal-Venture Bridge', 
+              description: 'Align personal and business goals',
+              type: 'personal_venture_bridge'
+            }
           ].map((worksheet) => (
             <Card key={worksheet.name} className="cursor-pointer hover:shadow-md transition-shadow">
               <CardHeader>
@@ -416,7 +436,22 @@ export const PersonalPage = ({ isEmbedded = false }) => {
                 <CardDescription className="text-sm">{worksheet.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => {
+                    console.log(`Opening ${worksheet.name} worksheet`);
+                    // Dispatch event to open personal worksheet
+                    window.dispatchEvent(new CustomEvent('openPersonalWorksheet', {
+                      detail: { 
+                        worksheetType: worksheet.type,
+                        worksheetName: worksheet.name,
+                        worksheetDescription: worksheet.description
+                      }
+                    }));
+                  }}
+                >
                   Open Worksheet
                 </Button>
               </CardContent>
