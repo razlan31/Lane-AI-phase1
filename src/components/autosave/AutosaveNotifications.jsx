@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -156,9 +156,9 @@ export const SaveToast = ({
   hideDelay = 3000,
   className = ""
 }) => {
-  const [countdown, setCountdown] = React.useState(hideDelay / 1000);
+  const [countdown, setCountdown] = useState(hideDelay / 1000);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isVisible || !autoHide) return;
 
     const timer = setInterval(() => {
@@ -174,7 +174,7 @@ export const SaveToast = ({
     return () => clearInterval(timer);
   }, [isVisible, autoHide, onClose]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isVisible) {
       setCountdown(hideDelay / 1000);
     }
@@ -249,18 +249,18 @@ export const SaveToast = ({
 
 // Hook for managing all autosave notifications
 export const useAutosaveNotifications = () => {
-  const [saveToast, setSaveToast] = React.useState({
+  const [saveToast, setSaveToast] = useState({
     isVisible: false,
     type: 'success',
     message: ''
   });
 
-  const [recoveryBanner, setRecoveryBanner] = React.useState({
+  const [recoveryBanner, setRecoveryBanner] = useState({
     isVisible: false,
     recoveryData: null
   });
 
-  const [rollbackBanner, setRollbackBanner] = React.useState({
+  const [rollbackBanner, setRollbackBanner] = useState({
     isVisible: false,
     actionDescription: '',
     undoTimeLeft: 0

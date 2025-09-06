@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import AuthPage from '../../pages/AuthPage';
 import UpgradeModal from '../modals/UpgradeModal';

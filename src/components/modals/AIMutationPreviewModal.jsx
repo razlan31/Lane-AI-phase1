@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +13,7 @@ const AIMutationPreviewModal = ({
   selectedRole,
 }) => {
   const { toast } = useToast();
-  const [applying, setApplying] = React.useState(false);
+  const [applying, setApplying] = useState(false);
 
   if (!proposedAction) return null;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertCircle, Key, ExternalLink } from 'lucide-react';
 import { displayMissingEnvWarnings, checkRequiredEnvVars } from '@/lib/envConfig';
 import { Card } from '@/components/ui/card';
