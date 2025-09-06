@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "zustand"],  // ✅ ensure single zustand copy
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "zustand"],  // ✅ prebundle zustand
+    include: ["react", "react-dom", "zustand", "html-to-image"],  // ✅ prebundle html-to-image
   },
   css: {
     postcss: {
