@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
-import htmlToImage from 'html-to-image';
+import { toPng } from 'html-to-image';
 
 export class ExportEngine {
   static async exportData(format, options = {}) {
@@ -220,7 +220,7 @@ export class ExportEngine {
       throw new Error(`Element with ID "${elementId}" not found`);
     }
     
-    const dataUrl = await htmlToImage.toPng(element, {
+    const dataUrl = await toPng(element, {
       quality: 1.0,
       pixelRatio: 2,
       backgroundColor: '#ffffff'
