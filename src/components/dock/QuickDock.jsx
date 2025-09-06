@@ -46,34 +46,42 @@ const QuickDock = ({ className = "" }) => {
 
   return (
     <div className={`fixed bottom-4 right-4 z-40 ${className}`}>
-      {/* Show scratchpad if active */}
-      {showScratchpad && (
+      {/* Scratchpad Panel */}
+      {scratchpadOpen && (
         <div className="absolute bottom-16 right-0 mb-4">
           <ScratchpadPanel 
-            ventureId={ventureId}
-            onClose={() => setShowScratchpad(false)}
+            onClose={() => setScratchpadOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Tools Panel */}
+      {toolsOpen && (
+        <div className="absolute bottom-16 right-0 mb-4">
+          <ToolsPanel 
+            onClose={() => setToolsOpen(false)}
           />
         </div>
       )}
 
       {/* Quick action buttons */}
       <div className="flex flex-col gap-2">
-        {quickActions.map((action) => {
-          const Icon = action.icon;
+        {dockItems.map((item) => {
+          const Icon = item.icon;
           return (
-            <Tooltip key={action.id}>
+            <Tooltip key={item.id}>
               <TooltipTrigger asChild>
                 <Button
                   size="sm"
-                  variant={action.variant || "outline"}
-                  className={`w-12 h-12 p-0 rounded-full shadow-lg border-2 ${action.className || ''}`}
-                  onClick={action.action}
+                  variant="outline"
+                  className="w-12 h-12 p-0 rounded-full shadow-lg border-2"
+                  onClick={item.action}
                 >
                   <Icon className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
-                <p>{action.tooltip}</p>
+                <p>{item.label}</p>
               </TooltipContent>
             </Tooltip>
           );
