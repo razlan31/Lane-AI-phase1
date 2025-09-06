@@ -98,6 +98,48 @@ export type Database = {
           },
         ]
       }
+      billing_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan: string
+          price_id: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       block_dependencies: {
         Row: {
           created_at: string | null
@@ -536,6 +578,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_quota_remaining: number | null
+          ai_quota_reset_date: string | null
           ai_requests_reset_date: string | null
           ai_requests_used: number | null
           created_at: string
@@ -545,6 +589,7 @@ export type Database = {
           id: string
           is_founder: boolean | null
           onboarded: boolean | null
+          plan: string | null
           role: string | null
           stripe_customer_id: string | null
           subscription_current_period_end: string | null
@@ -554,6 +599,8 @@ export type Database = {
           venture_type: string | null
         }
         Insert: {
+          ai_quota_remaining?: number | null
+          ai_quota_reset_date?: string | null
           ai_requests_reset_date?: string | null
           ai_requests_used?: number | null
           created_at?: string
@@ -563,6 +610,7 @@ export type Database = {
           id?: string
           is_founder?: boolean | null
           onboarded?: boolean | null
+          plan?: string | null
           role?: string | null
           stripe_customer_id?: string | null
           subscription_current_period_end?: string | null
@@ -572,6 +620,8 @@ export type Database = {
           venture_type?: string | null
         }
         Update: {
+          ai_quota_remaining?: number | null
+          ai_quota_reset_date?: string | null
           ai_requests_reset_date?: string | null
           ai_requests_used?: number | null
           created_at?: string
@@ -581,6 +631,7 @@ export type Database = {
           id?: string
           is_founder?: boolean | null
           onboarded?: boolean | null
+          plan?: string | null
           role?: string | null
           stripe_customer_id?: string | null
           subscription_current_period_end?: string | null

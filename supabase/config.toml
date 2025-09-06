@@ -49,3 +49,17 @@ verify_jwt = false
 
 [functions.send-email]
 verify_jwt = true
+
+# Existing subscription-related functions
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+# Public webhook endpoint (no JWT verification)
+[functions.stripe-webhooks]
+verify_jwt = false

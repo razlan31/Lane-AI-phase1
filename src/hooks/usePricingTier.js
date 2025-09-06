@@ -24,9 +24,9 @@ export const usePricingTier = () => {
           
           setProfile(profileData);
           
-          // Set tier based on profile subscription plan
-          const userTier = profileData?.subscription_plan || 'free';
-          setTier(userTier);
+          // Set tier based on profile.plan if available, else subscription_plan
+          const plan = profileData?.plan || profileData?.subscription_plan || 'free';
+          setTier(plan);
           
           // Auto-refresh subscription status
           setTimeout(() => {

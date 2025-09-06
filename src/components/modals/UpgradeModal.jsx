@@ -16,56 +16,57 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
   }
   const plans = [
     {
-      id: 'founders',
-      name: 'Founders',
+      id: 'pro-promo',
+      name: 'Pro Promo',
       icon: Zap,
-      price: '$9',
+      price: '$9.90',
       period: '/month',
-      yearlyPrice: '$86',
-      description: 'Perfect for individual founders',
+      description: 'Locked price for first 9 users until cancel',
       features: [
-        'Unlimited ventures',
-        'Advanced worksheets', 
-        'AI chat assistance',
-        'Basic reports',
-        'Founder mode',
-        'Priority support'
+        'Worksheets: full CRUD',
+        'Personal: full CRUD',
+        'Scratchpad Reflect (AI)',
+        'Founder Mode AI',
+        'Export: PDF + CSV'
       ],
       popular: true
     },
     {
-      id: 'pro',
-      name: 'Pro',
+      id: 'pro-standard',
+      name: 'Pro Standard',
       icon: Star,
       price: '$15',
       period: '/month', 
-      yearlyPrice: '$144',
-      description: 'For growing businesses',
+      description: 'Standard monthly plan',
       features: [
-        'Everything in Founders',
-        'Advanced formula editor',
-        'Export all reports',
-        'Custom integrations',
-        'Team collaboration',
-        'Advanced analytics'
+        'Everything in Pro Promo',
+        '500 AI prompts/month',
+        '2s AI cooldown'
       ]
     },
     {
-      id: 'enterprise',
-      name: 'Enterprise',
+      id: 'weekly',
+      name: 'Weekly',
       icon: Crown,
-      price: 'Custom',
-      period: '',
-      description: 'For teams and organizations',
+      price: '$4',
+      period: '/week',
+      description: 'Short-term access',
       features: [
-        'Everything in Pro',
-        'Custom deployments',
-        'SSO integration',
-        'Advanced admin controls',
-        'Dedicated support',
-        'Custom training'
-      ],
-      comingSoon: true
+        'All paid features',
+        'Billed weekly'
+      ]
+    },
+    {
+      id: 'annual',
+      name: 'Annual',
+      icon: Crown,
+      price: '$150',
+      period: '/year',
+      description: '12 months for the price of 10',
+      features: [
+        'All paid features',
+        'Best value'
+      ]
     }
   ];
 
@@ -75,9 +76,10 @@ const UpgradeModal = ({ isOpen, onClose, targetFeature }) => {
     try {
       // Map plan selection to Stripe plan types
       const planTypeMapping = {
-        'founders': 'pro-promo',
-        'pro': 'pro-standard',
-        'enterprise': 'pro-standard' // Enterprise uses same as pro for now
+        'pro-promo': 'pro-promo',
+        'pro-standard': 'pro-standard',
+        'weekly': 'weekly',
+        'annual': 'annual'
       };
       
       const planType = planTypeMapping[planId];
