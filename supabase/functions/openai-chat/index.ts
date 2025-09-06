@@ -370,11 +370,12 @@ When users request these actions, use the available functions to perform them im
       }
 
       if (!targetVentureId) {
-        const { data: v } = await supabase
+        const { data: v, error: vErr } = await supabase
           .from('ventures')
           .insert({ user_id: userId, name: ventureName, description: `${ventureName} created from confirmation`, type: 'local_business', stage: 'growth' })
           .select()
           .maybeSingle();
+        if (vErr) console.error('Venture creation error:', vErr);
         targetVentureId = v?.id || null;
       }
 
@@ -382,14 +383,37 @@ When users request these actions, use the available functions to perform them im
         const templates = getWorksheetTemplates(inferredType, 'real_data', null, 'existing_business');
         const created = [] as any[];
         for (const t of templates) {
-          const { data: w } = await supabase
-            .from('worksheets')
-            .insert({ user_id: userId, venture_id: targetVentureId, type: t.type, template_category: t.type, inputs: { fields: t.fields || [] }, confidence_level: 'actual' })
-            .select()
-            .maybeSingle();
-          if (w) created.push(w);
+          try {
+            const { data: w, error: wErr } = await supabase
+              .from('worksheets')
+              .insert({ 
+                user_id: userId,  // TEXT column, so userId as string is correct
+                venture_id: targetVentureId, 
+                type: t.type, 
+                template_category: t.type, 
+                inputs: { fields: t.fields || [] }, 
+                confidence_level: 'actual' 
+              })
+              .select()
+              .maybeSingle();
+            if (w && !wErr) created.push(w);
+            else console.error('Worksheet insert error:', wErr);
+          } catch (e) {
+            console.error('Worksheet insert exception:', e);
+          }
         }
         const names = templates.map(t => t.name).join(', ');
+        
+        // Save assistant response to chat
+        await supabase
+          .from('chat_messages')
+          .insert([{
+            session_id: sid,
+            role: 'assistant',
+            content: `🎉 Created ${created.length} worksheets: ${names} for "${ventureName}". Open your HQ Dashboard to view them.`,
+            created_at: new Date().toISOString()
+          }]);
+        
         return new Response(JSON.stringify({
           sessionId: sid,
           message: `🎉 Created ${created.length} worksheets: ${names} for "${ventureName}". Open your HQ Dashboard to view them.`,
