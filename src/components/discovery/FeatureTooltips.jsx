@@ -84,25 +84,32 @@ const FeatureTooltips = () => {
     }
     localStorage.setItem('laneai-last-visit', now.toString());
 
-    // Show tooltips based on user interaction patterns
-    const showTooltipTimer = setTimeout(() => {
-      const eligibleTooltips = tooltips.filter(tooltip => 
-        !dismissedTooltips.has(tooltip.id) &&
-        document.querySelector(tooltip.selector)
-      );
+    // Show tooltips based on user interaction patterns - only show once per session
+    const sessionKey = `tooltip-session-${Date.now()}`;
+    const currentSession = sessionStorage.getItem('laneai-tooltip-session');
+    
+    if (!currentSession) {
+      sessionStorage.setItem('laneai-tooltip-session', sessionKey);
+      
+      const showTooltipTimer = setTimeout(() => {
+        const eligibleTooltips = tooltips.filter(tooltip => 
+          !dismissedTooltips.has(tooltip.id) &&
+          document.querySelector(tooltip.selector)
+        );
 
-      if (eligibleTooltips.length > 0) {
-        // Prioritize new features, then tips, then info
-        const prioritized = eligibleTooltips.sort((a, b) => {
-          const order = { new: 0, tip: 1, feature: 2, info: 3 };
-          return order[a.type] - order[b.type];
-        });
-        
-        setActiveTooltip(prioritized[0]);
-      }
-    }, 3000); // Show after 3 seconds
+        if (eligibleTooltips.length > 0) {
+          // Prioritize new features, then tips, then info
+          const prioritized = eligibleTooltips.sort((a, b) => {
+            const order = { new: 0, tip: 1, feature: 2, info: 3 };
+            return order[a.type] - order[b.type];
+          });
+          
+          setActiveTooltip(prioritized[0]);
+        }
+      }, 3000); // Show after 3 seconds
 
-    return () => clearTimeout(showTooltipTimer);
+      return () => clearTimeout(showTooltipTimer);
+    }
   }, []);
 
   const dismissTooltip = (tooltipId, persistent = false) => {
@@ -132,11 +139,34 @@ const FeatureTooltips = () => {
   if (!targetElement) return null;
 
   const rect = targetElement.getBoundingClientRect();
+  
+  // Calculate safe positioning to ensure tooltip is fully visible
+  const tooltipWidth = 320;
+  const tooltipHeight = 200; // estimated height
+  const margin = 16;
+  
+  let left = rect.left;
+  let top = rect.bottom + 8;
+  
+  // Adjust horizontal position if tooltip would go off-screen
+  if (left + tooltipWidth > window.innerWidth - margin) {
+    left = window.innerWidth - tooltipWidth - margin;
+  }
+  if (left < margin) {
+    left = margin;
+  }
+  
+  // Adjust vertical position if tooltip would go off-screen
+  if (top + tooltipHeight > window.innerHeight - margin) {
+    top = rect.top - tooltipHeight - 8; // Position above the element
+  }
+  
   const tooltipStyle = {
     position: 'fixed',
-    top: rect.bottom + 8,
-    left: Math.max(16, Math.min(rect.left, window.innerWidth - 320)),
-    zIndex: 1000
+    top: Math.max(margin, top),
+    left,
+    zIndex: 1000,
+    maxWidth: `${tooltipWidth}px`
   };
 
   const getTooltipColor = (type) => {
@@ -170,7 +200,7 @@ const FeatureTooltips = () => {
 
       {/* Active Tooltip */}
       <div style={tooltipStyle} className="animate-scale-in">
-        <Card className="w-80 shadow-xl border-0 overflow-hidden">
+        <Card className="w-full max-w-sm shadow-xl border-0 overflow-hidden bg-background">
           {/* Header with gradient */}
           <div className={`p-3 text-white ${getTooltipColor(tooltip.type)}`}>
             <div className="flex items-center justify-between">
