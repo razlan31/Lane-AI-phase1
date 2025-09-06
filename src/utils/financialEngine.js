@@ -7,8 +7,7 @@ export class FinancialEngine {
       breakeven: this.calculateBreakeven.bind(this),
       unitEconomics: this.calculateUnitEconomics.bind(this),
       loanPayment: this.calculateLoanPayment.bind(this),
-      npv: this.calculateNPV.bind(this),
-      irr: this.calculateIRR.bind(this)
+      npv: this.calculateNPV.bind(this)
     };
   }
 
