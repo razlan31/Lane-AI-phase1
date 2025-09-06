@@ -25,7 +25,6 @@ export default defineConfig(({ mode, command }) => ({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "zustand"],
-    force: true, // Force complete cache rebuild
   },
   esbuild: {
     exclude: ["html-to-image"], // Additional exclusion at build level
