@@ -101,11 +101,81 @@ export const createTestVentures = async () => {
 
     if (kpisError) throw kpisError;
 
-    console.log('✅ Successfully created 4 test ventures with complete KPI data');
-    return { success: true, ventures, kpisCount: kpisData.length };
+    // Create supporting worksheets for each venture
+    const worksheets = [];
 
-  } catch (error) {
-    console.error('❌ Error creating test ventures:', error);
-    return { success: false, error: error.message };
-  }
-};
+    if (foodTruck) {
+      worksheets.push(
+        {
+          user_id: user.id,
+          venture_id: foodTruck.id,
+          type: 'cashflow',
+          inputs: { revenue_streams: [{ name: 'Food sales', amount: 12500 }], expenses: [{ name: 'Operating', amount: 8200 }] },
+          outputs: { monthly_revenue: 12500, monthly_burn: 8200, net_cashflow: 12500 - 8200 },
+          confidence_level: 'actual'
+        },
+        {
+          user_id: user.id,
+          venture_id: foodTruck.id,
+          type: 'unit-economics',
+          inputs: { avg_order_value: 14.7, daily_customers: 85 },
+          outputs: { monthly_orders: 85 * 26, average_order_value: 14.7 },
+          confidence_level: 'estimate'
+        }
+      );
+    }
+
+    if (dropship) {
+      worksheets.push(
+        {
+          user_id: user.id,
+          venture_id: dropship.id,
+          type: 'cashflow',
+          inputs: { orders: 420, aov: 68.8, cac: 45 },
+          outputs: { monthly_revenue: 28900, conversion_rate: 3.2, monthly_orders: 420 },
+          confidence_level: 'actual'
+        },
+        {
+          user_id: user.id,
+          venture_id: dropship.id,
+          type: 'unit-economics',
+          inputs: { cac: 45, aov: 68.8 },
+          outputs: { gross_margin: 0.45 },
+          confidence_level: 'estimate'
+        }
+      );
+    }
+
+    if (freelance) {
+      worksheets.push(
+        {
+          user_id: user.id,
+          venture_id: freelance.id,
+          type: 'cashflow',
+          inputs: { active_clients: 6, avg_project_value: 2800, monthly_expenses: 1200 },
+          outputs: { monthly_revenue: 8500, monthly_expenses: 1200, net_cashflow: 8500 - 1200 },
+          confidence_level: 'actual'
+        }
+      );
+    }
+
+    if (app) {
+      worksheets.push(
+        {
+          user_id: user.id,
+          venture_id: app.id,
+          type: 'saas-metrics',
+          inputs: { mau: 2400, mrr: 1850, retention: 68 },
+          outputs: { monthly_active_users: 2400, mrr: 1850, retention_rate: 68 },
+          confidence_level: 'actual'
+        }
+      );
+    }
+
+    if (worksheets.length > 0) {
+      const { error: wsErr } = await supabase.from('worksheets').insert(worksheets);
+      if (wsErr) throw wsErr;
+    }
+
+    console.log('✅ Successfully created 4 test ventures with complete KPI data and worksheets');
+    return { success: true, ventures, kpisCount: kpisData.length, worksheetsCount: worksheets.length };
