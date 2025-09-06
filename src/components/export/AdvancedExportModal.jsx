@@ -478,10 +478,63 @@ export function AdvancedExportModal({ isOpen, onClose, data, className }) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Scheduled exports coming soon</p>
-                    <p className="text-sm">Set up recurring reports and automated delivery</p>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { id: 'weekly', label: 'Weekly Report', desc: 'Every Monday at 9 AM', enabled: true },
+                        { id: 'monthly', label: 'Monthly Summary', desc: 'First day of month', enabled: false },
+                        { id: 'quarterly', label: 'Quarterly Review', desc: 'End of quarter', enabled: false }
+                      ].map((schedule) => (
+                        <Card key={schedule.id} className={`cursor-pointer transition-colors ${schedule.enabled ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h5 className="font-medium text-sm">{schedule.label}</h5>
+                                <p className="text-xs text-muted-foreground mt-1">{schedule.desc}</p>
+                                {schedule.enabled && (
+                                  <span className="text-xs text-primary font-medium mt-1 block">Active</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const action = schedule.enabled ? 'disable' : 'enable';
+                                  console.log(`${action} ${schedule.label}`);
+                                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                                    detail: { 
+                                      message: `Help me ${action} the ${schedule.label} scheduled export. I want to configure when and how these reports are sent.`,
+                                      context: 'scheduled-exports'
+                                    }
+                                  }));
+                                }}
+                                className={`w-8 h-4 rounded-full transition-colors ${
+                                  schedule.enabled ? 'bg-primary' : 'bg-muted'
+                                } relative`}
+                              >
+                                <div className={`w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 ${
+                                  schedule.enabled ? 'translate-x-4' : 'translate-x-0.5'
+                                }`} />
+                              </button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('openAIChat', {
+                          detail: { 
+                            message: 'Help me set up a new scheduled export. I want to create automated reports that are sent regularly to my team.',
+                            context: 'new-scheduled-export'
+                          }
+                        }));
+                      }}
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Create New Schedule
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

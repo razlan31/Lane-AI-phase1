@@ -60,8 +60,17 @@ const LockUnlockWrapper = ({
   const tierInfo = getTierInfo(requiredTier);
 
   const handleUpgrade = () => {
-    // TODO: Implement actual upgrade flow
-    console.log(`Upgrade to ${requiredTier}`);
+    console.log(`Initiating upgrade to ${requiredTier}`);
+    
+    // Open upgrade modal or pricing page
+    window.dispatchEvent(new CustomEvent('openUpgradeModal', {
+      detail: { 
+        requiredTier: requiredTier,
+        feature: feature,
+        currentTier: 'free' // This would come from user context
+      }
+    }));
+    
     setShowUpsellModal(false);
   };
 

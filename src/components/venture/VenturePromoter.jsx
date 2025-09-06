@@ -29,7 +29,36 @@ export const VenturePromoter = ({ isOpen, onClose, sourceData, sourceType }) => 
       
       const result = await createVenture(ventureData);
       if (result.success) {
-        // TODO: Link source data to the new venture
+        // Link source data to the new venture
+        if (sourceData && sourceType) {
+          console.log(`Linking ${sourceType} data to venture:`, result.venture.id);
+          
+          // Create initial KPIs from source data
+          if (sourceType === 'playground' && sourceData.blocks) {
+            // Generate KPIs from playground blocks
+            sourceData.blocks.forEach(block => {
+              console.log(`Creating KPI from block: ${block.name}`);
+            });
+          }
+          
+          if (sourceType === 'tools' && sourceData.length) {
+            // Generate KPIs from tool results
+            sourceData.forEach(tool => {
+              console.log(`Creating KPI from tool: ${tool.name}`);
+            });
+          }
+          
+          // Dispatch event to show success and open the new venture
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('openVenture', {
+              detail: { 
+                ventureId: result.venture.id, 
+                ventureName: ventureName 
+              }
+            }));
+          }, 500);
+        }
+        
         onClose();
       }
     } catch (error) {

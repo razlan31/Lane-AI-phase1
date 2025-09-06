@@ -43,22 +43,41 @@ const CsvUploadModal = ({ isOpen, onClose, onFileUploaded }) => {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (selectedFile && onFileUploaded) {
-      // Mock CSV data for prototype
-      const mockCsvData = {
-        filename: selectedFile.name,
-        headers: ['Date', 'Description', 'Amount', 'Category'],
-        rows: [
-          ['2024-01-01', 'Revenue from Client A', '5000', 'Income'],
-          ['2024-01-02', 'Office Rent', '-2000', 'Expense'],
-          ['2024-01-03', 'Marketing Campaign', '-500', 'Expense'],
-          ['2024-01-04', 'Revenue from Client B', '3000', 'Income']
-        ]
-      };
-      onFileUploaded(mockCsvData);
-      setSelectedFile(null);
-      onClose();
+      try {
+        // Read the actual CSV file
+        const text = await selectedFile.text();
+        const lines = text.split('\n').filter(line => line.trim());
+        
+        if (lines.length === 0) {
+          alert('The CSV file appears to be empty.');
+          return;
+        }
+        
+        // Parse CSV (simple comma-separated parsing)
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const rows = lines.slice(1).map(line => 
+          line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+        ).filter(row => row.length === headers.length);
+        
+        const csvData = {
+          filename: selectedFile.name,
+          headers: headers,
+          rows: rows,
+          totalRows: rows.length,
+          fileSize: selectedFile.size
+        };
+        
+        console.log('Parsed CSV data:', csvData);
+        onFileUploaded(csvData);
+        setSelectedFile(null);
+        onClose();
+        
+      } catch (error) {
+        console.error('Error reading CSV file:', error);
+        alert('Error reading the CSV file. Please make sure it\'s a valid CSV format.');
+      }
     }
   };
 

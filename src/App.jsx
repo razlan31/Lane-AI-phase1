@@ -224,6 +224,17 @@ function App() {
         }));
       }, 100);
     };
+    const handleOpenUpgradeModal = (e) => {
+      const { requiredTier, feature, currentTier } = e.detail;
+      console.log(`Opening upgrade modal for ${feature} requiring ${requiredTier}`);
+      
+      // In a real app, this would open the pricing/upgrade modal
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: `I need to upgrade my account to access the ${feature} feature. Can you help me understand the ${requiredTier} plan benefits and upgrade process?`,
+          context: 'upgrade-assistance'
+        }
+      }));
     };
 
     window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
@@ -237,6 +248,7 @@ function App() {
     window.addEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
     window.addEventListener('openReportViewer', handleOpenReportViewer);
     window.addEventListener('openWorksheet', handleOpenWorksheet);
+    window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
 
     return () => {
       window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
@@ -250,6 +262,7 @@ function App() {
       window.removeEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
       window.removeEventListener('openReportViewer', handleOpenReportViewer);
       window.removeEventListener('openWorksheet', handleOpenWorksheet);
+      window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
     };
   }, []);
 
