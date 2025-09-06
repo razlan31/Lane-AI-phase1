@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LayoutDashboard, FileSpreadsheet, GitBranch, FileText, Activity, Workflow } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import KpiCard from '../primitives/KpiCard';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
 import ScenariosTab from '../scenarios/ScenariosTab';
@@ -413,13 +414,85 @@ Churn Rate,5%,${today},Retention`;
 
           {/* Flows Tab */}
           <TabsContent value="flows">
-            <div className="border border-dashed border-border rounded-lg p-12 text-center">
-              <Workflow className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Workflow Builder</h3>
-              <p className="text-muted-foreground mb-4">
-                Automate your business processes with visual workflows
-              </p>
-              <Button>Coming Soon</Button>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Workflow Automation</h3>
+                  <p className="text-sm text-muted-foreground">Create automated workflows for your business processes</p>
+                </div>
+                <Button onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                    detail: { 
+                      message: 'Help me design automated workflows for my venture. I want to streamline repetitive tasks and create efficient business processes.',
+                      context: 'workflow-design'
+                    }
+                  }));
+                }}>
+                  <Workflow className="h-4 w-4 mr-2" />
+                  Create Workflow
+                </Button>
+              </div>
+              
+              {/* Sample Workflow Templates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    name: 'Customer Onboarding',
+                    description: 'Automate new customer welcome emails and setup tasks',
+                    triggers: 'New customer signup',
+                    actions: '3 automated steps'
+                  },
+                  {
+                    name: 'Monthly Reporting',
+                    description: 'Generate and send monthly performance reports',
+                    triggers: 'Monthly schedule',
+                    actions: '5 automated steps'
+                  },
+                  {
+                    name: 'Lead Qualification',
+                    description: 'Score and route leads based on criteria',
+                    triggers: 'New lead form',
+                    actions: '4 automated steps'
+                  },
+                  {
+                    name: 'Invoice Reminders',
+                    description: 'Send payment reminders for overdue invoices',
+                    triggers: 'Overdue invoice',
+                    actions: '3 automated steps'
+                  }
+                ].map((workflow) => (
+                  <Card key={workflow.name} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Workflow className="h-5 w-5 text-primary" />
+                        {workflow.name}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">{workflow.description}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between text-xs text-muted-foreground mb-3">
+                        <span>Trigger: {workflow.triggers}</span>
+                        <span>{workflow.actions}</span>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('openAIChat', {
+                            detail: { 
+                              message: `Set up a ${workflow.name} workflow. ${workflow.description}. Help me configure the triggers and actions.`,
+                              context: 'workflow-setup'
+                            }
+                          }));
+                        }}
+                      >
+                        Set Up Workflow
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </TabsContent>
         </Tabs>

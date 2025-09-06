@@ -83,9 +83,32 @@ const NotificationSettings = () => {
     reports: true,
     marketing: false
   });
+  const [saving, setSaving] = useState(false);
 
-  const handleToggle = (key) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+  const handleToggle = async (key) => {
+    const newValue = !notifications[key];
+    setNotifications(prev => ({ ...prev, [key]: newValue }));
+    
+    // Save to database/localStorage
+    setSaving(true);
+    try {
+      // Simulate saving to database
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // In real app, save to Supabase user preferences
+      localStorage.setItem('notifications_preferences', JSON.stringify({
+        ...notifications,
+        [key]: newValue
+      }));
+      
+      console.log(`Updated ${key} notification setting to:`, newValue);
+    } catch (error) {
+      console.error('Failed to save notification settings:', error);
+      // Revert on error
+      setNotifications(prev => ({ ...prev, [key]: !newValue }));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -108,9 +131,10 @@ const NotificationSettings = () => {
             </div>
             <button
               onClick={() => handleToggle(key)}
+              disabled={saving}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 value ? 'bg-primary' : 'bg-muted'
-              }`}
+              } ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -155,7 +179,12 @@ const SupportSettings = () => {
           <p className="text-sm text-muted-foreground">
             Learn how to make the most of LaneAI features
           </p>
-          <button className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors">
+          <button 
+            className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors"
+            onClick={() => {
+              window.open('https://docs.lovable.dev/', '_blank');
+            }}
+          >
             View Docs
           </button>
         </Card>
@@ -165,7 +194,17 @@ const SupportSettings = () => {
           <p className="text-sm text-muted-foreground">
             Suggest new features or improvements
           </p>
-          <button className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors">
+          <button 
+            className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openAIChat', {
+                detail: { 
+                  message: 'I want to submit a feature request for the app. Help me structure my feedback and suggestions for new features or improvements.',
+                  context: 'feature-request'
+                }
+              }));
+            }}
+          >
             Submit Request
           </button>
         </Card>
@@ -175,7 +214,12 @@ const SupportSettings = () => {
           <p className="text-sm text-muted-foreground">
             Join our community of founders and entrepreneurs
           </p>
-          <button className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors">
+          <button 
+            className="w-full border border-border py-2 px-4 rounded-lg hover:bg-muted/50 transition-colors"
+            onClick={() => {
+              window.open('https://discord.com/channels/1119885301872070706/1280461670979993613', '_blank');
+            }}
+          >
             Join Discord
           </button>
         </Card>

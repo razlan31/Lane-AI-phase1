@@ -98,7 +98,31 @@ const TemplateChooser = ({ isOpen, onClose, onSelectTemplate }) => {
                   key={template.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => {
-                    onSelectTemplate(template);
+                    console.log('Template selected:', template);
+                    
+                    // Create worksheet from template
+                    const worksheetData = {
+                      id: Date.now(),
+                      name: template.title,
+                      type: template.category.toLowerCase(),
+                      description: template.description,
+                      template_id: template.id,
+                      status: 'draft',
+                      created_at: new Date().toISOString()
+                    };
+                    
+                    onSelectTemplate(worksheetData);
+                    
+                    // Open the new worksheet
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('openWorksheet', {
+                        detail: { 
+                          worksheetId: worksheetData.id, 
+                          worksheetData: worksheetData 
+                        }
+                      }));
+                    }, 300);
+                    
                     onClose();
                   }}
                 >

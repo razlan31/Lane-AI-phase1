@@ -47,12 +47,25 @@ const WorksheetBuilder = ({ isOpen, onClose, onCreateWorksheet }) => {
   const handleCreate = () => {
     if (!worksheetData.name) return;
     
-    onCreateWorksheet({
+    const newWorksheet = {
       ...worksheetData,
       id: Date.now(),
       created_at: new Date().toISOString(),
       status: 'draft'
-    });
+    };
+    
+    // Call the parent's create function
+    onCreateWorksheet(newWorksheet);
+    
+    // Open the actual worksheet for editing
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('openWorksheet', {
+        detail: { 
+          worksheetId: newWorksheet.id, 
+          worksheetData: newWorksheet 
+        }
+      }));
+    }, 500);
     
     // Reset form
     setWorksheetData({

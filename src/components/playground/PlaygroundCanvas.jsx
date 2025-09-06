@@ -295,13 +295,45 @@ const PlaygroundCanvas = ({ className = "" }) => {
             </div>
 
             <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                    detail: { 
+                      message: `Add a new tool to ${selectedElement.block.name}. Help me select and configure the right tool for this block's functionality.`,
+                      context: 'tool-addition'
+                    }
+                  }));
+                }}
+              >
                 Add Tool
               </Button>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openNewWorksheetModal'));
+                }}
+              >
                 Add Worksheet
               </Button>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('autoGenerateKPIs', {
+                    detail: { 
+                      type: 'block-specific',
+                      count: 2,
+                      blockName: selectedElement.block.name
+                    }
+                  }));
+                }}
+              >
                 Add KPI
               </Button>
             </div>

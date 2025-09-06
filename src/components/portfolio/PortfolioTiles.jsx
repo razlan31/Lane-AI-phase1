@@ -27,7 +27,12 @@ const PortfolioTiles = ({ onVentureClick }) => {
           <p className="text-muted-foreground text-center mb-4">
             Create your first venture to start tracking metrics and building your portfolio
           </p>
-          <button className="text-sm text-primary hover:text-primary/80 font-medium">
+          <button 
+            className="text-sm text-primary hover:text-primary/80 font-medium"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+            }}
+          >
             + Create Your First Venture
           </button>
         </CardContent>
@@ -168,7 +173,12 @@ const PortfolioTiles = ({ onVentureClick }) => {
       })}
       
       {/* Add New Venture Card */}
-      <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer">
+      <Card 
+        className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+        }}
+      >
         <CardContent className="flex flex-col items-center justify-center py-12">
           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
             <Building2 className="h-6 w-6 text-primary" />
@@ -177,7 +187,13 @@ const PortfolioTiles = ({ onVentureClick }) => {
           <p className="text-sm text-muted-foreground text-center mb-4">
             Start tracking a new business or project
           </p>
-          <button className="text-sm text-primary hover:text-primary/80 font-medium">
+          <button 
+            className="text-sm text-primary hover:text-primary/80 font-medium"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click from firing
+              window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+            }}
+          >
             + Create Venture
           </button>
         </CardContent>

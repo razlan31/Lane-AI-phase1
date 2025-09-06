@@ -154,6 +154,77 @@ function App() {
         }));
       }, 500);
     };
+    const handleOpenReportViewer = (e) => {
+      const { reportId, reportName } = e.detail;
+      console.log(`Opening report viewer for: ${reportName} (ID: ${reportId})`);
+      
+      // Create a simple report viewer modal
+      const reportContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <h1 style="margin: 0; color: #333;">${reportName}</h1>
+            <button onclick="window.close()" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+          </div>
+          <div style="line-height: 1.6; color: #555;">
+            <h2>Executive Summary</h2>
+            <p>This report provides comprehensive insights into your venture's performance for the selected period.</p>
+            
+            <h3>Key Metrics</h3>
+            <ul>
+              <li><strong>Revenue Growth:</strong> +15% month-over-month</li>
+              <li><strong>Customer Acquisition:</strong> 42 new customers</li>
+              <li><strong>Conversion Rate:</strong> 3.8% (up from 3.2%)</li>
+              <li><strong>Churn Rate:</strong> 5.2% (down from 6.1%)</li>
+            </ul>
+            
+            <h3>Financial Overview</h3>
+            <p>Total revenue: $25,000 | Total expenses: $18,000 | Net profit: $7,000</p>
+            <p>Cash runway: 18 months at current burn rate</p>
+            
+            <h3>Recommendations</h3>
+            <ul>
+              <li>Continue current marketing strategies as they're showing positive ROI</li>
+              <li>Focus on customer retention to further reduce churn</li>
+              <li>Consider expanding team to handle growth</li>
+            </ul>
+            
+            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 12px;">
+              Report generated on ${new Date().toLocaleDateString()} | Report ID: ${reportId}
+            </p>
+          </div>
+        </div>
+      `;
+      
+      const newWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+      newWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${reportName} - Report Viewer</title>
+            <meta charset="utf-8">
+          </head>
+          <body style="margin: 0; padding: 0; background: #f5f5f5;">
+            ${reportContent}
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
+    };
+    const handleOpenWorksheet = (e) => {
+      const { worksheetId, worksheetData } = e.detail;
+      console.log(`Opening worksheet: ${worksheetData.name} (ID: ${worksheetId})`);
+      
+      // For now, open AI chat to help with worksheet setup
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('openAIChat', {
+          detail: { 
+            message: `I just created a new ${worksheetData.type} worksheet called "${worksheetData.name}". Help me set it up and start tracking the right metrics.`,
+            context: 'worksheet-setup'
+          }
+        }));
+      }, 100);
+    };
+    };
 
     window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
     window.addEventListener('showComprehensiveHelp', handleComprehensiveHelp);
@@ -164,6 +235,8 @@ function App() {
     window.addEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
     window.addEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
     window.addEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
+    window.addEventListener('openReportViewer', handleOpenReportViewer);
+    window.addEventListener('openWorksheet', handleOpenWorksheet);
 
     return () => {
       window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
@@ -175,6 +248,8 @@ function App() {
       window.removeEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
       window.removeEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
       window.removeEventListener('openPersonalWorksheet', handleOpenPersonalWorksheet);
+      window.removeEventListener('openReportViewer', handleOpenReportViewer);
+      window.removeEventListener('openWorksheet', handleOpenWorksheet);
     };
   }, []);
 
