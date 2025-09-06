@@ -108,7 +108,7 @@ const QuickDock = ({ className = "", onNavigate }) => {
         </Dialog>
 
         {/* Quick action buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3" data-feature="quick-dock">
           {dockItems.map((item, index) => {
             const Icon = item.icon;
             return (

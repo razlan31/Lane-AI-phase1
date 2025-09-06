@@ -33,6 +33,9 @@ import AdvancedExportModal from './components/export/AdvancedExportModal';
 import AdvancedReportsPanel from './components/reports/AdvancedReportsPanel';
 import WorksheetTemplatesGallery from './components/templates/WorksheetTemplatesGallery';
 import HelpModal from './components/modals/HelpModal';
+import FeatureDiscovery from './components/discovery/FeatureDiscovery';
+import FeatureTooltips from './components/discovery/FeatureTooltips';
+import ComprehensiveHelpSystem from './components/help/ComprehensiveHelpSystem';
 import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
 import PortfolioDashboard from './components/PortfolioDashboard';
@@ -59,6 +62,9 @@ function App() {
   const [advancedReportsOpen, setAdvancedReportsOpen] = useState(false);
   const [templatesGalleryOpen, setTemplatesGalleryOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [featureDiscoveryOpen, setFeatureDiscoveryOpen] = useState(false);
+  const [comprehensiveHelpOpen, setComprehensiveHelpOpen] = useState(false);
+  const [discoveryTarget, setDiscoveryTarget] = useState(null);
   const { ventures, loading: venturesLoading, createVenture } = useVentures();
   const { user: currentUser } = useAuth();
   const { showPlainExplanations } = useDisplaySettings();
@@ -83,10 +89,29 @@ function App() {
       setAdvancedReportsOpen(false);
       setTemplatesGalleryOpen(false);
       setHelpModalOpen(false);
+      setFeatureDiscoveryOpen(false);
+      setComprehensiveHelpOpen(false);
     },
   });
 
   // Get user profile and check onboarding status
+  // Global event listeners for UX features
+  useEffect(() => {
+    const handleFeatureDiscovery = (e) => {
+      setDiscoveryTarget(e.detail?.target || null);
+      setFeatureDiscoveryOpen(true);
+    };
+    const handleComprehensiveHelp = () => setComprehensiveHelpOpen(true);
+
+    window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
+    window.addEventListener('showComprehensiveHelp', handleComprehensiveHelp);
+
+    return () => {
+      window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
+      window.removeEventListener('showComprehensiveHelp', handleComprehensiveHelp);
+    };
+  }, []);
+
   useEffect(() => {
     const setupUserProfile = async () => {
       if (!currentUser) {
@@ -451,6 +476,20 @@ function App() {
       />
 
       <GlobalUpgradeHandler />
+
+      {/* Feature Discovery and Help */}
+      <FeatureDiscovery
+        isOpen={featureDiscoveryOpen}
+        onClose={() => setFeatureDiscoveryOpen(false)}
+        targetFeature={discoveryTarget}
+      />
+
+      <ComprehensiveHelpSystem
+        isOpen={comprehensiveHelpOpen}
+        onClose={() => setComprehensiveHelpOpen(false)}
+      />
+
+      <FeatureTooltips />
       </div>
       </EnvChecker>
     </div>
