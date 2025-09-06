@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth.jsx';
 import AuthPage from '../../pages/AuthPage';
 import ResetPasswordPage from '../../pages/ResetPasswordPage';
 import UpgradeModal from '../modals/UpgradeModal';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AuthWrapper = ({ children }) => {
   const { user, loading } = useAuth();
@@ -19,6 +20,35 @@ export const AuthWrapper = ({ children }) => {
     window.addEventListener('showUpgradeModal', handleShowUpgradeModal);
     return () => window.removeEventListener('showUpgradeModal', handleShowUpgradeModal);
   }, []);
+
+  // Dev-only seeding: create founder user and auto sign-in once when no user exists
+  useEffect(() => {
+    const run = async () => {
+      const seedKey = 'seed-founder-done';
+      try {
+        if (loading || user) return;
+        if (localStorage.getItem(seedKey) === 'true') return;
+
+        const email = 'razlansalim01@gmail.com';
+        const password = '12345@';
+
+        await supabase.functions.invoke('seed-founder', {
+          body: { email, password, founder: true },
+        });
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!error) {
+          localStorage.setItem(seedKey, 'true');
+        } else {
+          console.error('Auto sign-in error:', error);
+        }
+      } catch (e) {
+        console.error('Seed founder error:', e);
+      }
+    };
+
+    run();
+  }, [loading, user]);
   
   const isResetPasswordRoute = typeof window !== 'undefined' && window.location.hash.includes('reset-password');
   if (isResetPasswordRoute) {
