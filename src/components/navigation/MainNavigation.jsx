@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Bot,
   Home,
@@ -14,11 +14,13 @@ import {
   Gamepad2,
   Upload,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { PersonalPage } from '../../pages/PersonalPage';
+import { useIsMobile } from '../ui/MobileOptimized';
 
 const MainNavigation = ({ 
   currentView, 
@@ -30,6 +32,42 @@ const MainNavigation = ({
   className 
 }) => {
   const [personalExpanded, setPersonalExpanded] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Auto-close sidebar on mobile when navigating
+  const handleViewChange = (viewId) => {
+    onViewChange(viewId);
+    if (isMobile && !isCollapsed) {
+      onToggleCollapse();
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.altKey) {
+        switch (e.key) {
+          case '1':
+            e.preventDefault();
+            handleViewChange('copilot');
+            break;
+          case '2':
+            e.preventDefault();
+            handleViewChange('hq');
+            break;
+          case '3':
+            e.preventDefault();
+            if (ventures.length > 0) {
+              handleViewChange(`venture-${ventures[0].id}`);
+            }
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [ventures, handleViewChange]);
   // Primary navigation items in correct order per spec
   const primaryItems = [
     { 
@@ -98,7 +136,7 @@ const MainNavigation = ({
               item.isPrimary && "font-medium",
               item.id === 'copilot' && "text-primary hover:text-primary border-l-2 border-l-primary/30"
             )}
-            onClick={() => onViewChange(item.id)}
+            onClick={() => handleViewChange(item.id)}
             title={isCollapsed ? `${item.label}: ${item.description}` : undefined}
           >
             <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
@@ -122,40 +160,47 @@ const MainNavigation = ({
 
   return (
     <>
-      {/* Mobile backdrop - only show when sidebar is open on mobile */}
-      {!isCollapsed && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-20 md:hidden" 
-          onClick={onToggleCollapse}
-          aria-hidden="true"
-        />
-      )}
+        {/* Mobile backdrop - only show when sidebar is open on mobile */}
+        {!isCollapsed && isMobile && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 animate-fade-in" 
+            onClick={onToggleCollapse}
+            aria-hidden="true"
+          />
+        )}
       
       <aside className={cn(
         "flex flex-col border-r border-border bg-background transition-all duration-300",
-        "fixed md:relative z-30 md:z-auto h-full",
+        "fixed md:relative z-30 md:z-auto h-full shadow-lg md:shadow-none",
         isCollapsed 
           ? "-translate-x-full md:translate-x-0 w-16" 
-          : "translate-x-0 w-80 md:w-64",
+          : "translate-x-0 w-80 md:w-64 animate-slide-in-left md:animate-none",
         className
       )}>
-        {/* Mobile Close Button */}
-        <div className="flex justify-between items-center p-2 md:justify-end">
+        {/* Header with Close/Toggle Button */}
+        <div className="flex justify-between items-center p-4 border-b border-border md:border-b-0">
+          {!isCollapsed && (
+            <h2 className="text-lg font-semibold text-foreground md:hidden">
+              Navigation
+            </h2>
+          )}
           <Button 
             variant="ghost" 
-            size="sm"
+            size="icon-sm"
             onClick={onToggleCollapse}
-            className="md:hidden"
+            className={cn(
+              "ml-auto transition-transform",
+              isMobile ? "hover:bg-destructive/10 hover:text-destructive" : ""
+            )}
+            title={isMobile ? "Close menu" : isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            Close
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={onToggleCollapse}
-            className="hidden md:block"
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {isMobile ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <>
+                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </>
+            )}
           </Button>
         </div>
 
@@ -187,7 +232,7 @@ const MainNavigation = ({
                           "w-full justify-start",
                           isCollapsed && "px-2"
                         )}
-                        onClick={() => onViewChange(item.id)}
+                        onClick={() => handleViewChange(item.id)}
                         title={isCollapsed ? `${item.label}: ${item.description}` : undefined}
                       >
                         <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />

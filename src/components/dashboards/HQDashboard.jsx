@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target } from 'lucide-react';
+import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target, Plus, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';
 // import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
@@ -9,6 +9,10 @@ import FounderModeOverlay from '../overlays/FounderModeOverlay';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useRoleBasedKpis } from '../../hooks/useRoleBasedKpis';
 import { useAlerts } from '../../hooks/useAlerts';
+import { MetricCard, ActionCard, StatusCard } from '../ui/EnhancedCard';
+import { ResponsiveContainer, ResponsiveGrid } from '../ui/ResponsiveContainer';
+import { LoadingSpinner, LoadingCard } from '../ui/LoadingSpinner';
+import { EmptyState } from '../ui/ErrorStates';
 
 const HQDashboard = () => {
   // Get user profile to determine role-based KPIs
@@ -98,22 +102,37 @@ const HQDashboard = () => {
                   <div key={i} className="h-32 bg-muted animate-pulse rounded-lg"></div>
                 ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ) : roleBasedKpis.length > 0 ? (
+              <ResponsiveGrid cols={{ xs: 1, sm: 2, lg: 3 }} gap="default">
                 {roleBasedKpis.map((kpi, index) => (
-                  <KpiCard
+                  <MetricCard
                     key={index}
                     title={kpi.title}
                     description={kpi.description}
                     value={kpi.value}
-                    unit={kpi.unit}
                     trend={kpi.trend}
                     trendDirection={kpi.trendDirection}
-                    state={kpi.state}
                     icon={kpi.icon}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   />
                 ))}
-              </div>
+                <ActionCard
+                  title="Generate More KPIs"
+                  description="Let AI create custom metrics for your business"
+                  icon={Plus}
+                  action={() => console.log('Generate KPIs')}
+                  actionLabel="Generate"
+                />
+              </ResponsiveGrid>
+            ) : (
+              <EmptyState
+                title="No signals yet"
+                description="Generate KPIs to start tracking your business metrics"
+                action={() => console.log('Generate KPIs')}
+                actionLabel="Generate KPIs"
+                icon={Target}
+              />
             )}
           </section>
 
@@ -149,19 +168,39 @@ const HQDashboard = () => {
   };
 
   return (
-    <>
-      <DashboardLayout
-        title="HQ Dashboard"
-        subtitle="Portfolio overview and key signals"
-        topStrip={topStripKpis}
-        tabs={tabs}
-        onQuickAction={handleQuickActions}
-      />
+    <ResponsiveContainer maxWidth="7xl" padding="lg">
+      <div className="space-y-8 animate-fade-in">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">HQ Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Portfolio overview and key signals</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <StatusCard
+              status="success"
+              title="System Online"
+              message="All services operational"
+              className="w-auto"
+            />
+          </div>
+        </div>
+
+        {/* Top KPIs Strip */}
+        <section>
+          <ResponsiveGrid cols={{ xs: 1, sm: 3 }} gap="default">
+            {topStripKpis}
+          </ResponsiveGrid>
+        </section>
+
+        {tabs[0].content}
+      </div>
+      
       <FounderModeOverlay 
         isOpen={founderModeOpen} 
         onClose={() => setFounderModeOpen(false)} 
       />
-    </>
+    </ResponsiveContainer>
   );
 };
 
