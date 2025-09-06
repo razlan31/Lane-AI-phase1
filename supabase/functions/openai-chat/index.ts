@@ -244,11 +244,23 @@ serve(async (req) => {
 
 When users mention ANY business idea (food truck, SaaS, consulting, retail, app, service, etc.), IMMEDIATELY trigger the magic moment:
 
-"🎯 Perfect! I can create a complete business dashboard for your [BUSINESS TYPE] with 5-7 worksheets automatically. Choose your approach:
+"🎯 Exciting! Let me help you set up a complete business dashboard for your [BUSINESS TYPE]. First, tell me:
+
+**What stage is this project?**
+🌱 **New Project** - Just starting, need to plan everything from scratch
+📈 **Existing Business** - Already running, want to track and scale operations  
+💭 **Brainstorming Ideas** - Exploring concepts, not ready to commit yet
+
+Then choose your data approach:
 
 **A) 📊 Use Industry Benchmarks** - I'll create your venture with realistic mock data from industry averages that you can replace with real numbers later
 
 **B) 🎯 Provide Real Data** - I'll ask targeted questions to build your dashboard with your actual business data (you can skip any you don't have)"
+
+STAGE-SPECIFIC RESPONSES:
+🌱 **New Project**: Focus on planning worksheets (business model, market analysis, financial projections, launch timeline, risk assessment)
+📈 **Existing Business**: Focus on operational worksheets (current performance, growth metrics, optimization opportunities, scaling plans)
+💭 **Brainstorming**: Focus on exploration worksheets (market research, competitive analysis, feasibility studies, concept validation)
 
 BUSINESS TYPE DETECTION:
 - Food truck/restaurant: Unit economics, daily sales, inventory, labor costs, location analysis
@@ -433,6 +445,7 @@ When users request these actions, use the available functions to perform them im
               required: ["name", "description", "business_type"]
             },
             data_approach: { type: "string", enum: ["industry_benchmarks", "real_data"] },
+            project_stage: { type: "string", enum: ["new_project", "existing_business", "brainstorming"] },
             user_data: {
               type: "object",
               properties: {
@@ -885,10 +898,10 @@ async function createVenture(args: any, userId: string, supabase: any) {
 }
 
 async function createCompleteVentureWithWorksheets(args: any, userId: string, supabase: any) {
-  const { venture, data_approach, user_data } = args;
+  const { venture, data_approach, user_data, project_stage } = args;
   const { name, description, business_type, type, stage } = venture;
   
-  console.log(`Creating complete venture with worksheets: ${name} (${business_type})`);
+  console.log(`Creating complete venture with worksheets: ${name} (${business_type}) - Stage: ${project_stage}`);
   
   // First create the venture
   const { data: newVenture, error: ventureError } = await supabase
@@ -910,7 +923,7 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
   const ventureId = newVenture.id;
   
   // Industry-specific worksheet templates and mock data
-  const worksheetTemplates = getWorksheetTemplates(business_type, data_approach, user_data);
+  const worksheetTemplates = getWorksheetTemplates(business_type, data_approach, user_data, project_stage);
   
   // Create worksheets
   const createdWorksheets = [];
@@ -961,8 +974,88 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
   };
 }
 
-function getWorksheetTemplates(businessType: string, dataApproach: string, userData: any) {
+function getWorksheetTemplates(businessType: string, dataApproach: string, userData: any, projectStage: string = 'new_project') {
   const isRealData = dataApproach === 'real_data';
+  
+  // Stage-specific worksheet focus
+  const stageWorksheets = {
+    new_project: {
+      focus: "planning",
+      additional: [
+        {
+          name: "Business Model Canvas",
+          type: "strategic",
+          fields: [
+            { label: "Value Proposition", type: "text", value: isRealData ? "" : "Core value we provide to customers" },
+            { label: "Target Customer Segments", type: "text", value: isRealData ? "" : "Primary customer groups" },
+            { label: "Revenue Streams", type: "text", value: isRealData ? "" : "How we make money" },
+            { label: "Key Partnerships", type: "text", value: isRealData ? "" : "Strategic partners needed" },
+            { label: "Key Resources", type: "text", value: isRealData ? "" : "Critical assets required" }
+          ]
+        },
+        {
+          name: "Launch Timeline",
+          type: "strategic",
+          fields: [
+            { label: "MVP Target Date", type: "text", value: isRealData ? "" : "3 months" },
+            { label: "Beta Launch Date", type: "text", value: isRealData ? "" : "6 months" },
+            { label: "Full Launch Date", type: "text", value: isRealData ? "" : "9 months" },
+            { label: "Key Milestones", type: "text", value: isRealData ? "" : "Product dev, testing, marketing" }
+          ]
+        }
+      ]
+    },
+    existing_business: {
+      focus: "optimization",
+      additional: [
+        {
+          name: "Current Performance Analysis",
+          type: "operations",
+          fields: [
+            { label: "Current Monthly Revenue", type: "currency", value: isRealData ? (userData?.revenue || "0") : "15000" },
+            { label: "Month-over-Month Growth %", type: "number", value: isRealData ? "0" : "8" },
+            { label: "Top 3 Challenges", type: "text", value: isRealData ? "" : "Customer acquisition, operational efficiency, cash flow" },
+            { label: "Biggest Opportunities", type: "text", value: isRealData ? "" : "Market expansion, product optimization" }
+          ]
+        },
+        {
+          name: "Scaling Strategy",
+          type: "strategic", 
+          fields: [
+            { label: "6-Month Revenue Goal", type: "currency", value: isRealData ? "0" : "25000" },
+            { label: "Team Growth Plan", type: "text", value: isRealData ? "" : "Hire 2 team members" },
+            { label: "Market Expansion", type: "text", value: isRealData ? "" : "2 new geographic markets" },
+            { label: "Investment Needed", type: "currency", value: isRealData ? "0" : "50000" }
+          ]
+        }
+      ]
+    },
+    brainstorming: {
+      focus: "exploration",
+      additional: [
+        {
+          name: "Market Research",
+          type: "strategic",
+          fields: [
+            { label: "Market Size Estimate", type: "currency", value: isRealData ? "0" : "5000000" },
+            { label: "Key Competitors", type: "text", value: isRealData ? "" : "List 3-5 main competitors" },
+            { label: "Competitive Advantage", type: "text", value: isRealData ? "" : "What makes us different" },
+            { label: "Target Market Pain Points", type: "text", value: isRealData ? "" : "Problems we solve" }
+          ]
+        },
+        {
+          name: "Feasibility Assessment",
+          type: "financial",
+          fields: [
+            { label: "Startup Costs Estimate", type: "currency", value: isRealData ? "0" : "25000" },
+            { label: "Time to Revenue", type: "text", value: isRealData ? "" : "6-12 months" },
+            { label: "Risk Level (1-10)", type: "number", value: "6" },
+            { label: "Confidence Level", type: "text", value: isRealData ? "" : "Medium-High" }
+          ]
+        }
+      ]
+    }
+  };
   
   const baseTemplates = {
     food_truck: [
@@ -1170,7 +1263,18 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
     }
   ];
   
-  return baseTemplates[businessType] || defaultTemplate;
+  
+  // Get base business-type templates
+  const businessTemplates = baseTemplates[businessType] || defaultTemplate;
+  
+  // Get stage-specific additional worksheets
+  const stageSpecific = stageWorksheets[projectStage]?.additional || [];
+  
+  // Combine business templates with stage-specific worksheets
+  const combinedTemplates = [...businessTemplates, ...stageSpecific];
+  
+  // Limit to 7 worksheets max, prioritizing business-specific ones
+  return combinedTemplates.slice(0, 7);
 }
 
 function getBusinessTypeKPIs(businessType: string, dataApproach: string, userData: any) {
