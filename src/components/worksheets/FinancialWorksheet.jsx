@@ -7,15 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorksheets } from '@/hooks/useWorksheets';
 import { useToast } from '@/hooks/use-toast';
 import { financialEngine } from '@/utils/financialEngine';
-import { Calculator, TrendingUp, DollarSign, BarChart3, Settings } from 'lucide-react';
+import { Calculator, TrendingUp, DollarSign, BarChart3, Settings, Download, FileText, Mail } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import DynamicFieldsManager from './DynamicFieldsManager';
+import { worksheetExporter } from '@/utils/export';
 
 const FinancialWorksheet = ({ ventureId, type = 'roi', initialData }) => {
   const [inputs, setInputs] = useState(initialData?.inputs || {});
   const [outputs, setOutputs] = useState(initialData?.outputs || null);
   const [customFields, setCustomFields] = useState(initialData?.custom_fields || []);
   const [worksheetId, setWorksheetId] = useState(initialData?.id || null);
+  const [isExporting, setIsExporting] = useState(false);
   const { createWorksheet, updateWorksheet, calculating } = useWorksheets(ventureId);
   const { toast } = useToast();
 
@@ -35,6 +37,99 @@ const FinancialWorksheet = ({ ventureId, type = 'roi', initialData }) => {
       autoSaveWorksheet();
     }
   }, [debouncedInputs]);
+
+  // Export Functions
+  const handlePDFExport = async () => {
+    setIsExporting(true);
+    try {
+      const worksheet = {
+        type,
+        inputs,
+        venture_id: ventureId,
+        venture_name: 'Current Venture' // Could be fetched from venture data
+      };
+      
+      const result = await worksheetExporter.exportToPDF(worksheet, outputs, customFields);
+      
+      if (result.success) {
+        toast({
+          title: "PDF Export Successful",
+          description: `Downloaded ${result.filename}`,
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: "PDF Export Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleCSVExport = async () => {
+    setIsExporting(true);
+    try {
+      const worksheet = {
+        type,
+        inputs,
+        venture_id: ventureId
+      };
+      
+      const result = worksheetExporter.exportToCSV(worksheet, outputs, customFields);
+      
+      if (result.success) {
+        toast({
+          title: "CSV Export Successful",
+          description: `Downloaded ${result.filename}`,
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: "CSV Export Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleEmailExport = async () => {
+    setIsExporting(true);
+    try {
+      const worksheet = {
+        type,
+        inputs,
+        venture_id: ventureId,
+        venture_name: 'Current Venture'
+      };
+      
+      const result = await worksheetExporter.emailWorksheet(worksheet, outputs, customFields);
+      
+      if (result.success) {
+        toast({
+          title: "Email Sent Successfully",
+          description: "The worksheet has been sent to your email address",
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: "Email Export Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const calculateOutputs = useCallback(() => {
     const validation = financialEngine.validateInputs(type, inputs);
@@ -337,7 +432,41 @@ const FinancialWorksheet = ({ ventureId, type = 'roi', initialData }) => {
 
       {outputs && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Results</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Results</h3>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePDFExport}
+                disabled={isExporting}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCSVExport}
+                disabled={isExporting}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                CSV
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleEmailExport}
+                disabled={isExporting}
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Email
+              </Button>
+            </div>
+          </div>
           {renderOutputs()}
         </Card>
       )}
