@@ -239,14 +239,27 @@ serve(async (req) => {
       systemPrompt = "You are Lane AI helping with business brainstorming. Help organize thoughts, identify patterns, and suggest next steps. Be encouraging and insightful.";
     }
 
-    // Enhanced system prompt with chat builder capabilities
-    systemPrompt += `\n\nYou can also help users modify their workspace:
-- Add custom fields to personal metrics (paid feature)
-- Create custom calculators and worksheets (paid feature) 
-- Convert scratchpad notes to KPIs (paid feature)
-- Add venture KPIs and metrics
+    // Enhanced system prompt with AI meta activities capabilities
+    systemPrompt += `\n\nYou have special capabilities to help users modify their workspace through conversation:
 
-When users ask for these features, guide them through the process and confirm before making changes.`;
+WORKSHEET OPERATIONS:
+- Add custom fields: "Add a marketing expense field to my ROI worksheet"
+- Remove fields: "Remove the loan amount field from my personal worksheet"
+
+PERSONAL FINANCE:
+- Add debt entries: "Add my student loan debt of $25,000"
+- Create goals: "Set a goal to save $10,000 for emergency fund"
+- Track activities: "Add gym membership as a monthly commitment"
+
+SCRATCHPAD:
+- Create notes: "Create a note about potential investors"
+- Link to contexts: "Add a note about the competitor analysis linked to my startup"
+
+VENTURE MANAGEMENT:
+- Create ventures: "Create a new venture called TechFlow for my SaaS idea"
+- Skip onboarding: "Skip to founder mode setup"
+
+When users request these actions, use the available functions to perform them immediately. Always confirm what you've done and guide users to where they can see the changes.`;
 
     // Get recent conversation history for context (last 12 messages = 6 turns)
     const { data: recentMessages } = await supabase
@@ -275,7 +288,104 @@ When users ask for these features, guide them through the process and confirm be
 
     console.log(`Using model: ${model} for user: ${userId}`);
 
-    // Call OpenAI API
+    // Define available functions for AI meta activities
+    const functions = [
+      {
+        name: "modify_worksheet_fields",
+        description: "Add or remove custom fields from worksheets",
+        parameters: {
+          type: "object",
+          properties: {
+            action: { type: "string", enum: ["add", "remove"] },
+            worksheet_id: { type: "string", description: "ID of the worksheet to modify" },
+            field: {
+              type: "object",
+              properties: {
+                label: { type: "string" },
+                type: { type: "string", enum: ["text", "number", "currency"] },
+                value: { type: "string" }
+              }
+            }
+          },
+          required: ["action", "worksheet_id"]
+        }
+      },
+      {
+        name: "create_personal_entry",
+        description: "Create entries in the personal finance section",
+        parameters: {
+          type: "object",
+          properties: {
+            type: { type: "string", enum: ["debt", "goal", "activity", "commitment"] },
+            data: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                amount: { type: "number" },
+                description: { type: "string" },
+                monthly_payment: { type: "number" },
+                target_date: { type: "string" }
+              }
+            }
+          },
+          required: ["type", "data"]
+        }
+      },
+      {
+        name: "create_scratchpad_note",
+        description: "Create notes in the scratchpad",
+        parameters: {
+          type: "object",
+          properties: {
+            text: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            linked_context: {
+              type: "object",
+              properties: {
+                type: { type: "string" },
+                id: { type: "string" }
+              }
+            }
+          },
+          required: ["text"]
+        }
+      },
+      {
+        name: "update_onboarding_progress",
+        description: "Skip onboarding steps or complete onboarding",
+        parameters: {
+          type: "object",
+          properties: {
+            action: { type: "string", enum: ["skip_to_founder_mode", "complete", "reset"] },
+            profile_updates: {
+              type: "object",
+              properties: {
+                is_founder: { type: "boolean" },
+                experience_level: { type: "string" },
+                venture_type: { type: "string" }
+              }
+            }
+          },
+          required: ["action"]
+        }
+      },
+      {
+        name: "create_venture",
+        description: "Create a new venture through AI conversation",
+        parameters: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            description: { type: "string" },
+            type: { type: "string", enum: ["startup", "local_business", "side_project", "investment"] },
+            stage: { type: "string", enum: ["concept", "planning", "launch", "growth", "mature"] }
+          },
+          required: ["name", "description"]
+        }
+      }
+    ];
+
+    // Call OpenAI API with function calling
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -285,6 +395,8 @@ When users ask for these features, guide them through the process and confirm be
       body: JSON.stringify({
         model,
         messages,
+        functions,
+        function_call: "auto",
         temperature: 0.7,
         max_tokens: 1000
       }),
@@ -303,7 +415,28 @@ When users ask for these features, guide them through the process and confirm be
     }
 
     const result = await openAIResponse.json();
-    const assistantText = result.choices?.[0]?.message?.content ?? 'Sorry, I could not generate a response.';
+    let assistantText = result.choices?.[0]?.message?.content ?? 'Sorry, I could not generate a response.';
+    let functionCallResult = null;
+
+    // Handle function calls
+    const functionCall = result.choices?.[0]?.message?.function_call;
+    if (functionCall) {
+      console.log('Function call detected:', functionCall);
+      
+      try {
+        const functionArgs = JSON.parse(functionCall.arguments);
+        functionCallResult = await handleFunctionCall(functionCall.name, functionArgs, userId, supabase);
+        
+        if (functionCallResult.success) {
+          assistantText = functionCallResult.message;
+        } else {
+          assistantText = `I apologize, but I couldn't complete that action: ${functionCallResult.error}`;
+        }
+      } catch (error) {
+        console.error('Function call error:', error);
+        assistantText = "I apologize, but I encountered an error while trying to perform that action.";
+      }
+    }
 
     // Save assistant response
     const { error: assistantMsgError } = await supabase
@@ -361,3 +494,249 @@ When users ask for these features, guide them through the process and confirm be
     });
   }
 });
+
+// Function call handlers
+async function handleFunctionCall(functionName: string, args: any, userId: string, supabase: any) {
+  console.log(`Handling function call: ${functionName}`, args);
+
+  try {
+    switch (functionName) {
+      case 'modify_worksheet_fields':
+        return await modifyWorksheetFields(args, userId, supabase);
+      
+      case 'create_personal_entry':
+        return await createPersonalEntry(args, userId, supabase);
+      
+      case 'create_scratchpad_note':
+        return await createScratchpadNote(args, userId, supabase);
+      
+      case 'update_onboarding_progress':
+        return await updateOnboardingProgress(args, userId, supabase);
+      
+      case 'create_venture':
+        return await createVenture(args, userId, supabase);
+      
+      default:
+        return { success: false, error: 'Unknown function' };
+    }
+  } catch (error) {
+    console.error(`Error in ${functionName}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function modifyWorksheetFields(args: any, userId: string, supabase: any) {
+  const { action, worksheet_id, field } = args;
+  
+  // Get worksheet
+  const { data: worksheet, error: fetchError } = await supabase
+    .from('worksheets')
+    .select('*')
+    .eq('id', worksheet_id)
+    .eq('user_id', userId)
+    .maybeSingle();
+  
+  if (fetchError || !worksheet) {
+    return { success: false, error: 'Worksheet not found' };
+  }
+
+  let customFields = worksheet.custom_fields || [];
+  
+  if (action === 'add' && field) {
+    // Add new field
+    const newField = {
+      id: `custom_${Date.now()}`,
+      label: field.label,
+      type: field.type || 'text',
+      value: field.value || ''
+    };
+    customFields.push(newField);
+    
+    const { error: updateError } = await supabase
+      .from('worksheets')
+      .update({ custom_fields: customFields })
+      .eq('id', worksheet_id);
+    
+    if (updateError) {
+      return { success: false, error: updateError.message };
+    }
+    
+    return { 
+      success: true, 
+      message: `Added custom field "${field.label}" to your worksheet. You can now edit its value in the worksheet interface.` 
+    };
+  }
+  
+  if (action === 'remove' && field?.label) {
+    // Remove field by label
+    customFields = customFields.filter((f: any) => f.label !== field.label);
+    
+    const { error: updateError } = await supabase
+      .from('worksheets')
+      .update({ custom_fields: customFields })
+      .eq('id', worksheet_id);
+    
+    if (updateError) {
+      return { success: false, error: updateError.message };
+    }
+    
+    return { 
+      success: true, 
+      message: `Removed custom field "${field.label}" from your worksheet.` 
+    };
+  }
+  
+  return { success: false, error: 'Invalid action or missing field data' };
+}
+
+async function createPersonalEntry(args: any, userId: string, supabase: any) {
+  const { type, data } = args;
+  
+  // Get existing personal data
+  const { data: personal, error: fetchError } = await supabase
+    .from('personal')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  
+  let personalData = personal || {
+    user_id: userId,
+    goals: [],
+    activities: [],
+    commitments: []
+  };
+  
+  const newEntry = {
+    id: `${type}_${Date.now()}`,
+    name: data.name,
+    created_at: new Date().toISOString(),
+    ...data
+  };
+  
+  switch (type) {
+    case 'goal':
+      personalData.goals = [...(personalData.goals || []), newEntry];
+      break;
+    case 'activity':
+      personalData.activities = [...(personalData.activities || []), newEntry];
+      break;
+    case 'commitment':
+      personalData.commitments = [...(personalData.commitments || []), newEntry];
+      break;
+    case 'debt':
+      // For debt, we'll add it as a goal to pay it off
+      const debtGoal = {
+        id: `debt_${Date.now()}`,
+        name: `Pay off ${data.name}`,
+        amount: data.amount,
+        monthly_payment: data.monthly_payment,
+        type: 'debt_payoff',
+        created_at: new Date().toISOString()
+      };
+      personalData.goals = [...(personalData.goals || []), debtGoal];
+      break;
+  }
+  
+  const { error: upsertError } = await supabase
+    .from('personal')
+    .upsert(personalData);
+  
+  if (upsertError) {
+    return { success: false, error: upsertError.message };
+  }
+  
+  return { 
+    success: true, 
+    message: `Added ${type} "${data.name}" to your personal finance section. You can view and edit it in the Personal tab.` 
+  };
+}
+
+async function createScratchpadNote(args: any, userId: string, supabase: any) {
+  const { text, tags, linked_context } = args;
+  
+  const { error: insertError } = await supabase
+    .from('scratchpad_notes')
+    .insert({
+      user_id: userId,
+      text,
+      tags: tags || [],
+      linked_context: linked_context || null
+    });
+  
+  if (insertError) {
+    return { success: false, error: insertError.message };
+  }
+  
+  return { 
+    success: true, 
+    message: `Created a new scratchpad note: "${text.slice(0, 50)}${text.length > 50 ? '...' : ''}". You can find it in your scratchpad.` 
+  };
+}
+
+async function updateOnboardingProgress(args: any, userId: string, supabase: any) {
+  const { action, profile_updates } = args;
+  
+  let updates: any = {};
+  
+  switch (action) {
+    case 'skip_to_founder_mode':
+      updates = {
+        onboarded: true,
+        is_founder: true,
+        ...profile_updates
+      };
+      break;
+    case 'complete':
+      updates = {
+        onboarded: true,
+        ...profile_updates
+      };
+      break;
+    case 'reset':
+      updates = {
+        onboarded: false,
+        is_founder: false
+      };
+      break;
+  }
+  
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
+  
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+  
+  return { 
+    success: true, 
+    message: `Onboarding ${action.replace('_', ' ')} completed! Your profile has been updated accordingly.` 
+  };
+}
+
+async function createVenture(args: any, userId: string, supabase: any) {
+  const { name, description, type, stage } = args;
+  
+  const { data: venture, error: insertError } = await supabase
+    .from('ventures')
+    .insert({
+      user_id: userId,
+      name,
+      description,
+      type: type || 'startup',
+      stage: stage || 'concept'
+    })
+    .select()
+    .maybeSingle();
+  
+  if (insertError) {
+    return { success: false, error: insertError.message };
+  }
+  
+  return { 
+    success: true, 
+    message: `Created new venture "${name}"! You can now start adding KPIs and worksheets to track its progress.`,
+    data: venture
+  };
+}
