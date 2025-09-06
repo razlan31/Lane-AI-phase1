@@ -268,7 +268,19 @@ const WorksheetRenderer = ({ worksheetId, ventureId, onSave, onClose }) => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Inputs</h2>
             <div className="space-y-4">
-              {worksheet.inputs.map(input => (
+              {(
+                Array.isArray(worksheet.inputs)
+                  ? worksheet.inputs
+                  : (Array.isArray(worksheet.inputs?.fields)
+                      ? worksheet.inputs.fields
+                      : Object.entries(worksheet.inputs || {}).map(([id, val]) => ({
+                          id,
+                          label: id.replace(/_/g, ' '),
+                          type: (val && typeof val === 'number') ? 'number' : 'text',
+                          value: (val && typeof val === 'object' && 'value' in val) ? val.value : val
+                        }))
+                    )
+              ).map(input => (
                 <ExplainOverlay
                   key={input.id}
                   contextData={{ 

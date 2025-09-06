@@ -149,16 +149,24 @@ export const AutoWorksheetGenerator = ({ ventureId, ventureName, ventureType }) 
                   <div>
                     <h5 className="text-sm font-medium mb-2 text-muted-foreground">Key Inputs</h5>
                     <div className="space-y-1">
-                      {Object.entries(worksheet.inputs || {}).slice(0, 4).map(([key, value]) => (
-                        <div key={key} className="flex justify-between text-sm">
-                          <span className="capitalize">{key.replace(/_/g, ' ')}</span>
-                          <span className="font-medium">
-                            {typeof value === 'number' ? 
-                              (value > 1000 ? value.toLocaleString() : value) : 
-                              value}
-                          </span>
-                        </div>
-                      ))}
+                      {(() => {
+                        const inputs = worksheet.inputs || {};
+                        // Normalize various shapes into [label, value] pairs
+                        let pairs = [];
+                        if (Array.isArray(inputs)) {
+                          pairs = inputs.slice(0, 4).map(f => [f.label || f.id, f.value]);
+                        } else if (Array.isArray(inputs.fields)) {
+                          pairs = inputs.fields.slice(0, 4).map(f => [f.label || f.id, f.value]);
+                        } else {
+                          pairs = Object.entries(inputs).slice(0, 4).map(([k, v]) => [k.replace(/_/g, ' '), (v && typeof v === 'object' && 'value' in v) ? v.value : v]);
+                        }
+                        return pairs.map(([label, val]) => (
+                          <div key={label} className="flex justify-between text-sm">
+                            <span className="capitalize">{label}</span>
+                            <span className="font-medium">{typeof val === 'number' ? (val > 1000 ? val.toLocaleString() : val) : String(val ?? '')}</span>
+                          </div>
+                        ));
+                      })()}
                     </div>
                   </div>
                   
