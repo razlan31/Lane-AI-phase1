@@ -68,14 +68,16 @@ const GlobalOrb = ({ className = "", context = null, ventureId = null }) => {
     
     await addMessage(activeSessionId, userInput, 'user');
     
-    // Mock AI response
-    setTimeout(async () => {
-      await addMessage(
-        activeSessionId, 
-        `I can help you with: ${userInput}. Let me provide some insights based on your context.`,
-        'assistant'
-      );
-    }, 1000);
+    // Dispatch to real AI chat instead of mock response
+    window.dispatchEvent(new CustomEvent('openAIChat', {
+      detail: { 
+        message: userInput,
+        context: 'global-orb-query'
+      }
+    }));
+    
+    setInput('');
+    setIsExpanded(false);
   };
 
   if (!isVisible) {

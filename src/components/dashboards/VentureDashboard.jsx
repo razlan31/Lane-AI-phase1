@@ -133,11 +133,49 @@ const VentureDashboard = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   ];
 
   const handleQuickActions = {
-    onAddData: () => console.log('Add venture data'),
-    onSignals: () => console.log('View venture signals'),
-    onRunFlow: () => console.log('Run venture flow'),
-    onExport: () => console.log('Export venture data'),
-    onChat: () => console.log('Open venture chat')
+    onAddData: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: `Help me add new data to ${ventureName}. I want to input venture-specific metrics, financial information, or track progress.`,
+          context: 'venture-data-entry'
+        }
+      }));
+    },
+    onSignals: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: `Show me the key signals and alerts for ${ventureName}. I want to monitor important metrics and trends.`,
+          context: 'venture-signals'
+        }
+      }));
+    },
+    onRunFlow: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: `Help me set up automated workflows for ${ventureName} to streamline business processes.`,
+          context: 'venture-workflow'
+        }
+      }));
+    },
+    onExport: () => {
+      const today = new Date().toISOString().split('T')[0];
+      const csvData = `Metric,Value,Date\nRevenue,25000,${today}\nExpenses,18000,${today}\nCustomers,342,${today}`;
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${ventureName.toLowerCase().replace(/\s+/g, '-')}-data-${today}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
+    onChat: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: `I want to discuss ${ventureName} and get insights about my venture performance and strategy.`,
+          context: 'venture-chat'
+        }
+      }));
+    }
   };
 
   return (

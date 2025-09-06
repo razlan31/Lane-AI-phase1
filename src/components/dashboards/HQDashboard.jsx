@@ -183,11 +183,25 @@ const HQDashboard = () => {
   ];
 
   const handleQuickActions = {
-    onAddData: () => console.log('Add data'),
-    onSignals: () => console.log('View signals'),
-    onRunFlow: () => console.log('Run flow'),
-    onExport: () => console.log('Export'),
-    onChat: () => console.log('Open chat'),
+    onAddData: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: 'Help me add new data to my dashboard. I want to input business metrics, financial information, or other relevant data.',
+          context: 'hq-data-entry'
+        }
+      }));
+    },
+    onSignals: () => setCurrentView('hq'),
+    onRunFlow: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: 'Help me create and run automated workflows for my business processes.',
+          context: 'hq-workflow'
+        }
+      }));
+    },
+    onExport: () => setAdvancedExportModalOpen(true),
+    onChat: () => setShowCoPilot(true),
     onFounderMode: () => setFounderModeOpen(true)
   };
 

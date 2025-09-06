@@ -178,7 +178,9 @@ const PortfolioDashboard = () => {
           <p className="text-muted-foreground mb-4">
             Create your first venture to start tracking portfolio metrics
           </p>
-          <Button>
+          <Button onClick={() => {
+            window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+          }}>
             <Plus className="h-4 w-4 mr-2" />
             Create Venture
           </Button>

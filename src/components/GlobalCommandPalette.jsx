@@ -42,7 +42,7 @@ export const GlobalCommandPalette = () => {
       icon: Plus,
       action: () => {
         setIsOpen(false);
-        // TODO: Open new venture modal
+        window.dispatchEvent(new CustomEvent('openNewVentureModal'));
       }
     }
   ];

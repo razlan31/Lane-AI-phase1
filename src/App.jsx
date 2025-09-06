@@ -355,15 +355,36 @@ function App() {
   // Quick dock handlers
   const handleQuickActions = {
     onAddWorksheet: () => setTemplatesGalleryOpen(true),
-    onAddDashboard: () => console.log('Add dashboard'),
-    onImportCsv: () => console.log('Import CSV'),
+    onAddDashboard: () => setCurrentView('hq'),
+    onImportCsv: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: 'Help me import CSV data into my workspace. I want to upload financial data, customer lists, or other business data.',
+          context: 'csv-import'
+        }
+      }));
+    },
     onAddVenture: () => setNewVentureModalOpen(true),
     onFounderMode: () => setShowFounderMode(true),
     onExport: () => setAdvancedExportModalOpen(true),
     onAdvancedReports: () => setAdvancedReportsOpen(true),
-    onAddData: () => console.log('Add data'),
-    onSignals: () => console.log('View signals'),
-    onRunFlow: () => console.log('Run flow'),
+    onAddData: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: 'Help me add data to my workspace. I want to input new business metrics, financial information, or other relevant data.',
+          context: 'data-entry'
+        }
+      }));
+    },
+    onSignals: () => setCurrentView('hq'),
+    onRunFlow: () => {
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: { 
+          message: 'Help me set up and run automated workflows for my business processes.',
+          context: 'workflow-execution'
+        }
+      }));
+    },
     onChat: () => setShowCoPilot(true)
   };
 
