@@ -476,21 +476,28 @@ When users request these actions, use the available functions to perform them im
       }
     ];
 
-    // Call OpenAI API with function calling
+    // Build OpenAI payload respecting model parameter differences
+    const isNewModel = /gpt-5|4\.1|^o3|^o4/.test(model);
+    const oaPayload: any = {
+      model,
+      messages,
+      functions,
+      function_call: "auto"
+    };
+    if (isNewModel) {
+      oaPayload.max_completion_tokens = 1200; // newer models
+    } else {
+      oaPayload.max_tokens = 1000; // legacy models
+      oaPayload.temperature = 0.7;
+    }
+
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        functions,
-        function_call: "auto",
-        temperature: 0.7,
-        max_tokens: 1000
-      }),
+      body: JSON.stringify(oaPayload),
     });
 
     if (!openAIResponse.ok) {
