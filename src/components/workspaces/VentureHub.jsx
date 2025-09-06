@@ -53,7 +53,6 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
     // Create a new blank worksheet
     setIsWorksheetBuilderOpen(true);
   };
-  };
 
   const handleGenerateReport = () => {
     setIsNewReportModalOpen(true);
