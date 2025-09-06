@@ -253,19 +253,36 @@ export const useWorksheets = (ventureId = null) => {
 
   const autoSave = async (id, data) => {
     try {
-      // Debounced auto-save
+      // Enhanced auto-save with versioning
+      setSaving(true);
+      
+      // Update the main worksheet
       const result = await updateWorksheet(id, data);
+      
       if (result.success) {
-        toast({
-          title: "Auto-saved",
-          description: "Your changes have been saved automatically.",
-          duration: 2000
-        });
+        // Create a version entry for this save
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('versions')
+            .upsert({
+              parent_id: id,
+              parent_type: 'worksheet',
+              user_id: user.id,
+              content: data,
+              status: 'draft'
+            }, {
+              onConflict: 'parent_id,parent_type,user_id,status'
+            });
+        }
       }
+      
       return result;
     } catch (error) {
       console.error('Auto-save failed:', error);
       return { success: false, error: error.message };
+    } finally {
+      setSaving(false);
     }
   };
 

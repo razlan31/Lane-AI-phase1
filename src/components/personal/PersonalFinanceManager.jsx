@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { usePersonal } from '@/hooks/usePersonal';
 import { useToast } from '@/hooks/use-toast';
 import FeatureGate from '@/components/gating/FeatureGate';
-import { DollarSign, Plus, Edit3, Trash2, TrendingUp, TrendingDown, Target, PiggyBank, CreditCard, Home } from 'lucide-react';
+import { DollarSign, Plus, Edit3, Trash2, TrendingUp, TrendingDown, Target, PiggyBank, CreditCard, Home, Save } from 'lucide-react';
+import useAutosave from '@/hooks/useAutosave';
+import { AutosaveStatus } from '@/components/autosave/AutosaveNotifications';
 
 const PersonalFinanceManager = () => {
   const [newEntry, setNewEntry] = useState({
@@ -33,6 +35,28 @@ const PersonalFinanceManager = () => {
   } = usePersonal();
 
   const { toast } = useToast();
+
+  // Autosave for personal finance data
+  const {
+    content: personalContent,
+    setContent: setPersonalContent,
+    saveStatus,
+    lastSaved,
+    commit,
+    forceRetry,
+    hasUnsavedChanges
+  } = useAutosave(
+    personalData?.id || 'personal', 
+    'personal', 
+    personalData || {}
+  );
+
+  // Update personal content when personalData changes
+  useEffect(() => {
+    if (personalData && Object.keys(personalData).length > 0) {
+      setPersonalContent(personalData);
+    }
+  }, [personalData, setPersonalContent]);
 
   const predefinedCategories = {
     income: ['Salary', 'Freelance', 'Investment', 'Rental', 'Business', 'Other'],

@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useScratchpad } from '@/hooks/useScratchpad';
-import { FileText, Plus, X, Sparkles } from 'lucide-react';
+import { FileText, Plus, X, Sparkles, Save } from 'lucide-react';
+import useAutosave from '@/hooks/useAutosave';
+import { AutosaveStatus } from '@/components/autosave/AutosaveNotifications';
 
 const CleanScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
   const [newNote, setNewNote] = useState('');
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
   
   const {
     notes,
@@ -17,6 +20,16 @@ const CleanScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     deleteNote,
     reflectOnNote
   } = useScratchpad();
+
+  // Autosave for selected note editing
+  const {
+    content: editingContent,
+    setContent: setEditingContent,
+    saveStatus,
+    lastSaved,
+    commit,
+    forceRetry
+  } = useAutosave(selectedNoteId, 'scratchpad', selectedNoteId ? notes.find(n => n.id === selectedNoteId)?.text || '' : '');
 
   const handleCreateNote = async () => {
     if (!newNote.trim()) return;
