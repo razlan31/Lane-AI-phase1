@@ -63,3 +63,6 @@ verify_jwt = true
 # Public webhook endpoint (no JWT verification)
 [functions.stripe-webhooks]
 verify_jwt = false
+
+[functions.scratchpad-reflect]
+verify_jwt = true

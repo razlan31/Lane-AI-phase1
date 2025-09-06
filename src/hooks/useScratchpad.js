@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { scratchpadAI } from '@/utils/scratchpadAI';
+import { getCapabilities } from '@/utils/capabilities';
+import { useToast } from '@/hooks/use-toast';
 
 export const useScratchpad = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [aiReflectionLoading, setAiReflectionLoading] = useState(false);
+  const { toast } = useToast();
 
   // Fetch scratchpad notes
   useEffect(() => {
@@ -209,10 +214,178 @@ export const useScratchpad = () => {
     return notes.filter(note => note.tags.includes(tag));
   };
 
+  // AI Reflection capabilities for paid users
+  const reflectOnNote = async (noteText, noteId = null) => {
+    try {
+      setAiReflectionLoading(true);
+      
+      // Check user capabilities
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan, subscription_plan, is_founder')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const capabilities = getCapabilities(profile);
+      
+      if (!capabilities.scratchpad_reflect_ai) {
+        toast({
+          title: "Upgrade Required",
+          description: "AI reflection is available with paid plans. Get intelligent tagging and conversion suggestions!",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      // Get existing KPIs for context
+      const { data: kpis } = await supabase
+        .from('kpis')
+        .select('name, id')
+        .limit(20);
+
+      const existingTags = [...new Set(notes.flatMap(note => note.tags || []))];
+
+      const result = await scratchpadAI.reflectOnNote(noteText, kpis || [], existingTags);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Auto-apply suggested tags to the note if noteId provided
+      if (noteId && result.analysis?.suggestedTags) {
+        const currentNote = notes.find(n => n.id === noteId);
+        if (currentNote) {
+          const newTags = [...new Set([...currentNote.tags, ...result.analysis.suggestedTags])];
+          await updateNote(noteId, { tags: newTags });
+        }
+      }
+
+      toast({
+        title: "AI Reflection Complete",
+        description: "Found insights and suggestions for your note!",
+      });
+
+      return result.analysis;
+    } catch (err) {
+      console.error('AI reflection error:', err);
+      toast({
+        title: "Reflection Failed",
+        description: err.message || "Could not analyze note",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setAiReflectionLoading(false);
+    }
+  };
+
+  const analyzeAllNotesForPatterns = async () => {
+    try {
+      setAiReflectionLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan, subscription_plan, is_founder')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const capabilities = getCapabilities(profile);
+      
+      if (!capabilities.scratchpad_reflect_ai) {
+        toast({
+          title: "Upgrade Required", 
+          description: "Pattern analysis requires a paid plan!",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      // Get existing KPIs for context
+      const { data: kpis } = await supabase
+        .from('kpis')
+        .select('name, id')
+        .limit(20);
+
+      const result = await scratchpadAI.analyzeNotesForPatterns(notes, kpis || []);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      toast({
+        title: "Pattern Analysis Complete",
+        description: "Discovered patterns across your notes!",
+      });
+
+      return result.analysis;
+    } catch (err) {
+      console.error('Pattern analysis error:', err);
+      toast({
+        title: "Analysis Failed",
+        description: err.message || "Could not analyze patterns",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setAiReflectionLoading(false);
+    }
+  };
+
+  const suggestConversions = async (noteText) => {
+    try {
+      setAiReflectionLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan, subscription_plan, is_founder')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const capabilities = getCapabilities(profile);
+      
+      if (!capabilities.scratchpad_reflect_ai) {
+        toast({
+          title: "Upgrade Required",
+          description: "Conversion suggestions require a paid plan!",
+          variant: "destructive" 
+        });
+        return null;
+      }
+
+      const result = await scratchpadAI.suggestConversions(noteText);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return result.analysis;
+    } catch (err) {
+      console.error('Conversion suggestions error:', err);
+      toast({
+        title: "Conversion Failed",
+        description: err.message || "Could not suggest conversions",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setAiReflectionLoading(false);
+    }
+  };
+
   return {
     notes,
     loading,
     error,
+    aiReflectionLoading,
     createNote,
     updateNote,
     deleteNote,
@@ -220,6 +393,10 @@ export const useScratchpad = () => {
     convertToVentureNote,
     suggestTools,
     searchNotes,
-    filterByTag
+    filterByTag,
+    // AI Reflection features (paid only)
+    reflectOnNote,
+    analyzeAllNotesForPatterns,
+    suggestConversions
   };
 };

@@ -7,23 +7,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { useScratchpad } from '@/hooks/useScratchpad';
 import { useCopilotManager } from '@/hooks/useCopilotManager';
 import { ScratchpadSuggestions } from './ScratchpadSuggestions';
+import { ScratchpadReflectionPanel } from './ScratchpadReflectionPanel';
 import AICopilot from '@/components/copilot/AICopilot';
-import { FileText, Plus, Search, Tag, X } from 'lucide-react';
+import { FileText, Plus, Search, Tag, X, Sparkles, Brain } from 'lucide-react';
 
 const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
   const [newNote, setNewNote] = useState('');
   const [newTags, setNewTags] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
+  const [activeReflection, setActiveReflection] = useState(null);
+  const [reflectionNoteId, setReflectionNoteId] = useState(null);
   
   const {
     notes,
     loading,
+    aiReflectionLoading,
     createNote,
+    updateNote,
     deleteNote,
     searchNotes,
     filterByTag,
-    suggestTools
+    suggestTools,
+    reflectOnNote,
+    analyzeAllNotesForPatterns,
+    suggestConversions
   } = useScratchpad();
 
   const { activeSuggestion, generateSuggestion, dismissSuggestion } = useCopilotManager();
@@ -55,6 +63,43 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
       
       setNewNote('');
       setNewTags('');
+    }
+  };
+
+  const handleReflectOnNote = async (noteText, noteId = null) => {
+    const reflection = await reflectOnNote(noteText, noteId);
+    if (reflection) {
+      setActiveReflection(reflection);
+      setReflectionNoteId(noteId);
+    }
+  };
+
+  const handleApplyReflectionSuggestion = async (type, data) => {
+    if (type === 'tag' && reflectionNoteId) {
+      const note = notes.find(n => n.id === reflectionNoteId);
+      if (note) {
+        const newTags = [...new Set([...note.tags, data])];
+        await updateNote(reflectionNoteId, { tags: newTags });
+      }
+    } else if (type === 'all-tags' && reflectionNoteId) {
+      const note = notes.find(n => n.id === reflectionNoteId);
+      if (note) {
+        const newTags = [...new Set([...note.tags, ...data])];
+        await updateNote(reflectionNoteId, { tags: newTags });
+      }
+    }
+  };
+
+  const handleConversion = async (conversionData) => {
+    console.log('Converting to:', conversionData);
+    // TODO: Implement conversion to KPIs, worksheets, etc.
+  };
+
+  const handlePatternAnalysis = async () => {
+    const patterns = await analyzeAllNotesForPatterns();
+    if (patterns) {
+      setActiveReflection(patterns);
+      setReflectionNoteId(null); // Pattern analysis not specific to one note
     }
   };
 
@@ -93,6 +138,44 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
               suggestion={activeSuggestion}
               onSuggestionAction={handleSuggestionAction}
               layout="strip"
+            />
+          )}
+
+          {/* AI Pattern Analysis Button */}
+          <div className="flex justify-between items-center">
+            <Button 
+              onClick={handlePatternAnalysis} 
+              variant="outline" 
+              size="sm"
+              disabled={aiReflectionLoading || notes.length === 0}
+              className="text-xs"
+            >
+              <Brain className="h-3 w-3 mr-1" />
+              Analyze Patterns
+            </Button>
+            
+            {newNote.trim() && (
+              <Button 
+                onClick={() => handleReflectOnNote(newNote)} 
+                variant="outline" 
+                size="sm"
+                disabled={aiReflectionLoading}
+                className="text-xs"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Reflect
+              </Button>
+            )}
+          </div>
+
+          {/* AI Reflection Panel */}
+          {activeReflection && (
+            <ScratchpadReflectionPanel 
+              reflection={activeReflection}
+              loading={aiReflectionLoading}
+              onApplySuggestion={handleApplyReflectionSuggestion}
+              onConvert={handleConversion}
+              className="mb-4"
             />
           )}
 
@@ -180,14 +263,26 @@ const ScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
                     
                     <div className="flex justify-between items-center text-xs text-muted-foreground">
                       <span>{new Date(note.created_at).toLocaleDateString()}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteNote(note.id)}
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleReflectOnNote(note.text, note.id)}
+                          disabled={aiReflectionLoading}
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                          title="AI Reflect on this note"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteNote(note.id)}
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
