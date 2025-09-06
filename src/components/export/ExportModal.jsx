@@ -72,7 +72,6 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
     } catch (error) {
       console.error('Export failed:', error);
       toast.error(error.message || "An error occurred during export");
-      });
     } finally {
       setIsExporting(false);
     }
