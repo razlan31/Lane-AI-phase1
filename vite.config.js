@@ -21,11 +21,16 @@ export default defineConfig(({ mode }) => ({
       react: path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ["react", "react-dom", "zustand"],  // ✅ ensure single zustand copy
+    dedupe: ["react", "react-dom", "zustand"],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "zustand"],  // ✅ prebundle core dependencies
-    exclude: ["html-to-image"]  // ✅ exclude from optimization to allow dynamic import
+    include: ["react", "react-dom", "zustand"],
+    exclude: ["html-to-image"]
+  },
+  build: {
+    commonjsOptions: {
+      exclude: ["html-to-image"]
+    }
   },
   css: {
     postcss: {
