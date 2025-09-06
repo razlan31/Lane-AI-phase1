@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TrendingUp, DollarSign, AlertTriangle, Activity, Users, Target, Plus, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import KpiCard from '../primitives/KpiCard';
+import { Button } from '../ui/button';
 // import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
 import PortfolioTiles from '../portfolio/PortfolioTiles';
 import AlertsStrip from '../alerts/AlertsStrip';
@@ -194,14 +195,32 @@ const HQDashboard = () => {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
-              <button 
-                className="text-sm text-primary hover:text-primary/80 font-medium"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('openNewVentureModal'));
-                }}
-              >
-                + Add Venture
-              </button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    console.log('🚀 Creating test data from HQ Dashboard...');
+                    try {
+                      const { createTestVentures } = await import('../../utils/seedTestData');
+                      await createTestVentures();
+                      console.log('✅ Test data created successfully');
+                    } catch (error) {
+                      console.error('❌ Failed to create test data:', error);
+                    }
+                  }}
+                >
+                  Create Test Data
+                </Button>
+                <button 
+                  className="text-sm text-primary hover:text-primary/80 font-medium"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+                  }}
+                >
+                  + Add Venture
+                </button>
+              </div>
             </div>
             <PortfolioTiles 
               onVentureClick={(ventureId) => console.log('Navigate to venture:', ventureId)}
