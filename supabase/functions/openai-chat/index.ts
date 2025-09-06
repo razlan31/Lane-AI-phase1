@@ -284,6 +284,20 @@ COMPREHENSIVE QUESTION FLOW (Option B):
 6. Growth plans and timeline
 7. Any existing data or spreadsheets
 
+SMART FLOW RULES (Adaptive Behavior):
+- If the user message contains multiple concrete metrics (e.g., numbers with units like $/%, counts, rates) or explicit statements like "we currently have", "our MRR is", "churn is", "AOV =", auto-select:
+  - project_stage = existing_business (unless they say it's new/idea)
+  - data_approach = real_data
+  - Extract as much structured data as possible into user_data: { revenue, monthly_expenses, customer_count, pricing_model, key_metrics: { churn, cac, ltv, aov, arpu, conversion_rate, etc. } }
+  - Immediately summarize what you parsed in 1-2 lines and ask ONLY for the top 2-3 missing critical values needed to create the worksheets. Do NOT repeat the A/B choice or stage questions.
+- If information is sparse or clearly exploratory, show the stage + A/B choice flow.
+- Always batch questions (max 3 at a time), accept "skip", and continue with defaults/benchmarks if skipped.
+- Never ask the same question twice; track what you already collected in the conversation.
+
+CONFIRMATION & ACTION:
+- After summarizing and collecting any missing essentials, propose: "I'll create the venture and 5-7 worksheets now using [Real Data/Benchmarks]. Proceed?"
+- On confirm, call create_complete_venture_with_worksheets with inferred venture.business_type, project_stage, data_approach, and user_data.
+
 Always create 5-7 relevant worksheets automatically based on business type.
 
 WORKSHEET OPERATIONS:
@@ -527,9 +541,16 @@ When users request these actions, use the available functions to perform them im
     }
     
     // Enhanced role detection
+    const numericMentions = (message.match(/(?:\$?\d[\d,]*(?:\.\d+)?%?)/g) || []).length;
+    const hasBizMetrics = /(mrr|arr|revenue|customers|churn|ltv|cac|aov|arpu|conversion|profit|margin|runway|burn|expenses|payroll|units)/i.test(message);
+    const dataRich = numericMentions >= 3 || (numericMentions >= 2 && hasBizMetrics);
+
     if (/(explain|what is|definition|glossary)/.test(lowerMsg)) {
       selectedRole = 'explainer';
       roleJustification = 'You asked for an explanation of a concept.';
+    } else if (dataRich) {
+      selectedRole = 'venture_creator';
+      roleJustification = 'You provided concrete business metrics; proceeding with real-data setup and only asking for missing essentials.';
     } else if (detectedBusinessType && /(starting|launch|create|build|open|begin|new|idea|thinking about)/.test(lowerMsg)) {
       selectedRole = 'venture_creator';
       roleJustification = `You mentioned starting a ${detectedBusinessType.replace('_', ' ')} business - perfect for creating a complete venture dashboard!`;
