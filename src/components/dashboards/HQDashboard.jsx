@@ -95,11 +95,11 @@ const HQDashboard = () => {
               <button 
                 className="text-sm text-primary hover:text-primary/80 font-medium"
                 onClick={() => {
-                  // Trigger AI KPI generation
-                  window.dispatchEvent(new CustomEvent('openAIChat', {
+                  // Auto-generate KPIs directly without opening chat
+                  window.dispatchEvent(new CustomEvent('autoGenerateKPIs', {
                     detail: { 
-                      message: 'Generate 5 custom KPIs for my business based on my profile and industry. Include metrics like customer acquisition cost, monthly recurring revenue, churn rate, and other relevant KPIs for my specific business type.',
-                      context: 'kpi-generation'
+                      type: 'auto-generate',
+                      count: 5
                     }
                   }));
                 }}
@@ -133,10 +133,11 @@ const HQDashboard = () => {
                   description="Let AI create custom metrics for your business"
                   icon={Plus}
                   action={() => {
-                    window.dispatchEvent(new CustomEvent('openAIChat', {
+                    // Auto-generate additional KPIs directly
+                    window.dispatchEvent(new CustomEvent('autoGenerateKPIs', {
                       detail: { 
-                        message: 'Create additional specialized KPIs for my venture. I need metrics that track growth, efficiency, customer satisfaction, and financial health. Please suggest 3-5 new KPIs that would be valuable for monitoring my business performance.',
-                        context: 'kpi-expansion'
+                        type: 'generate-more',
+                        count: 3
                       }
                     }));
                   }}
