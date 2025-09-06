@@ -42,7 +42,7 @@ function App() {
   
   // All hooks must be called before any conditional returns
   const [currentView, setCurrentView] = useState('copilot');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 768); // Auto-collapse on mobile
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
   const [showCoPilot, setShowCoPilot] = useState(false);
@@ -318,7 +318,7 @@ function App() {
         />
 
         {/* Main Content Area with TopBar */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* TopBar */}
           <TopBar 
             onSearchClick={handleTopBarActions.onSearchClick}
@@ -326,6 +326,7 @@ function App() {
             onFounderMode={handleTopBarActions.onFounderMode}
             onHomeClick={handleTopBarActions.onHomeClick}
             onToggleCoPilot={() => setShowCoPilot(!showCoPilot)}
+            onToggleMobileMenu={() => setSidebarCollapsed(!sidebarCollapsed)}
           />
 
           {/* Main Content */}

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Search, Bell, User, Command, Crown, Home, Bot, LogOut } from 'lucide-react';
+import { Search, Bell, User, Command, Crown, Home, Bot, LogOut, Menu } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
 
-const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onToggleCoPilot, className }) => {
+const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onToggleCoPilot, onToggleMobileMenu, className }) => {
   const { signOut, user } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -48,6 +48,15 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onT
         
         {/* App Logo/Name - Left */}
         <div className="flex items-center gap-3">
+          {/* Mobile Menu Button */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onToggleMobileMenu}
+            className="md:hidden mr-2"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
           <button 
             onClick={onHomeClick}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"

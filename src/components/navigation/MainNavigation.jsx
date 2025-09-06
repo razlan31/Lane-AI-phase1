@@ -121,74 +121,96 @@ const MainNavigation = ({
   );
 
   return (
-    <aside className={cn(
-      "flex flex-col border-r border-border bg-card/50 transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64",
-      className
-    )}>
-      {/* Collapse Toggle */}
-      <div className="flex justify-end p-2">
-        <Button 
-          variant="ghost" 
-          size="sm"
+    <>
+      {/* Mobile backdrop */}
+      {!isCollapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden" 
           onClick={onToggleCollapse}
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
+        />
+      )}
+      
+      <aside className={cn(
+        "flex flex-col border-r border-border bg-card/50 transition-all duration-300",
+        "fixed md:relative z-30 md:z-auto h-full",
+        isCollapsed 
+          ? "w-16 -translate-x-full md:translate-x-0" 
+          : "w-80 translate-x-0 md:w-64",
+        className
+      )}>
+        {/* Mobile Close Button */}
+        <div className="flex justify-between items-center p-2 md:justify-end">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onToggleCollapse}
+            className="md:hidden"
+          >
+            Close
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onToggleCollapse}
+            className="hidden md:block"
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
 
-      <div className="flex-1 p-2 space-y-6 overflow-y-auto">
-        {/* Primary Navigation - AI Co-Pilot first, then HQ */}
-        {renderNavSection(primaryItems, "Navigation", false)}
+        <div className="flex-1 p-2 space-y-6 overflow-y-auto">
+          {/* Primary Navigation - AI Co-Pilot first, then HQ */}
+          {renderNavSection(primaryItems, "Navigation", false)}
 
-        {/* Venture Workspaces */}
-        {(ventureItems.length > 0 || !isCollapsed) && (
-          <>
-            <div className="border-t border-border my-4" />
-            {!isCollapsed && (
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
-                Venture Workspaces
-              </h3>
-            )}
-            
-            {ventureItems.length > 0 && (
-              <div className="space-y-1">
-                {ventureItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentView === item.id;
-                  
-                  return (
-                    <Button
-                      key={item.id}
-                      variant={isActive ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start",
-                        isCollapsed && "px-2"
-                      )}
-                      onClick={() => onViewChange(item.id)}
-                      title={isCollapsed ? `${item.label}: ${item.description}` : undefined}
-                    >
-                      <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
-                      {!isCollapsed && item.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            )}
-            
-            {!isCollapsed && (
-              <div className="mt-2">
-                {renderAddVentureButton()}
-              </div>
-            )}
-          </>
-        )}
+          {/* Venture Workspaces */}
+          {(ventureItems.length > 0 || !isCollapsed) && (
+            <>
+              <div className="border-t border-border my-4" />
+              {!isCollapsed && (
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
+                  Venture Workspaces
+                </h3>
+              )}
+              
+              {ventureItems.length > 0 && (
+                <div className="space-y-1">
+                  {ventureItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentView === item.id;
+                    
+                    return (
+                      <Button
+                        key={item.id}
+                        variant={isActive ? "secondary" : "ghost"}
+                        className={cn(
+                          "w-full justify-start",
+                          isCollapsed && "px-2"
+                        )}
+                        onClick={() => onViewChange(item.id)}
+                        title={isCollapsed ? `${item.label}: ${item.description}` : undefined}
+                      >
+                        <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                        {!isCollapsed && item.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {!isCollapsed && (
+                <div className="mt-2">
+                  {renderAddVentureButton()}
+                </div>
+              )}
+            </>
+          )}
 
-        {/* Other Section */}
-        <div className="border-t border-border my-4" />
-        {renderNavSection(otherItems, "Other")}
-      </div>
-    </aside>
+          {/* Other Section */}
+          <div className="border-t border-border my-4" />
+          {renderNavSection(otherItems, "Other")}
+        </div>
+      </aside>
+    </>
   );
 };
 
