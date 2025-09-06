@@ -29,6 +29,9 @@ import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
+import AdvancedExportModal from './components/export/AdvancedExportModal';
+import AdvancedReportsPanel from './components/reports/AdvancedReportsPanel';
+import WorksheetTemplatesGallery from './components/templates/WorksheetTemplatesGallery';
 import HelpModal from './components/modals/HelpModal';
 import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
@@ -52,6 +55,9 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [advancedExportModalOpen, setAdvancedExportModalOpen] = useState(false);
+  const [advancedReportsOpen, setAdvancedReportsOpen] = useState(false);
+  const [templatesGalleryOpen, setTemplatesGalleryOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const { ventures, loading: venturesLoading, createVenture } = useVentures();
   const { user: currentUser } = useAuth();
@@ -73,6 +79,9 @@ function App() {
       setCommandPaletteOpen(false);
       setNewVentureModalOpen(false);
       setExportModalOpen(false);
+      setAdvancedExportModalOpen(false);
+      setAdvancedReportsOpen(false);
+      setTemplatesGalleryOpen(false);
       setHelpModalOpen(false);
     },
   });
@@ -166,12 +175,13 @@ function App() {
 
   // Quick dock handlers
   const handleQuickActions = {
-    onAddWorksheet: () => console.log('Add worksheet'),
+    onAddWorksheet: () => setTemplatesGalleryOpen(true),
     onAddDashboard: () => console.log('Add dashboard'),
     onImportCsv: () => console.log('Import CSV'),
     onAddVenture: () => setNewVentureModalOpen(true),
     onFounderMode: () => setShowFounderMode(true),
-    onExport: () => setExportModalOpen(true),
+    onExport: () => setAdvancedExportModalOpen(true),
+    onAdvancedReports: () => setAdvancedReportsOpen(true),
     onAddData: () => console.log('Add data'),
     onSignals: () => console.log('View signals'),
     onRunFlow: () => console.log('Run flow'),
@@ -292,7 +302,22 @@ function App() {
       case 'scratchpads':
         return <ToolsScratchpads ventures={ventures} />;
       case 'reports':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p>Global reports coming soon...</p></div>;
+        return (
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold">Advanced Reports</h1>
+                <p className="text-muted-foreground">Comprehensive business analytics and insights</p>
+              </div>
+              <Button onClick={() => setAdvancedReportsOpen(true)}>
+                Open Advanced Reports
+              </Button>
+            </div>
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Click "Open Advanced Reports" to access comprehensive analytics</p>
+            </div>
+          </div>
+        );
       case 'settings':
         return <SettingsPage userProfile={userProfileData} />;
       // Dynamic venture views
@@ -402,6 +427,27 @@ function App() {
       <HelpModal
         isOpen={helpModalOpen}
         onClose={() => setHelpModalOpen(false)}
+      />
+
+      <AdvancedExportModal
+        isOpen={advancedExportModalOpen}
+        onClose={() => setAdvancedExportModalOpen(false)}
+        data={{ ventures, currentView }}
+      />
+
+      <AdvancedReportsPanel
+        isOpen={advancedReportsOpen}
+        onClose={() => setAdvancedReportsOpen(false)}
+        ventures={ventures}
+      />
+
+      <WorksheetTemplatesGallery
+        isOpen={templatesGalleryOpen}
+        onClose={() => setTemplatesGalleryOpen(false)}
+        onSelectTemplate={(template) => {
+          console.log('Selected template:', template);
+          // Handle template selection
+        }}
       />
 
       <GlobalUpgradeHandler />
