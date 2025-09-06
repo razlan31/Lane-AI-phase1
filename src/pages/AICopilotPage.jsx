@@ -127,9 +127,19 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
 
   // Handle sending message
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !activeChatId || aiLoading) return;
+    console.log('AICopilotPage handleSendMessage called', { inputValue, activeChatId, aiLoading });
+    
+    if (!inputValue.trim() || aiLoading) return;
+
+    // Create a new chat if none exists
+    if (!activeChatId) {
+      console.log('No active chat, creating new one...');
+      await createNewChat('New Chat');
+      return; // The effect will trigger and set activeChatId, then user can try again
+    }
 
     const userMessage = inputValue.trim();
+    console.log('Sending message:', userMessage);
     
     // Check for scenario intent first
     if (detectScenarioIntent(userMessage)) {
@@ -487,15 +497,18 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
               <input
                 type="text"
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  console.log('AICopilotPage input change:', e.target.value);
+                  setInputValue(e.target.value);
+                }}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                placeholder="Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"
+                placeholder={loading ? "Setting up chat..." : !activeChatId ? "Creating chat session..." : "Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"}
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={aiLoading || evaluating}
+                disabled={aiLoading || evaluating || loading}
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={!inputValue.trim() || aiLoading || evaluating}
+                disabled={!inputValue.trim() || aiLoading || evaluating || loading || !activeChatId}
                 className="h-10 w-10 p-0"
               >
                 {evaluating ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
