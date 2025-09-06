@@ -36,10 +36,10 @@ export const GlobalOrb = ({ context, ventureId }) => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 left-6 z-50 md:bottom-6 md:right-6">
       {/* Expanded Panel */}
       {isExpanded && (
-        <Card className="absolute bottom-16 right-0 w-80 p-4 shadow-xl border">
+        <Card className="absolute bottom-16 left-0 md:right-0 md:left-auto w-80 max-w-[calc(100vw-3rem)] p-4 shadow-xl border bg-background">
           <div className="space-y-4">
             {/* AI Suggestion */}
             {activeSuggestion && (
@@ -125,7 +125,7 @@ export const GlobalOrb = ({ context, ventureId }) => {
       <Button
         onClick={handleOrbClick}
         className={`
-          h-14 w-14 rounded-full shadow-lg transition-all duration-300 
+          h-12 w-12 md:h-14 md:w-14 rounded-full shadow-lg transition-all duration-300 touch-manipulation
           ${isExpanded ? 'scale-110' : 'hover:scale-105'}
           bg-gradient-to-br from-primary to-primary/80
           hover:from-primary/90 hover:to-primary/70
@@ -133,7 +133,7 @@ export const GlobalOrb = ({ context, ventureId }) => {
         size="icon"
       >
         <div className="relative">
-          <Bot className="h-6 w-6 text-white" />
+          <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
           
           {/* Notification Badge */}
           {notifications.length > 0 && !isExpanded && (

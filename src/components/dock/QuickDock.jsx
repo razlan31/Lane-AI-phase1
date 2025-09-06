@@ -45,10 +45,10 @@ const QuickDock = ({ className = "" }) => {
   ];
 
   return (
-    <div className={`fixed bottom-4 right-4 z-40 ${className}`}>
+    <div className={`fixed bottom-20 right-6 md:bottom-6 md:right-20 z-40 ${className}`}>
       {/* Scratchpad Panel */}
       {scratchpadOpen && (
-        <div className="absolute bottom-16 right-0 mb-4">
+        <div className="absolute bottom-16 right-0 mb-4 max-w-[calc(100vw-3rem)]">
           <ScratchpadPanel 
             onClose={() => setScratchpadOpen(false)}
           />
@@ -57,7 +57,7 @@ const QuickDock = ({ className = "" }) => {
 
       {/* Tools Panel */}
       {toolsOpen && (
-        <div className="absolute bottom-16 right-0 mb-4">
+        <div className="absolute bottom-16 right-0 mb-4 max-w-[calc(100vw-3rem)]">
           <ToolsPanel 
             onClose={() => setToolsOpen(false)}
           />
@@ -74,13 +74,14 @@ const QuickDock = ({ className = "" }) => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-12 h-12 p-0 rounded-full shadow-lg border-2"
+                  className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full shadow-lg border-2 bg-background hover:bg-accent touch-manipulation"
                   onClick={item.action}
+                  aria-label={item.label}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left">
+              <TooltipContent side="left" className="hidden md:block">
                 <p>{item.label}</p>
               </TooltipContent>
             </Tooltip>
