@@ -152,6 +152,11 @@ export const useScenarios = () => {
   }, []);
 
   const detectScenarioIntent = useCallback((message) => {
+    // Don't detect scenario intent for empty messages or placeholder text
+    if (!message || !message.trim() || message.includes('placeholder') || message.includes('Try:')) {
+      return false;
+    }
+    
     const scenarioKeywords = [
       /scenario:/i,
       /what if/i,
