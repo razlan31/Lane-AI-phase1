@@ -54,11 +54,7 @@ const ImportModal = ({ isOpen, onClose, onImportComplete }) => {
       setValidation(validation);
       setShowPreview(true);
     } catch (error) {
-      toast({
-        title: "File Validation Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(`File Validation Failed: ${error.message}`);
       setFile(null);
     }
   };
@@ -74,10 +70,7 @@ const ImportModal = ({ isOpen, onClose, onImportComplete }) => {
         validateOnly: false 
       });
       
-      toast({
-        title: "Import Complete",
-        description: `Successfully imported data with ${JSON.stringify(result.results)}`,
-      });
+      toast.success(`Successfully imported data with ${JSON.stringify(result.results)}`);
       
       onImportComplete?.(result);
       onClose();

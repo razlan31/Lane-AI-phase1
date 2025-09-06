@@ -114,10 +114,7 @@ export const useAutosave = (parentId, parentType, initialContent = {}) => {
     } catch (error) {
       console.error('Autosave error:', error);
       setSaveStatus('error');
-      toast({
-        title: "Save Failed",
-        description: "Failed to save changes. Click to retry.",
-        variant: "destructive",
+      toast.error("Failed to save changes. Click to retry.", {
         action: {
           label: "Retry",
           onClick: () => autosave()
@@ -168,10 +165,7 @@ export const useAutosave = (parentId, parentType, initialContent = {}) => {
       setLastSaved(new Date());
       await fetchVersions(); // Refresh versions list
       
-      toast({
-        title: "Changes Committed",
-        description: `Version ${data.version_number} saved successfully.`
-      });
+      toast.success(`Version ${data.version_number} saved successfully.`);
 
       return { success: true, data };
     } catch (error) {
@@ -189,10 +183,7 @@ export const useAutosave = (parentId, parentType, initialContent = {}) => {
       setContent(version.content);
       await autosave();
       
-      toast({
-        title: "Reverted",
-        description: `Reverted to version ${version.version_number}.`
-      });
+      toast.success(`Reverted to version ${version.version_number}.`);
 
       return { success: true };
     } catch (error) {

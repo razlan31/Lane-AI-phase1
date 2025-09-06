@@ -41,10 +41,7 @@ const ResetPasswordPage = () => {
         setError(error.message);
       } else {
         setSuccess(true);
-        toast({
-          title: "Password Updated",
-          description: "Your password has been successfully updated."
-        });
+        toast.success("Your password has been successfully updated.");
         
         // Redirect to main app after successful reset
         setTimeout(() => {

@@ -90,28 +90,17 @@ const ProfileSettings = ({ userProfile }) => {
 
   const handleTestEmail = async () => {
     if (!user?.email) {
-      toast({
-        title: "Error",
-        description: "No email address found for current user",
-        variant: "destructive"
-      });
+      toast.error("No email address found for current user");
       return;
     }
 
     setIsTestingEmail(true);
     try {
       await sendTestEmail(user.email);
-      toast({
-        title: "Email sent!",
-        description: `Test email sent successfully to ${user.email}`,
-      });
+      toast.success(`Test email sent successfully to ${user.email}`);
     } catch (error) {
       console.error('Test email failed:', error);
-      toast({
-        title: "Email failed",
-        description: error.message || "Failed to send test email",
-        variant: "destructive"
-      });
+      toast.error(error.message || "Failed to send test email");
     } finally {
       setIsTestingEmail(false);
     }

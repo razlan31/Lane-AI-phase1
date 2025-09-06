@@ -94,17 +94,9 @@ export const useOpenAIChat = () => {
       
       // Show toast for rate limiting
       if (err.message?.includes('Rate limit')) {
-        toast({
-          title: "Rate Limited",
-          description: "Please wait before sending another message.",
-          variant: "destructive"
-        });
+        toast.error("Please wait before sending another message.");
       } else {
-        toast({
-          title: "Chat Error",
-          description: errorMessage,
-          variant: "destructive"
-        });
+        toast.error(errorMessage);
       }
 
       return {
@@ -175,11 +167,7 @@ export const useOpenAIChat = () => {
       const errorMessage = err.message || 'Failed to generate explanation';
       setError(errorMessage);
       
-      toast({
-        title: "Explanation Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      toast.error(errorMessage);
 
       return {
         success: false,

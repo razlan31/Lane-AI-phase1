@@ -38,11 +38,7 @@ const ScenarioSandbox = ({ onClose }) => {
 
   const evaluateScenario = async () => {
     if (!scenarioText.trim()) {
-      toast({
-        title: "Input Required",
-        description: "Please enter a scenario to evaluate",
-        variant: "destructive"
-      });
+      toast.error("Please enter a scenario to evaluate");
       return;
     }
 
@@ -82,11 +78,7 @@ const ScenarioSandbox = ({ onClose }) => {
       }
     } catch (error) {
       console.error('Scenario evaluation error:', error);
-      toast({
-        title: "Evaluation Failed",
-        description: error.message || 'Failed to evaluate scenario',
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to evaluate scenario');
     } finally {
       setLoading(false);
     }
@@ -116,19 +108,12 @@ const ScenarioSandbox = ({ onClose }) => {
 
       if (error) throw error;
 
-      toast({
-        title: "Calculation Saved",
-        description: "Scenario has been saved to your calculation log."
-      });
+      toast.success("Scenario has been saved to your calculation log.");
 
       onClose?.();
     } catch (error) {
       console.error('Save calculation error:', error);
-      toast({
-        title: "Save Failed",
-        description: error.message || 'Failed to save calculation',
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to save calculation');
     } finally {
       setSaving(false);
     }
