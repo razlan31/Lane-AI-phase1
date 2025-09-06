@@ -93,12 +93,12 @@ const HQDashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Signals Board</h2>
               <button 
-                className="text-sm text-primary hover:text-primary/80"
+                className="text-sm text-primary hover:text-primary/80 font-medium"
                 onClick={() => {
                   // Trigger AI KPI generation
                   window.dispatchEvent(new CustomEvent('openAIChat', {
                     detail: { 
-                      message: 'Generate 5 custom KPIs for my business based on my profile and industry',
+                      message: 'Generate 5 custom KPIs for my business based on my profile and industry. Include metrics like customer acquisition cost, monthly recurring revenue, churn rate, and other relevant KPIs for my specific business type.',
                       context: 'kpi-generation'
                     }
                   }));
@@ -135,7 +135,7 @@ const HQDashboard = () => {
                   action={() => {
                     window.dispatchEvent(new CustomEvent('openAIChat', {
                       detail: { 
-                        message: 'Create additional KPIs for my venture based on my business model and goals',
+                        message: 'Create additional specialized KPIs for my venture. I need metrics that track growth, efficiency, customer satisfaction, and financial health. Please suggest 3-5 new KPIs that would be valuable for monitoring my business performance.',
                         context: 'kpi-expansion'
                       }
                     }));
@@ -159,7 +159,7 @@ const HQDashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-foreground">Portfolio</h2>
               <button 
-                className="text-sm text-primary hover:text-primary/80"
+                className="text-sm text-primary hover:text-primary/80 font-medium"
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent('openNewVentureModal'));
                 }}

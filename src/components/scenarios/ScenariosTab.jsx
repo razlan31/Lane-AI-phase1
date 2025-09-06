@@ -56,7 +56,13 @@ const ScenariosTab = ({ ventureId }) => {
           </p>
         </div>
           <Button onClick={() => {
-            window.dispatchEvent(new CustomEvent('openScenarioSandbox'));
+            console.log('Create Scenario clicked');
+            window.dispatchEvent(new CustomEvent('openAIChat', {
+              detail: { 
+                message: 'Help me create a new scenario for my venture. I want to model different what-if situations to understand potential outcomes and plan better strategies.',
+                context: 'scenario-creation'
+              }
+            }));
           }}>
             <Copy className="h-4 w-4 mr-2" />
             Create Scenario
@@ -97,9 +103,10 @@ const ScenariosTab = ({ ventureId }) => {
             <Button 
               variant="outline"
               onClick={() => {
+                console.log('Generate AI Scenarios clicked');
                 window.dispatchEvent(new CustomEvent('openAIChat', {
                   detail: { 
-                    message: 'Generate AI-powered what-if scenarios for my venture based on my current data and market conditions',
+                    message: 'Generate comprehensive AI-powered what-if scenarios for my venture. Create 3-5 different scenarios including optimistic growth, market downturn, competitive pressure, and expansion opportunities. Base them on my current data and realistic market conditions.',
                     context: 'scenario-generation'
                   }
                 }));

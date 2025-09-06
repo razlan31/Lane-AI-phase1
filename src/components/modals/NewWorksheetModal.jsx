@@ -22,7 +22,11 @@ const NewWorksheetModal = ({ isOpen, onClose, onChatBuild, onChooseTemplate, onB
           <div className="space-y-4">
             {/* Chat Build Option */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary">
-              <CardContent className="p-4" onClick={() => { onChatBuild(); onClose(); }}>
+              <CardContent className="p-4" onClick={() => { 
+                console.log('Chat Build clicked');
+                onChatBuild(); 
+                onClose(); 
+              }}>
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <MessageSquare className="h-5 w-5 text-primary" />
@@ -42,7 +46,11 @@ const NewWorksheetModal = ({ isOpen, onClose, onChatBuild, onChooseTemplate, onB
 
             {/* Choose Template Option */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary">
-              <CardContent className="p-4" onClick={() => { onChooseTemplate(); onClose(); }}>
+              <CardContent className="p-4" onClick={() => { 
+                console.log('Choose Template clicked');
+                onChooseTemplate(); 
+                onClose(); 
+              }}>
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <FileSpreadsheet className="h-5 w-5 text-green-600" />
@@ -62,7 +70,11 @@ const NewWorksheetModal = ({ isOpen, onClose, onChatBuild, onChooseTemplate, onB
 
             {/* Blank Worksheet Option */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary">
-              <CardContent className="p-4" onClick={() => { onBlankWorksheet(); onClose(); }}>
+              <CardContent className="p-4" onClick={() => { 
+                console.log('Blank Worksheet clicked');
+                onBlankWorksheet(); 
+                onClose(); 
+              }}>
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Plus className="h-5 w-5 text-gray-600" />

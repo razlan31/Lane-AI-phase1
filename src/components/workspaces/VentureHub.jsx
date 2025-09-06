@@ -39,24 +39,30 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   };
 
   const handleChatBuild = () => {
+    console.log('handleChatBuild called');
+    setIsNewWorksheetModalOpen(false);
     window.dispatchEvent(new CustomEvent('openAIChat', {
       detail: { 
-        message: 'I want to create a new worksheet. Please guide me through the process.',
+        message: `I want to create a new worksheet for ${ventureName}. Please guide me through the process step by step. I need help deciding what metrics to track and how to structure the calculations.`,
         context: 'worksheet-creation'
       }
     }));
   };
 
   const handleChooseTemplate = () => {
+    console.log('handleChooseTemplate called');
+    setIsNewWorksheetModalOpen(false);
     setIsTemplateChooserOpen(true);
   };
 
   const handleBlankWorksheet = () => {
-    // Create a new blank worksheet
+    console.log('handleBlankWorksheet called');
+    setIsNewWorksheetModalOpen(false);
     setIsWorksheetBuilderOpen(true);
   };
 
   const handleGenerateReport = () => {
+    console.log('handleGenerateReport called');
     setIsNewReportModalOpen(true);
   };
 
@@ -239,15 +245,27 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                   variant="outline" 
                   size="sm"
                   onClick={() => {
-                    // Generate and download CSV export of venture data
-                    const csvData = "Name,Value,Date\nRevenue,25000,2024-01-01\nExpenses,18000,2024-01-01";
+                    // Generate more comprehensive CSV export
+                    const today = new Date().toISOString().split('T')[0];
+                    const csvData = `Metric,Value,Date,Type
+Revenue,25000,${today},Financial
+Expenses,18000,${today},Financial
+Customer Count,342,${today},Operations
+Avg Order Value,24.85,${today},Operations
+Monthly Growth Rate,15%,${today},Growth
+Customer Acquisition Cost,125,${today},Marketing
+Churn Rate,5%,${today},Retention`;
+                    
                     const blob = new Blob([csvData], { type: 'text/csv' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `venture-data-${new Date().toISOString().split('T')[0]}.csv`;
+                    a.download = `${ventureName.toLowerCase().replace(/\s+/g, '-')}-metrics-${today}.csv`;
                     a.click();
                     window.URL.revokeObjectURL(url);
+                    
+                    // Show success feedback
+                    console.log('Venture data exported successfully');
                   }}
                 >
                   Export CSV
@@ -258,7 +276,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('openAIChat', {
                       detail: { 
-                        message: 'Generate AI insights and recommendations for my venture based on current data and market trends',
+                        message: `Generate detailed AI insights and strategic recommendations for ${ventureName}. Analyze current performance metrics, identify growth opportunities, potential risks, and provide actionable recommendations for improvement based on industry best practices and market trends.`,
                         context: 'ai-insights'
                       }
                     }));
@@ -371,7 +389,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
               <Button onClick={() => {
                 window.dispatchEvent(new CustomEvent('openAIChat', {
                   detail: { 
-                    message: 'Help me configure smart alerts for my venture KPIs and metrics',
+                    message: 'Help me configure smart alerts for my venture KPIs and metrics. I want to set up automated notifications when key metrics change significantly, reach certain thresholds, or show concerning trends.',
                     context: 'alerts-configuration'
                   }
                 }));
