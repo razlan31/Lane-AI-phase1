@@ -31,6 +31,12 @@ export const useDebouncedChatInput = (initialValue = '', delay = 750) => {
     setTimeout(() => setIsTyping(false), delay + 100);
   }, [delay]);
 
+  // Wrapper to handle both direct calls and event objects
+  const setInputWrapper = useCallback((valueOrEvent) => {
+    const value = typeof valueOrEvent === 'string' ? valueOrEvent : valueOrEvent.target?.value || '';
+    handleInputChange(value);
+  }, [handleInputChange]);
+
   const clearInput = useCallback(() => {
     setInputValue('');
     setIsTyping(false);
@@ -40,7 +46,7 @@ export const useDebouncedChatInput = (initialValue = '', delay = 750) => {
     inputValue,
     debouncedValue,
     isTyping,
-    setInputValue: handleInputChange,
+    setInputValue: setInputWrapper,
     clearInput
   };
 };

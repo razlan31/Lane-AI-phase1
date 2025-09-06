@@ -132,9 +132,11 @@ const EnhancedAIChat = ({
 
   // Handle sending message
   const handleSendMessage = async () => {
+    console.log('handleSendMessage called', { inputValue, activeChatId, aiLoading });
     if (!inputValue.trim() || !activeChatId || aiLoading) return;
 
     const userMessage = inputValue.trim();
+    console.log('Sending message:', userMessage);
     
     // Check for scenario intent first
     if (detectScenarioIntent(userMessage)) {
@@ -456,7 +458,10 @@ const EnhancedAIChat = ({
             <input
               type="text"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                console.log('Input change:', e.target.value);
+                setInputValue(e.target.value);
+              }}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
               placeholder="Try: 'If I hire 3 people at $2k/month and charge $500/project, how many projects to break even?'"
               className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
