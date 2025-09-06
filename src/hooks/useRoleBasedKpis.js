@@ -8,6 +8,11 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
   const [kpis, setKpis] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Function to add new KPIs dynamically
+  const addKpis = (newKpis) => {
+    setKpis(prev => [...prev, ...newKpis]);
+  };
+
   useEffect(() => {
     const generateKpis = async () => {
       setLoading(true);
@@ -198,7 +203,99 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
     if (userRole) {
       generateKpis();
     }
+
+    // Set up event listener for auto-generate KPIs
+    const handleAutoGenerateKPIs = (event) => {
+      const { type, count } = event.detail;
+      const additionalKpis = generateAdditionalKpis(count);
+      addKpis(additionalKpis);
+    };
+
+    window.addEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+    
+    // Cleanup listener
+    return () => {
+      window.removeEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+    };
   }, [userRole, ventureType]);
 
-  return { kpis, loading };
+  return { kpis, loading, addKpis };
+};
+
+// Function to generate additional KPIs - moved outside component for reusability
+const generateAdditionalKpis = (count) => {
+    const additionalKpiPool = [
+      {
+        title: "Customer Acquisition Cost",
+        description: "Cost to acquire each new customer",
+        value: 125,
+        unit: "currency",
+        trend: -8,
+        trendDirection: "down",
+        icon: DollarSign,
+        state: "warning"
+      },
+      {
+        title: "Monthly Recurring Revenue",
+        description: "Predictable monthly income from subscriptions",
+        value: 15000,
+        unit: "currency",
+        trend: 25,
+        trendDirection: "up",
+        icon: TrendingUp,
+        state: "success"
+      },
+      {
+        title: "Churn Rate",
+        description: "Percentage of customers who cancel",
+        value: 5.2,
+        unit: "percentage",
+        trend: -2,
+        trendDirection: "down",
+        icon: AlertTriangle,
+        state: "warning"
+      },
+      {
+        title: "Average Revenue Per User",
+        description: "Revenue generated per active user",
+        value: 89,
+        unit: "currency",
+        trend: 12,
+        trendDirection: "up",
+        icon: Users
+      },
+      {
+        title: "Conversion Rate",
+        description: "Percentage of visitors who become customers",
+        value: 3.8,
+        unit: "percentage",
+        trend: 15,
+        trendDirection: "up",
+        icon: Target,
+        state: "success"
+      },
+      {
+        title: "Customer Lifetime Value",
+        description: "Total revenue expected from a customer",
+        value: 1840,
+        unit: "currency",
+        trend: 18,
+        trendDirection: "up",
+        icon: TrendingUp,
+        state: "success"
+      },
+      {
+        title: "Net Promoter Score",
+        description: "Customer satisfaction and loyalty metric",
+        value: 42,
+        unit: "score",
+        trend: 8,
+        trendDirection: "up",
+        icon: Target
+      }
+    ];
+
+  // Return random selection of KPIs
+  const shuffled = additionalKpiPool.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
 };

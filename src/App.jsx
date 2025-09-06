@@ -120,21 +120,13 @@ function App() {
       const { type, count } = e.detail;
       console.log(`Auto-generating ${count} KPIs of type: ${type}`);
       
-      // Simulate KPI generation process
-      const kpiTypes = [
-        { title: 'Customer Acquisition Cost', value: 125, unit: 'currency', trend: -8, trendDirection: 'down' },
-        { title: 'Monthly Recurring Revenue', value: 15000, unit: 'currency', trend: 25, trendDirection: 'up' },
-        { title: 'Churn Rate', value: 5.2, unit: 'percentage', trend: -2, trendDirection: 'down' },
-        { title: 'Average Revenue Per User', value: 89, unit: 'currency', trend: 12, trendDirection: 'up' },
-        { title: 'Conversion Rate', value: 3.8, unit: 'percentage', trend: 15, trendDirection: 'up' },
-        { title: 'Customer Lifetime Value', value: 1840, unit: 'currency', trend: 18, trendDirection: 'up' },
-        { title: 'Net Promoter Score', value: 42, unit: 'number', trend: 8, trendDirection: 'up' }
-      ];
-      
-      // Show a success message or toast
+      // The actual KPI generation is now handled by the useRoleBasedKpis hook
+      // This just provides user feedback
       setTimeout(() => {
-        alert(`Successfully generated ${count} new KPIs! Check your signals board.`);
-      }, 1000);
+        toast.success('KPIs Generated!', {
+          description: `Successfully generated ${count} new KPIs for your signals board.`,
+        });
+      }, 500);
     };
     const handleOpenPersonalWorksheet = (e) => {
       const { worksheetType, worksheetName, worksheetDescription } = e.detail;

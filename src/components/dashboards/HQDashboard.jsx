@@ -148,7 +148,14 @@ const HQDashboard = () => {
               <EmptyState
                 title="No signals yet"
                 description="Generate KPIs to start tracking your business metrics"
-                action={() => console.log('Generate KPIs')}
+                action={() => {
+                  window.dispatchEvent(new CustomEvent('autoGenerateKPIs', {
+                    detail: { 
+                      type: 'initial-generate',
+                      count: 5
+                    }
+                  }));
+                }}
                 actionLabel="Generate KPIs"
                 icon={Target}
               />
