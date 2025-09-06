@@ -21,6 +21,10 @@ const CleanScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     reflectOnNote
   } = useScratchpad();
 
+  // Get the selected note content safely
+  const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
+  const initialContent = selectedNote?.text || '';
+
   // Autosave for selected note editing
   const {
     content: editingContent,
@@ -29,7 +33,7 @@ const CleanScratchpadPanel = ({ isOpen, onClose, className = "" }) => {
     lastSaved,
     commit,
     forceRetry
-  } = useAutosave(selectedNoteId, 'scratchpad', selectedNoteId ? notes.find(n => n.id === selectedNoteId)?.text || '' : '');
+  } = useAutosave(selectedNoteId, 'scratchpad', initialContent);
 
   const handleCreateNote = async () => {
     if (!newNote.trim()) return;
