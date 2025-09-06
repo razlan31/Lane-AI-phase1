@@ -15,7 +15,10 @@ const QuickDock = ({ className = "" }) => {
       icon: FileText,
       label: 'Scratchpad',
       description: 'Quick notes and ideas',
-      action: () => setScratchpadOpen(true),
+      action: () => {
+        console.log('Scratchpad button clicked!');
+        setScratchpadOpen(true);
+      },
       shortcut: 'S'
     },
     {
@@ -23,7 +26,10 @@ const QuickDock = ({ className = "" }) => {
       icon: Calculator,
       label: 'Tools',
       description: 'Financial calculators',
-      action: () => setToolsOpen(true),
+      action: () => {
+        console.log('Calculator button clicked!');
+        setToolsOpen(true);
+      },
       shortcut: 'T'
     },
     {
@@ -46,24 +52,18 @@ const QuickDock = ({ className = "" }) => {
 
   return (
     <TooltipProvider>
-      <div className={`fixed bottom-20 right-6 md:bottom-6 md:right-20 z-40 ${className}`}>
+      <div className={`fixed bottom-20 right-6 md:bottom-6 md:right-20 z-50 ${className}`}>
         {/* Scratchpad Panel */}
-        {scratchpadOpen && (
-          <div className="absolute bottom-16 right-0 mb-4 max-w-[calc(100vw-3rem)]">
-            <ScratchpadPanel 
-              onClose={() => setScratchpadOpen(false)}
-            />
-          </div>
-        )}
+        <ScratchpadPanel 
+          isOpen={scratchpadOpen}
+          onClose={() => setScratchpadOpen(false)}
+        />
 
         {/* Tools Panel */}
-        {toolsOpen && (
-          <div className="absolute bottom-16 right-0 mb-4 max-w-[calc(100vw-3rem)]">
-            <ToolsPanel 
-              onClose={() => setToolsOpen(false)}
-            />
-          </div>
-        )}
+        <ToolsPanel 
+          isOpen={toolsOpen}
+          onClose={() => setToolsOpen(false)}
+        />
 
         {/* Quick action buttons */}
         <div className="flex flex-col gap-2">
