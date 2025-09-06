@@ -122,6 +122,9 @@ serve(async (req) => {
     // Dynamic cooldown based on plan
     const cooldownMs = isPaid ? 2000 : 10000;
 
+    // Confirmation intents should bypass cooldown ("yes", "ok", "proceed")
+    const isConfirm = /^\s*(yes|y|ok|okay|proceed|go ahead|confirm)\s*$/i.test(message);
+
     // Rate limiting: Check last message timestamp for this session
     const { data: lastMsg } = await supabase
       .from('chat_messages')
@@ -131,7 +134,7 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (lastMsg && now.getTime() - new Date(lastMsg.created_at).getTime() < cooldownMs) {
+    if (!isConfirm && lastMsg && now.getTime() - new Date(lastMsg.created_at).getTime() < cooldownMs) {
       const seconds = Math.ceil(cooldownMs / 1000);
       return new Response(JSON.stringify({ error: `Rate limit exceeded. Please wait ${seconds} seconds between messages.` }), {
         status: 429,
@@ -340,6 +343,64 @@ When users request these actions, use the available functions to perform them im
 
     // Add current user message
     messages.push({ role: 'user', content: message });
+
+    // Confirmation fast-path: execute without calling OpenAI to avoid non-2xx on simple "Yes"
+    if (isConfirm) {
+      const historyText = (recentMessages || []).map((m: any) => (m?.content || '')).join(' ').toLowerCase();
+      let inferredType: string = 'other';
+      if (/food\s*truck|street\s*food|food\s*cart/.test(historyText)) inferredType = 'food_truck';
+      else if (/saas|subscription|mrr/.test(historyText)) inferredType = 'saas';
+      else if (/consult(ing|ant)/.test(historyText)) inferredType = 'consulting';
+
+      // Try to attach to most recent venture; otherwise create one quickly
+      let targetVentureId: string | null = null;
+      let ventureName = inferredType === 'food_truck' ? 'Food Truck' : (inferredType === 'saas' ? 'SaaS Venture' : 'New Venture');
+
+      const { data: lastVenture } = await supabase
+        .from('ventures')
+        .select('id, name')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastVenture?.id) {
+        targetVentureId = lastVenture.id;
+        ventureName = lastVenture.name;
+      }
+
+      if (!targetVentureId) {
+        const { data: v } = await supabase
+          .from('ventures')
+          .insert({ user_id: userId, name: ventureName, description: `${ventureName} created from confirmation`, type: 'local_business', stage: 'growth' })
+          .select()
+          .maybeSingle();
+        targetVentureId = v?.id || null;
+      }
+
+      if (targetVentureId) {
+        const templates = getWorksheetTemplates(inferredType, 'real_data', null, 'existing_business');
+        const created = [] as any[];
+        for (const t of templates) {
+          const { data: w } = await supabase
+            .from('worksheets')
+            .insert({ user_id: userId, venture_id: targetVentureId, type: t.type, template_category: t.type, inputs: { fields: t.fields || [] }, confidence_level: 'actual' })
+            .select()
+            .maybeSingle();
+          if (w) created.push(w);
+        }
+        const names = templates.map(t => t.name).join(', ');
+        return new Response(JSON.stringify({
+          sessionId: sid,
+          message: `🎉 Created ${created.length} worksheets: ${names} for "${ventureName}". Open your HQ Dashboard to view them.`,
+          model: 'fast-path',
+          usage: { fast_path: true },
+          selectedRole: 'venture_creator',
+          roleJustification: 'Confirmation detected; executing action without LLM.'
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      // If we still have no venture id, continue with LLM flow
+    }
 
     // Choose model (default to GPT-4o-mini for cost efficiency)
     const model = modelOverride || Deno.env.get('OPENAI_DEFAULT_MODEL') || 'gpt-4o-mini';
@@ -1007,7 +1068,6 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
       .insert({
         user_id: userId,
         venture_id: ventureId,
-        name: template.name,
         type: template.type,
         template_category: template.type,
         inputs: { fields: template.fields || [] },
