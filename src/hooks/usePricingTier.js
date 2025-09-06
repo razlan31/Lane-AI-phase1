@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// DEBUG: React hooks availability check
+console.log('🔍 usePricingTier loading - React hooks available?', { useState: !!useState, useEffect: !!useEffect });
+
 // Mock pricing tier hook - replace with real Supabase query
 export const usePricingTier = () => {
   const [tier, setTier] = useState('free'); // 'free' | 'pro' | 'enterprise'
