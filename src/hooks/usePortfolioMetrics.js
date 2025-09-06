@@ -25,6 +25,27 @@ export const usePortfolioMetrics = () => {
 
       if (venturesError) throw venturesError;
 
+      // If no ventures, return empty metrics
+      if (!ventures || ventures.length === 0) {
+        const emptyMetrics = {
+          total_revenue: 0,
+          total_burn_rate: 0,
+          total_runway: 0,
+          portfolio_roi: 0,
+          risk_score: 0,
+          diversification_score: 0,
+          metadata: {
+            ventures_count: 0,
+            kpis_count: 0,
+            worksheets_count: 0,
+            roi_data_points: 0
+          }
+        };
+        setMetrics(emptyMetrics);
+        setLoading(false);
+        return;
+      }
+
       // Get all KPIs for user's ventures
       const ventureIds = ventures?.map(v => v.id) || [];
       let allKpis = [];

@@ -100,24 +100,21 @@ const HQDashboard = () => {
       icon: Activity,
       content: (
         <div className="space-y-8">
-          {/* AI Timeline Strip */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-foreground">AI Insights</h2>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 border border-amber-200 rounded-lg bg-amber-50">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <span className="text-sm text-amber-800">⚠️ Alert: Your expenses grew 25% faster this month</span>
-                <span className="text-xs text-amber-600 ml-auto">2 hours ago</span>
+          {/* AI Timeline Strip - Only show if there are KPIs */}
+          {roleBasedKpis && roleBasedKpis.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-medium text-foreground">AI Insights</h2>
               </div>
-              <div className="flex items-center gap-3 p-3 border border-blue-200 rounded-lg bg-blue-50">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-blue-800">📈 Revenue trend shows 15% growth potential next quarter</span>
-                <span className="text-xs text-blue-600 ml-auto">1 day ago</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-3 border border-blue-200 rounded-lg bg-blue-50">
+                  <TrendingUp className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm text-blue-800">💡 AI insights will appear here as you add more venture data</span>
+                  <span className="text-xs text-blue-600 ml-auto">Live</span>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Signals Board */}
           <section>

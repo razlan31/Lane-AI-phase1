@@ -12,6 +12,37 @@ const CleanFounderMode = ({ onClose, className }) => {
   const { portfolioMetrics, loading: metricsLoading } = usePortfolioMetrics();
   const { ventures } = useVentures();
 
+  // Only show metrics if there are actual ventures
+  if (!ventures || ventures.length === 0) {
+    return (
+      <div className={cn("fixed inset-0 z-50 bg-background/80 backdrop-blur-sm", className)}>
+        <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-background shadow-2xl border-l">
+          <div className="p-6 border-b flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Crown className="h-6 w-6 text-amber-500" />
+              <h1 className="text-xl font-semibold">Founder Mode</h1>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">No Ventures Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Create a venture to unlock Founder Mode insights and AI-powered analysis.
+            </p>
+            <Button onClick={() => {
+              onClose();
+              window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+            }}>
+              Create Your First Venture
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Calculate real venture metrics from portfolio data
   const ventureMetrics = {
     revenue: portfolioMetrics?.total_revenue || 0,
