@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import KpiCard from '../primitives/KpiCard';
 import WorksheetRenderer from '../worksheets/WorksheetRenderer';
+import { AutoWorksheetGenerator } from '../worksheets/AutoWorksheetGenerator';
 import ScenariosTab from '../scenarios/ScenariosTab';
 import ReportsList from '../reports/ReportsList';
 // import LockUnlockWrapper from '../primitives/LockUnlockWrapper';
@@ -33,6 +34,14 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const { kpis: ventureKpis, loading: kpisLoading } = useVentureKpis(ventureId);
   const { worksheets, loading: worksheetsLoading, createWorksheet } = useWorksheets(ventureId);
   const { alerts, loading: alertsLoading } = useAlerts(ventureId);
+
+  console.log('🏢 VentureHub state:', { 
+    ventureId, 
+    ventureName,
+    worksheetsCount: worksheets?.length || 0, 
+    worksheetsLoading,
+    worksheets: worksheets?.map(w => ({ id: w.id, type: w.type })) || []
+  });
 
   const handleExplainClick = (context) => {
     setChatContext(context);
@@ -301,70 +310,12 @@ Churn Rate,5%,${today},Retention`;
               </Button>
             </div>
             
-            {worksheetsLoading ? (
-              <div className="space-y-6">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-48 bg-muted animate-pulse rounded-lg"></div>
-                ))}
-              </div>
-            ) : worksheets.length > 0 ? (
-              <div className="space-y-6">
-                {worksheets.map(worksheet => (
-                  <div key={worksheet.id} className="border border-border rounded-lg bg-card p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-semibold text-foreground">{worksheet.name}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          {worksheet.type === 'roi' && 'Return on investment analysis'}
-                          {worksheet.type === 'cashflow' && 'Cash in and cash out projections'}
-                          {worksheet.type === 'breakeven' && 'Break-even analysis calculator'}
-                          {worksheet.type === 'personal' && 'Personal financial planning'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 text-sm rounded-md border ${
-                          worksheet.status === 'live' 
-                            ? 'bg-green-50 text-green-700 border-green-200' 
-                            : 'bg-blue-50 text-blue-700 border-blue-200'
-                        }`}>
-                          {worksheet.status === 'live' ? 'Live' : 'Draft'}
-                        </span>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="px-4"
-                          onClick={() => {
-                            // Open worksheet in renderer
-                            window.dispatchEvent(new CustomEvent('openWorksheet', {
-                              detail: { worksheetId: worksheet.id, worksheetData: worksheet }
-                            }));
-                          }}
-                        >
-                          Open
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {/* Preview Area */}
-                    <div className="bg-muted/30 rounded-lg p-8 text-center border-2 border-dashed border-muted">
-                      <div className="text-muted-foreground text-sm">
-                        Preview: {worksheet.name}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="border border-dashed border-border rounded-lg p-12 text-center">
-                <h4 className="text-lg font-medium mb-2">No worksheets yet</h4>
-                <p className="text-muted-foreground mb-4">
-                  Create your first worksheet to start tracking metrics
-                </p>
-              <Button onClick={handleCreateWorksheet}>
-                  + Create Worksheet
-                </Button>
-              </div>
-            )}
+            {/* Use AutoWorksheetGenerator instead of manual worksheet display */}
+            <AutoWorksheetGenerator 
+              ventureId={ventureId} 
+              ventureName={ventureName} 
+              ventureType="general" 
+            />
           </TabsContent>
 
           {/* Scenarios Tab */}

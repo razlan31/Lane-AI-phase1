@@ -37,10 +37,12 @@ export const useWorksheets = (ventureId = null) => {
   }, [ventureId]);
 
   const fetchWorksheets = async () => {
+    console.log('📊 Fetching worksheets for ventureId:', ventureId);
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      console.log('👤 User authenticated:', user.id);
 
       let query = supabase
         .from('worksheets')
@@ -55,11 +57,15 @@ export const useWorksheets = (ventureId = null) => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching worksheets:', error);
+        throw error;
+      }
 
+      console.log('✅ Fetched worksheets:', data);
       setWorksheets(data || []);
     } catch (err) {
-      console.error('Error fetching worksheets:', err);
+      console.error('❌ Error fetching worksheets:', err);
       setError(err.message);
     } finally {
       setLoading(false);

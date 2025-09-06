@@ -10,6 +10,13 @@ export const AutoWorksheetGenerator = ({ ventureId, ventureName, ventureType }) 
   const { worksheets, loading } = useWorksheets(ventureId);
   const [expandedWorksheet, setExpandedWorksheet] = useState(null);
 
+  console.log('📊 AutoWorksheetGenerator state:', { 
+    ventureId, 
+    worksheetsCount: worksheets?.length || 0, 
+    loading,
+    worksheets: worksheets?.map(w => ({ id: w.id, type: w.type })) || []
+  });
+
   const getWorksheetIcon = (type) => {
     const icons = {
       'unit-economics': '💰',
