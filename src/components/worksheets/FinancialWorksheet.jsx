@@ -7,12 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorksheets } from '@/hooks/useWorksheets';
 import { useToast } from '@/hooks/use-toast';
 import { financialEngine } from '@/utils/financialEngine';
-import { Calculator, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
+import { Calculator, TrendingUp, DollarSign, BarChart3, Settings } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import DynamicFieldsManager from './DynamicFieldsManager';
 
 const FinancialWorksheet = ({ ventureId, type = 'roi', initialData }) => {
   const [inputs, setInputs] = useState(initialData?.inputs || {});
   const [outputs, setOutputs] = useState(initialData?.outputs || null);
+  const [customFields, setCustomFields] = useState(initialData?.custom_fields || []);
   const [worksheetId, setWorksheetId] = useState(initialData?.id || null);
   const { createWorksheet, updateWorksheet, calculating } = useWorksheets(ventureId);
   const { toast } = useToast();
@@ -60,6 +62,7 @@ const FinancialWorksheet = ({ ventureId, type = 'roi', initialData }) => {
         type,
         inputs: debouncedInputs,
         outputs,
+        custom_fields: customFields,
         confidence_level: outputs ? 'calculated' : 'draft'
       };
 

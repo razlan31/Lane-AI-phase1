@@ -2,6 +2,7 @@ import ROIWorksheet from './ROIWorksheet';
 import CashflowWorksheet from './CashflowWorksheet';
 import BreakevenWorksheet from './BreakevenWorksheet';
 import UnitEconomicsWorksheet from './UnitEconomicsWorksheet';
+import PersonalFinanceWorksheet from './PersonalFinanceWorksheet';
 import FinancialWorksheet from './FinancialWorksheet';
 
 const WorksheetRenderer = ({ worksheet, ventureId, onSave }) => {
@@ -36,6 +37,10 @@ const WorksheetRenderer = ({ worksheet, ventureId, onSave }) => {
     case 'unit_economics':
       return <UnitEconomicsWorksheet {...worksheetProps} />;
     
+    case 'personal':
+    case 'personal_finance':
+      return <PersonalFinanceWorksheet {...worksheetProps} />;
+    
     case 'loanPayment':
       return (
         <FinancialWorksheet
@@ -59,7 +64,7 @@ const WorksheetRenderer = ({ worksheet, ventureId, onSave }) => {
             Worksheet type "{worksheet.type}" not supported yet
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            Available types: ROI, Cashflow, Break-even, Unit Economics
+            Available types: ROI, Cashflow, Break-even, Unit Economics, Personal Finance
           </p>
         </div>
       );
