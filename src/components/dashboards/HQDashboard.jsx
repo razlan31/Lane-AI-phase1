@@ -28,38 +28,69 @@ const HQDashboard = () => {
   // Get global alerts
   const { alerts, loading: alertsLoading } = useAlerts();
 
-  // Top strip KPIs - Always show these 3 critical metrics
-  const topStripKpis = [
-    <KpiCard
-      key="runway"
-      title="Runway"
-      description="How long your money will last with current spending"
-      value={18}
-      unit="months"
-      trend={-2}
-      trendDirection="down"
-      state="warning"
-    />,
-    <KpiCard
-      key="cashflow"
-      title="Monthly Cashflow"
-      description="Money coming in minus money going out each month"
-      value={-15000}
-      unit="currency"
-      trend={12}
-      trendDirection="up"
-      state="alert"
-    />,
-    <KpiCard
-      key="obligations"
-      title="Obligations"
-      description="Total amount you owe to others"
-      value={85000}
-      unit="currency"
-      trend={5}
-      trendDirection="up"
-    />
-  ];
+  // Top strip KPIs - Dynamic based on actual data
+  const getTopStripKpis = () => {
+    // If no ventures or KPIs, show empty state
+    if (!roleBasedKpis || roleBasedKpis.length === 0) {
+      return [];
+    }
+
+    // Find relevant KPIs from the role-based KPIs
+    const runwayKpi = roleBasedKpis.find(k => k.title.toLowerCase().includes('runway'));
+    const cashflowKpi = roleBasedKpis.find(k => k.title.toLowerCase().includes('cashflow') || k.title.toLowerCase().includes('revenue'));
+    const obligationsKpi = roleBasedKpis.find(k => k.title.toLowerCase().includes('obligation') || k.title.toLowerCase().includes('burn') || k.title.toLowerCase().includes('expense'));
+
+    const topKpis = [];
+
+    if (runwayKpi) {
+      topKpis.push(
+        <KpiCard
+          key="runway"
+          title={runwayKpi.title}
+          description={runwayKpi.description}
+          value={runwayKpi.value}
+          unit={runwayKpi.unit}
+          trend={runwayKpi.trend}
+          trendDirection={runwayKpi.trendDirection}
+          state={runwayKpi.state}
+        />
+      );
+    }
+
+    if (cashflowKpi) {
+      topKpis.push(
+        <KpiCard
+          key="cashflow"
+          title={cashflowKpi.title}
+          description={cashflowKpi.description}
+          value={cashflowKpi.value}
+          unit={cashflowKpi.unit}
+          trend={cashflowKpi.trend}
+          trendDirection={cashflowKpi.trendDirection}
+          state={cashflowKpi.state}
+        />
+      );
+    }
+
+    if (obligationsKpi) {
+      topKpis.push(
+        <KpiCard
+          key="obligations"
+          title={obligationsKpi.title}
+          description={obligationsKpi.description}
+          value={obligationsKpi.value}
+          unit={obligationsKpi.unit}
+          trend={obligationsKpi.trend}
+          trendDirection={obligationsKpi.trendDirection}
+          state={obligationsKpi.state}
+        />
+      );
+    }
+
+    return topKpis;
+  };
+
+  const topStripKpis = getTopStripKpis();
 
   // Signals board - 6-9 KPI Cards
   const tabs = [
