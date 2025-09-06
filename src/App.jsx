@@ -30,7 +30,7 @@ import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
 import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
-import { PortfolioDashboard } from './components/PortfolioDashboard';
+import PortfolioDashboard from './components/PortfolioDashboard';
 import { AlertsStrip } from './components/AlertsStrip';
 import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 import VentureHub from './components/workspaces/VentureHub';

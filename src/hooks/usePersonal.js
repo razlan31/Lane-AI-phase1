@@ -63,6 +63,56 @@ export const usePersonal = () => {
     }
   };
 
+  const createPersonalEntry = async (entry) => {
+    try {
+      const newEntry = {
+        id: crypto.randomUUID(),
+        ...entry,
+        created_at: new Date().toISOString()
+      };
+
+      const entries = personal?.entries || [];
+      const updatedEntries = [...entries, newEntry];
+      
+      return await createOrUpdatePersonal({ 
+        ...personal,
+        entries: updatedEntries 
+      });
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updatePersonalEntry = async (entryId, updates) => {
+    try {
+      const entries = personal?.entries || [];
+      const updatedEntries = entries.map(entry =>
+        entry.id === entryId ? { ...entry, ...updates } : entry
+      );
+      
+      return await createOrUpdatePersonal({ 
+        ...personal,
+        entries: updatedEntries 
+      });
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deletePersonalEntry = async (entryId) => {
+    try {
+      const entries = personal?.entries || [];
+      const updatedEntries = entries.filter(entry => entry.id !== entryId);
+      
+      return await createOrUpdatePersonal({ 
+        ...personal,
+        entries: updatedEntries 
+      });
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   const generatePersonalKPIs = () => {
     if (!personal) return [];
 
@@ -137,10 +187,13 @@ export const usePersonal = () => {
   };
 
   return {
-    personal,
+    personalData: personal,
     loading,
     error,
-    createOrUpdatePersonal,
+    updatePersonal: createOrUpdatePersonal,
+    createPersonalEntry,
+    updatePersonalEntry,
+    deletePersonalEntry,
     generatePersonalKPIs
   };
 };
