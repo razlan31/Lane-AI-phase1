@@ -9,6 +9,7 @@ import ErrorBoundary from "./components/auth/ErrorBoundary.jsx";
 import { AuthWrapper } from "./components/auth/AuthWrapper.jsx";
 import { DisplaySettingsProvider } from "./hooks/useDisplaySettings.jsx";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { PricingProvider } from "./contexts/PricingProvider.jsx";
 import { Toaster } from "sonner";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -19,9 +20,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <AuthProvider>
             <VenturesProvider>
               <AICopilotProvider>
-                <AuthWrapper>
-                  <App />
-                </AuthWrapper>
+                <PricingProvider>
+                  <AuthWrapper>
+                    <App />
+                  </AuthWrapper>
+                </PricingProvider>
               </AICopilotProvider>
             </VenturesProvider>
           </AuthProvider>
