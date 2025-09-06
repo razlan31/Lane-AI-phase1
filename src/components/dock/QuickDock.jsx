@@ -84,6 +84,7 @@ const QuickDock = ({ className = "", onNavigate }) => {
             </DialogHeader>
             <div className="p-6 h-full overflow-auto">
               <BlocksBrowser 
+                mode="browse"
                 onBlockSelect={(block) => {
                   console.log('Selected block:', block);
                   setBlocksOpen(false);
