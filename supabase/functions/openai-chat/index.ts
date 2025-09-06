@@ -199,7 +199,7 @@ serve(async (req) => {
                 type: t.type, 
                 template_category: t.type, 
                 inputs: { fields: t.fields || [] }, 
-                confidence_level: 'actual' 
+                confidence_level: 'real' 
               })
               .select()
               .maybeSingle();
