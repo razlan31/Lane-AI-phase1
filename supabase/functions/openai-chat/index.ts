@@ -616,6 +616,26 @@ When users request these actions, use the available functions to perform them im
 
     // Execute function call when allowed (no more preview-only)
     if (typeof parsedFunctionName === 'string' && validation.allowed) {
+      // Adjust args based on detected context to avoid mock data when real data is present
+      if (parsedFunctionName === 'create_complete_venture_with_worksheets' && parsedFunctionArgs) {
+        // Force real_data if message is data-rich or user_data provided
+        if (!parsedFunctionArgs.data_approach && (dataRich || parsedFunctionArgs.user_data)) {
+          parsedFunctionArgs.data_approach = 'real_data';
+        }
+        if (parsedFunctionArgs.data_approach === 'industry_benchmarks' && (dataRich || parsedFunctionArgs.user_data)) {
+          parsedFunctionArgs.data_approach = 'real_data';
+        }
+        // Default project_stage
+        if (!parsedFunctionArgs.project_stage && (dataRich || parsedFunctionArgs.user_data)) {
+          parsedFunctionArgs.project_stage = 'existing_business';
+        }
+        // Ensure venture object has business_type when detectable
+        parsedFunctionArgs.venture = parsedFunctionArgs.venture || {};
+        if (!parsedFunctionArgs.venture.business_type && detectedBusinessType) {
+          parsedFunctionArgs.venture.business_type = detectedBusinessType;
+        }
+      }
+
       console.log('Executing function call:', parsedFunctionName, 'with args:', parsedFunctionArgs);
       try {
         const execResult = await handleFunctionCall(parsedFunctionName, parsedFunctionArgs, userId, supabase);
@@ -947,6 +967,9 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
   
   console.log(`Creating complete venture with worksheets: ${name} (${business_type}) - Stage: ${project_stage}`);
   
+  // Map project_stage to venture.stage when not provided
+  const mappedStage = stage || (project_stage === 'existing_business' ? 'growth' : project_stage === 'new_project' ? 'planning' : 'concept');
+  
   // First create the venture
   const { data: newVenture, error: ventureError } = await supabase
     .from('ventures')
@@ -955,7 +978,7 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
       name: name,
       description: description,
       type: type || 'startup',
-      stage: stage || 'concept'
+      stage: mappedStage
     })
     .select()
     .maybeSingle();
@@ -979,8 +1002,9 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
         venture_id: ventureId,
         name: template.name,
         type: template.type,
-        fields: template.fields,
-        kpis: template.kpis || []
+        template_category: template.type,
+        inputs: { fields: template.fields || [] },
+        confidence_level: data_approach === 'real_data' ? 'actual' : 'mock'
       })
       .select()
       .maybeSingle();
