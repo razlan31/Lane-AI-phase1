@@ -197,8 +197,11 @@ serve(async (req) => {
                 user_id: userId,
                 venture_id: targetVentureId, 
                 type: t.type, 
-                template_category: t.type, 
-                inputs: { fields: t.fields || [] }, 
+                template_category: t.type,
+                inputs: t.fields ? t.fields.reduce((acc, field) => {
+                  acc[field.label.toLowerCase().replace(/\s+/g, '_')] = field.value;
+                  return acc;
+                }, {}) : {},  // Convert fields to input values
                 confidence_level: 'real' 
               })
               .select()
@@ -1361,7 +1364,7 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
     food_truck: [
       {
         name: "Daily Revenue Tracker",
-        type: "financial",
+        type: "cashflow",
         fields: [
           { label: "Daily Sales Target", type: "currency", value: isRealData ? (userData?.revenue || "500") : "650" },
           { label: "Average Order Value", type: "currency", value: isRealData ? "0" : "12.50" },
@@ -1377,7 +1380,7 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
       },
       {
         name: "Location Analysis",
-        type: "operations",
+        type: "location-performance",
         fields: [
           { label: "Primary Location", type: "text", value: isRealData ? "" : "Downtown Business District" },
           { label: "Peak Hours", type: "text", value: "11:30 AM - 2:00 PM, 5:00 PM - 8:00 PM" },
@@ -1387,7 +1390,7 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
       },
       {
         name: "Menu & Inventory",
-        type: "operations",
+        type: "inventory-planning",
         fields: [
           { label: "Menu Items Count", type: "number", value: isRealData ? "0" : "12" },
           { label: "Top Selling Item", type: "text", value: isRealData ? "" : "Signature Burger" },
@@ -1397,7 +1400,7 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
       },
       {
         name: "Unit Economics",
-        type: "financial",
+        type: "unit-economics",
         fields: [
           { label: "Cost per Customer", type: "currency", value: "8.20" },
           { label: "Customer Lifetime Value", type: "currency", value: isRealData ? "0" : "125" },
@@ -1406,7 +1409,7 @@ function getWorksheetTemplates(businessType: string, dataApproach: string, userD
       },
       {
         name: "Growth Planning",
-        type: "strategic", 
+        type: "growth-projections", 
         fields: [
           { label: "Target Locations", type: "number", value: isRealData ? "1" : "3" },
           { label: "Marketing Budget %", type: "number", value: "12" },
