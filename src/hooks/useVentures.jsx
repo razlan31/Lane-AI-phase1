@@ -148,12 +148,158 @@ export const VenturesProvider = ({ children }) => {
     }
   };
 
+  const seedTestVentures = async () => {
+    if (!user) {
+      return { success: false, error: new Error('Not authenticated') };
+    }
+
+    try {
+      const venturePayloads = [
+        {
+          user_id: user.id,
+          name: 'Gourmet Street Eats',
+          description: 'Mobile food truck serving artisanal burgers and craft sodas in downtown area',
+          type: 'local_business',
+          stage: 'operational'
+        },
+        {
+          user_id: user.id,
+          name: 'TechGadget Hub',
+          description: 'Dropshipping business specializing in consumer electronics and smart home devices',
+          type: 'ecommerce',
+          stage: 'growth'
+        },
+        {
+          user_id: user.id,
+          name: 'Digital Craft Studio',
+          description: 'Freelance web design and development services for SMBs',
+          type: 'service_business',
+          stage: 'operational'
+        },
+        {
+          user_id: user.id,
+          name: 'FitTracker Pro',
+          description: 'Mobile fitness tracking app with social features and personalized workout plans',
+          type: 'startup',
+          stage: 'mvp'
+        }
+      ];
+
+      // Avoid duplicates by name for this user
+      const names = venturePayloads.map(v => v.name);
+      const { data: existing, error: existingErr } = await supabase
+        .from('ventures')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .in('name', names);
+      if (existingErr) throw existingErr;
+
+      const existingNames = new Set((existing ?? []).map(v => v.name));
+      const toInsert = venturePayloads.filter(v => !existingNames.has(v.name));
+
+      let inserted = [];
+      if (toInsert.length > 0) {
+        const { data: insertedData, error: insertErr } = await supabase
+          .from('ventures')
+          .insert(toInsert)
+          .select('*');
+        if (insertErr) throw insertErr;
+        inserted = insertedData ?? [];
+      }
+
+      // Combine with any existing ones (so we can add KPIs for both)
+      const allVentures = [
+        ...((existing ?? []).map(v => ({ ...v }))),
+        ...inserted
+      ];
+
+      // Helper to insert KPIs per venture without duplicates
+      const insertKpisFor = async (ventureId, kpis) => {
+        const { data: existingKpis, error: kErr } = await supabase
+          .from('kpis')
+          .select('id, name')
+          .eq('venture_id', ventureId);
+        if (kErr) throw kErr;
+        const existSet = new Set((existingKpis ?? []).map(k => k.name));
+        const kpisToInsert = kpis
+          .filter(k => !existSet.has(k.name))
+          .map(k => ({ venture_id: ventureId, name: k.name, value: k.value, confidence: k.confidence, confidence_level: k.confidence }));
+        if (kpisToInsert.length > 0) {
+          const { error: insKpiErr } = await supabase.from('kpis').insert(kpisToInsert);
+          if (insKpiErr) throw insKpiErr;
+        }
+      };
+
+      // Define KPI sets
+      const kpiSetsByName = {
+        'Gourmet Street Eats': [
+          { name: 'Monthly Revenue', value: 12500, confidence: 'actual' },
+          { name: 'Daily Customers', value: 85, confidence: 'actual' },
+          { name: 'Average Order Value', value: 14.7, confidence: 'actual' },
+          { name: 'Monthly Burn Rate', value: 8200, confidence: 'estimate' }
+        ],
+        'TechGadget Hub': [
+          { name: 'Monthly Revenue', value: 28900, confidence: 'actual' },
+          { name: 'Conversion Rate', value: 3.2, confidence: 'actual' },
+          { name: 'Customer Acquisition Cost', value: 45, confidence: 'estimate' },
+          { name: 'Monthly Orders', value: 420, confidence: 'actual' }
+        ],
+        'Digital Craft Studio': [
+          { name: 'Monthly Revenue', value: 8500, confidence: 'actual' },
+          { name: 'Active Clients', value: 6, confidence: 'actual' },
+          { name: 'Average Project Value', value: 2800, confidence: 'actual' },
+          { name: 'Monthly Expenses', value: 1200, confidence: 'actual' }
+        ],
+        'FitTracker Pro': [
+          { name: 'Monthly Active Users', value: 2400, confidence: 'actual' },
+          { name: 'Monthly Recurring Revenue', value: 1850, confidence: 'actual' },
+          { name: 'User Retention Rate', value: 68, confidence: 'estimate' },
+          { name: 'Development Costs', value: 15000, confidence: 'actual' }
+        ]
+      };
+
+      // Insert KPIs for each
+      for (const v of allVentures) {
+        const id = v.id;
+        const name = v.name;
+        const kpis = kpiSetsByName[name];
+        if (id && kpis) {
+          await insertKpisFor(id, kpis);
+        }
+      }
+
+      // Build normalized entries for newly inserted ventures with basic kpis display
+      const normalizedInserted = inserted.map(v => ({
+        ...v,
+        status: v.stage ? 'active' : 'draft',
+        kpis: (kpiSetsByName[v.name] || []).map(k => ({
+          title: k.name,
+          value: k.value,
+          unit: 'number',
+          trend: 0,
+          trendDirection: 'up'
+        }))
+      }));
+
+      setVentures(prev => [
+        ...normalizedInserted,
+        ...prev
+      ]);
+
+      return { success: true, created: normalizedInserted.length };
+    } catch (error) {
+      console.error('Seed test ventures error:', error);
+      return { success: false, error };
+    }
+  };
+
   const value = {
     ventures,
     loading,
     error,
     createVenture,
-    updateVenture
+    updateVenture,
+    seedTestVentures
   };
 
   return (

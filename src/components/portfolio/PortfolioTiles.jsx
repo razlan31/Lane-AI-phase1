@@ -1,9 +1,34 @@
-// No React import needed
+import { useState } from 'react';
 import { Building2, TrendingUp, TrendingDown, Users, DollarSign, Clock, Target, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { formatNumber } from '../../lib/utils';
 import { useVentures } from '../../hooks/useVentures.jsx';
+
+const SeedTestVenturesButton = () => {
+  const { seedTestVentures } = useVentures();
+  const [busy, setBusy] = useState(false);
+
+  const handleClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await seedTestVentures();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button 
+      className="text-sm text-primary hover:text-primary/80 font-medium"
+      onClick={handleClick}
+      disabled={busy}
+    >
+      {busy ? 'Seeding…' : 'Create 4 Test Ventures'}
+    </button>
+  );
+};
 
 const PortfolioTiles = ({ onVentureClick }) => {
   const { ventures, loading } = useVentures();
@@ -27,14 +52,17 @@ const PortfolioTiles = ({ onVentureClick }) => {
           <p className="text-muted-foreground text-center mb-4">
             Create your first venture to start tracking metrics and building your portfolio
           </p>
-          <button 
-            className="text-sm text-primary hover:text-primary/80 font-medium"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('openNewVentureModal'));
-            }}
-          >
-            + Create Your First Venture
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openNewVentureModal'));
+              }}
+            >
+              + Create Your First Venture
+            </button>
+            <SeedTestVenturesButton />
+          </div>
         </CardContent>
       </Card>
     );
