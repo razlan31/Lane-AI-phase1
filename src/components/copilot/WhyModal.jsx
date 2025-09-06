@@ -19,12 +19,17 @@ const WhyModal = ({ isOpen, onClose, suggestion }) => {
   const generateExplanation = async () => {
     if (!suggestion) return;
 
-    const question = `Why did you suggest: "${suggestion.message}"?`;
+    const isResponse = suggestion.context?.type === 'chat_response';
+    const question = isResponse 
+      ? `Why did you give this response: "${suggestion.message}"? Explain the reasoning behind this AI response and what factors influenced it.`
+      : `Why did you suggest: "${suggestion.message}"?`;
+    
     const contextData = {
       suggestion: suggestion.message,
       context: suggestion.context,
       confidence: suggestion.confidence,
-      priority: suggestion.priority
+      priority: suggestion.priority,
+      isResponse
     };
 
     const result = await explainConcept(question, suggestion.context?.type || 'general', contextData);
@@ -62,6 +67,7 @@ const WhyModal = ({ isOpen, onClose, suggestion }) => {
 
   const ContextIcon = getContextIcon(suggestion.context?.type);
   const confidencePercent = Math.round((suggestion.confidence || 0.8) * 100);
+  const isResponse = suggestion.context?.type === 'chat_response';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -69,10 +75,10 @@ const WhyModal = ({ isOpen, onClose, suggestion }) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            Why this suggestion?
+            {isResponse ? 'Why this response?' : 'Why this suggestion?'}
           </DialogTitle>
           <DialogDescription>
-            AI-powered explanation of the suggestion logic
+            {isResponse ? 'AI-powered explanation of the response reasoning' : 'AI-powered explanation of the suggestion logic'}
           </DialogDescription>
         </DialogHeader>
 

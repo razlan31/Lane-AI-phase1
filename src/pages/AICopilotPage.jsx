@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import WhyModal from '@/components/copilot/WhyModal';
 import { 
   MessageCircle, 
   Send, 
@@ -736,38 +737,16 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
         <ScenarioSandbox onClose={() => setShowScenarioSandbox(false)} />
       )}
 
-      {/* Audit Trail Modal */}
-      <Dialog open={!!auditModal} onOpenChange={() => setAuditModal(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Why this response?</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">AI Response</h4>
-              <div className="p-3 bg-gray-50 rounded">
-                {auditModal?.content}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Referenced Items</h4>
-              <div className="text-sm text-muted-foreground">
-                This feature will show linked notes, KPIs, worksheets, and blocks that influenced this response.
-                
-                <div className="mt-3 p-3 border rounded">
-                  <div className="text-xs font-medium mb-1">Coming Soon:</div>
-                  <ul className="text-xs space-y-1">
-                    <li>• Referenced venture blocks</li>
-                    <li>• Linked KPIs and metrics</li>
-                    <li>• Connected worksheets</li>
-                    <li>• Related notes and decisions</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Why Response Modal */}
+      <WhyModal 
+        isOpen={!!auditModal} 
+        onClose={() => setAuditModal(null)} 
+        suggestion={auditModal ? {
+          message: auditModal.content,
+          context: { type: 'chat_response' },
+          confidence: 0.9
+        } : null} 
+      />
 
       {/* Chat History Modal */}
       <Dialog open={showHistory} onOpenChange={setShowHistory}>
