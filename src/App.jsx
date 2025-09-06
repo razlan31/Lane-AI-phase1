@@ -14,6 +14,7 @@ import { useAuth } from './hooks/useAuth.jsx';
 import { useRouter } from './hooks/useRouter';
 import { supabase } from '@/integrations/supabase/client';
 import { useKeyboardShortcuts, useGlobalShortcuts } from './hooks/useKeyboardShortcuts';
+import { toast } from 'sonner';
 
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
@@ -124,9 +125,9 @@ function App() {
       // This just provides user feedback
       setTimeout(() => {
         toast.success('KPIs Generated!', {
-          description: `Successfully generated ${count} new KPIs for your signals board.`,
+          description: `Generating ${count} new business metrics based on your role and existing data.`,
         });
-      }, 500);
+      }, 200);
     };
     const handleOpenPersonalWorksheet = (e) => {
       const { worksheetType, worksheetName, worksheetDescription } = e.detail;
