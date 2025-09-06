@@ -5,10 +5,12 @@ import { Button } from '../ui/button';
 import { Sparkles, Edit3, Eye, TrendingUp } from 'lucide-react';
 import { DataSourceIndicator, DataSourceLegend } from './DataSourceIndicator';
 import { useWorksheets } from '../../hooks/useWorksheets';
+import ExcelLikeWorksheet from './ExcelLikeWorksheet';
 
 export const AutoWorksheetGenerator = ({ ventureId, ventureName, ventureType }) => {
   const { worksheets, loading } = useWorksheets(ventureId);
   const [expandedWorksheet, setExpandedWorksheet] = useState(null);
+  const [openWorksheet, setOpenWorksheet] = useState(null);
 
   console.log('📊 AutoWorksheetGenerator state:', { 
     ventureId, 
@@ -133,11 +135,15 @@ export const AutoWorksheetGenerator = ({ ventureId, ventureName, ventureType }) 
                     )}
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    {expandedWorksheet === worksheet.id ? 'Hide' : 'View'}
+                    {expandedWorksheet === worksheet.id ? 'Hide' : 'Preview'}
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setOpenWorksheet(worksheet)}
+                  >
                     <Edit3 className="h-4 w-4 mr-1" />
-                    Edit
+                    Open in Spreadsheet
                   </Button>
                 </div>
               </div>
@@ -215,6 +221,15 @@ export const AutoWorksheetGenerator = ({ ventureId, ventureName, ventureType }) 
           </CardContent>
         </Card>
       )}
+      
+      {/* Excel-like Worksheet Modal */}
+      {openWorksheet && (
+        <ExcelLikeWorksheet
+          worksheet={openWorksheet}
+          ventureId={ventureId}
+          onClose={() => setOpenWorksheet(null)}
+        />
+      )}
     </div>
   );
 };
@@ -231,6 +246,47 @@ const getWorksheetInsight = (type, ventureType) => {
     'inventory-planning': 'Optimize inventory levels to reduce carrying costs while avoiding stockouts.',
     'market-expansion': 'Evaluate new market opportunities and their potential returns.',
     'product-performance': 'Identify your most profitable products and portfolio optimization opportunities.',
+    'project-profitability': 'Understand which types of projects generate the most profit for your time.',
+    'client-lifetime-value': 'Know the true value of your clients and focus retention efforts.',
+    'capacity-planning': 'Optimize your workload and identify when to hire or scale.',
+    'pricing-strategy': 'Ensure your pricing captures maximum value while staying competitive.',
+    'saas-metrics': 'Track the key metrics that determine SaaS business health and growth potential.',
+    'user-acquisition': 'Optimize your user acquisition funnel for better conversion and lower costs.',
+    'product-market-fit': 'Measure how well your product satisfies market demand.',
+    'funding-requirements': 'Plan your funding needs and runway to achieve key milestones.',
+    'growth-projections': 'Model different growth scenarios and their resource requirements.',
+    'feature-impact': 'Evaluate the ROI of new features before investing development resources.'
+  };
+  
+  return (
+    <div className="space-y-6">
+      {/* ... existing JSX content here ... */}
+      
+      {/* Excel-like Worksheet Modal */}
+      {openWorksheet && (
+        <ExcelLikeWorksheet
+          worksheet={openWorksheet}
+          ventureId={ventureId}
+          onClose={() => setOpenWorksheet(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Helper function to get insight descriptions  
+const getInsightDescription = (type) => {
+  const insights = {
+    'unit-economics': 'Understand the fundamental economics of each customer or sale.',
+    'cashflow': 'Monitor cash inflows and outflows to maintain healthy liquidity.',
+    'location-performance': 'Compare performance across different locations to optimize operations.',
+    'customer-acquisition': 'Track the cost and effectiveness of acquiring new customers.',
+    'seasonal-planning': 'Prepare for seasonal fluctuations in demand and revenue.',
+    'breakeven-analysis': 'Determine the minimum sales needed to cover all costs.',
+    'channel-performance': 'Evaluate which marketing channels provide the best ROI.',
+    'inventory-planning': 'Optimize inventory levels to reduce costs and avoid stockouts.',
+    'market-expansion': 'Assess opportunities and risks of entering new markets.',
+    'product-performance': 'Track which products drive the most revenue and profit.',
     'project-profitability': 'Understand which types of projects generate the most profit for your time.',
     'client-lifetime-value': 'Know the true value of your clients and focus retention efforts.',
     'capacity-planning': 'Optimize your workload and identify when to hire or scale.',
