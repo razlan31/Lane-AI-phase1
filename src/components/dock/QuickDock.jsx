@@ -34,30 +34,6 @@ const QuickDock = ({ className = "", onNavigate }) => {
         setToolsOpen(true);
       },
       shortcut: 'T'
-    },
-    {
-      id: 'playground',
-      icon: Layout,
-      label: 'Playground',
-      description: 'Visual builder',
-      action: () => {
-        console.log('Playground button clicked!');
-        if (onNavigate) {
-          onNavigate('playground');
-        }
-      },
-      shortcut: 'P'
-    },
-    {
-      id: 'blocks',
-      icon: Target,
-      label: 'Blocks',
-      description: 'Browse all blocks',
-      action: () => {
-        console.log('Blocks button clicked!');
-        setBlocksOpen(true);
-      },
-      shortcut: 'B'
     }
   ];
 
