@@ -40,12 +40,84 @@ serve(async (req) => {
 
     // Get current user from auth token (optional for explain endpoint)
     const authHeader = req.headers.get('authorization');
-    let userId = null;
-    
+    let userId: string | null = null;
+    let plan = 'free';
+    let isPaid = false;
+    let quotaRemaining = 10;
+    let aiRequestsUsed = 0;
+
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
       const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id;
+      userId = user?.id ?? null;
+
+      if (userId) {
+        // Fetch profile to determine plan and quota
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('plan, subscription_plan, is_founder, ai_quota_remaining, ai_quota_reset_date, ai_requests_used')
+          .eq('id', userId)
+          .maybeSingle();
+        if (profileError) {
+          console.error('Profile fetch error (explain):', profileError);
+        }
+        const paidPlans = ['pro_promo', 'pro_standard', 'weekly', 'annual'];
+        plan = (profile?.plan || profile?.subscription_plan || 'free') as string;
+        isPaid = paidPlans.includes(plan) || !!profile?.is_founder;
+        aiRequestsUsed = (profile?.ai_requests_used ?? 0);
+
+        const now = new Date();
+        quotaRemaining = typeof profile?.ai_quota_remaining === 'number' ? profile!.ai_quota_remaining : (isPaid ? 500 : 10);
+        const resetDate = profile?.ai_quota_reset_date ? new Date(profile.ai_quota_reset_date) : null;
+        const needsDailyReset = () => {
+          if (!resetDate) return true;
+          const a = new Date(resetDate); a.setHours(0,0,0,0);
+          const b = new Date(now); b.setHours(0,0,0,0);
+          return a.getTime() !== b.getTime();
+        };
+        const needsMonthlyReset = () => {
+          if (!resetDate) return true;
+          return resetDate.getUTCFullYear() !== now.getUTCFullYear() || resetDate.getUTCMonth() !== now.getUTCMonth();
+        };
+
+        let didReset = false;
+        if (!isPaid && needsDailyReset()) { quotaRemaining = 10; didReset = true; }
+        else if (isPaid && needsMonthlyReset()) { quotaRemaining = 500; didReset = true; }
+
+        if (didReset) {
+          const { error: resetErr } = await supabase
+            .from('profiles')
+            .update({ ai_quota_remaining: quotaRemaining, ai_quota_reset_date: now.toISOString() })
+            .eq('id', userId);
+          if (resetErr) console.error('Quota reset update error (explain):', resetErr);
+        }
+
+        // Cooldown based on plan using last explain audit
+        const cooldownMs = isPaid ? 2000 : 10000;
+        const { data: lastAudit } = await supabase
+          .from('ai_audit')
+          .select('created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (lastAudit && now.getTime() - new Date(lastAudit.created_at).getTime() < cooldownMs) {
+          const seconds = Math.ceil(cooldownMs / 1000);
+          return new Response(JSON.stringify({ error: `Rate limit exceeded. Please wait ${seconds} seconds between requests.` }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Enforce quota
+        if (quotaRemaining <= 0) {
+          const windowText = isPaid ? 'month' : 'day';
+          return new Response(JSON.stringify({ error: `AI quota exceeded. Please wait until your ${windowText} resets.` }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
     }
 
     // Build context-aware system prompt
@@ -105,16 +177,35 @@ Focus on practical business insights and actionable information. Avoid internal 
     const result = await openAIResponse.json();
     const explanation = result.choices?.[0]?.message?.content ?? 'Sorry, I could not generate an explanation.';
 
-    // Log the explanation request for analytics (optional)
+    // Log the explanation request for analytics and decrement quota
     if (userId) {
-      await supabase
-        .from('ai_audit')
-        .insert([{
-          user_id: userId,
-          prompt: `Explain: ${question}`,
-          response: { explanation, context, usage: result.usage },
-          created_at: new Date().toISOString()
-        }]);
+      try {
+        await supabase
+          .from('ai_audit')
+          .insert([{
+            user_id: userId,
+            prompt: `Explain: ${question}`,
+            response: { explanation, context, usage: result.usage },
+            created_at: new Date().toISOString()
+          }]);
+      } catch (e) {
+        console.error('Explain audit log error:', e);
+      }
+
+      // Decrement quota after successful response
+      try {
+        const newRemaining = Math.max(0, (quotaRemaining ?? (isPaid ? 500 : 10)) - 1);
+        const { error: decErr } = await supabase
+          .from('profiles')
+          .update({ 
+            ai_quota_remaining: newRemaining,
+            ai_requests_used: aiRequestsUsed + 1
+          })
+          .eq('id', userId);
+        if (decErr) console.error('Explain quota decrement error:', decErr);
+      } catch (e) {
+        console.error('Explain quota decrement exception:', e);
+      }
     }
 
     return new Response(JSON.stringify({ 
