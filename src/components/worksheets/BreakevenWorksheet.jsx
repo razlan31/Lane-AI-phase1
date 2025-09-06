@@ -1,9 +1,9 @@
 import FinancialWorksheet from './FinancialWorksheet';
 
-const ROIWorksheet = ({ ventureId, initialData, onSave }) => {
+const BreakevenWorksheet = ({ ventureId, initialData, onSave }) => {
   return (
     <FinancialWorksheet
-      type="roi"
+      type="breakeven"
       ventureId={ventureId}
       initialData={initialData}
       onSave={onSave}
@@ -11,4 +11,4 @@ const ROIWorksheet = ({ ventureId, initialData, onSave }) => {
   );
 };
 
-export default ROIWorksheet;
+export default BreakevenWorksheet;

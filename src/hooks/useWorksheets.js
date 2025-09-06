@@ -1,192 +1,284 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { financialEngine } from '../utils/financialEngine';
 
-// Supabase-ready hook for worksheets management
 export const useWorksheets = (ventureId = null) => {
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchWorksheets = async () => {
-      setLoading(true);
-      try {
-        // Simulate API call - will be replaced with Supabase query
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Mock worksheets - auto-seeded for ventures
-        let mockWorksheets = [];
-        
-        if (ventureId) {
-          // Auto-seed venture worksheets as per requirements
-          mockWorksheets = [
-            {
-              id: 1,
-              venture_id: ventureId,
-              name: "Cashflow Worksheet",
-              type: "cashflow",
-              status: "live",
-              created_at: "2024-01-15",
-              data: {
-                sheets: [
-                  {
-                    id: 1,
-                    name: "Monthly Cashflow",
-                    rows: 12,
-                    columns: 6,
-                    cells: {}
-                  }
-                ],
-                assumptions: {
-                  monthly_revenue: 10000,
-                  monthly_expenses: 7500,
-                  growth_rate: 0.15
-                }
-              }
-            },
-            {
-              id: 2,
-              venture_id: ventureId,
-              name: "ROI Calculator",
-              type: "roi",
-              status: "draft",
-              created_at: "2024-01-16",
-              data: {
-                sheets: [
-                  {
-                    id: 1,
-                    name: "Investment Analysis",
-                    rows: 20,
-                    columns: 8,
-                    cells: {}
-                  }
-                ],
-                assumptions: {
-                  initial_investment: 50000,
-                  expected_return: 0.25,
-                  time_horizon: 12
-                }
-              }
-            },
-            {
-              id: 3,
-              venture_id: ventureId,
-              name: "Break-even Calculator",
-              type: "breakeven",
-              status: "draft",
-              created_at: "2024-01-17",
-              data: {
-                sheets: [
-                  {
-                    id: 1,
-                    name: "Break-even Analysis",
-                    rows: 15,
-                    columns: 5,
-                    cells: {}
-                  }
-                ],
-                assumptions: {
-                  fixed_costs: 5000,
-                  variable_cost_per_unit: 15,
-                  price_per_unit: 25
-                }
-              }
-            }
-          ];
-        } else {
-          // Global worksheets
-          mockWorksheets = [
-            {
-              id: 4,
-              venture_id: null,
-              name: "Personal Budget",
-              type: "personal",
-              status: "live",
-              created_at: "2024-01-10",
-              data: {
-                sheets: [
-                  {
-                    id: 1,
-                    name: "Monthly Budget",
-                    rows: 20,
-                    columns: 4,
-                    cells: {}
-                  }
-                ]
-              }
-            }
-          ];
-        }
-        
-        setWorksheets(mockWorksheets);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWorksheets();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('worksheets-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'worksheets',
+          filter: ventureId ? `venture_id=eq.${ventureId}` : 'venture_id=is.null'
+        },
+        (payload) => {
+          console.log('Worksheet updated:', payload);
+          fetchWorksheets(); // Refresh on changes
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [ventureId]);
+
+  const fetchWorksheets = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      let query = supabase
+        .from('worksheets')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (ventureId) {
+        query = query.eq('venture_id', ventureId);
+      } else {
+        query = query.is('venture_id', null);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      setWorksheets(data || []);
+    } catch (err) {
+      console.error('Error fetching worksheets:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const createWorksheet = async (worksheetData) => {
     try {
-      // This will be replaced with Supabase insert
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const newWorksheet = {
-        id: Date.now(),
-        venture_id: ventureId,
-        status: 'draft',
-        created_at: new Date().toISOString(),
-        data: {
-          sheets: [
-            {
-              id: 1,
-              name: "Sheet 1",
-              rows: 50,
-              columns: 10,
-              cells: {}
-            }
-          ],
-          assumptions: {}
-        },
+        user_id: user.id,
+        venture_id: ventureId || null,
+        type: worksheetData.type || 'custom',
+        inputs: worksheetData.inputs || {},
+        outputs: worksheetData.outputs || {},
+        confidence_level: 'draft',
         ...worksheetData
       };
+
+      const { data, error } = await supabase
+        .from('worksheets')
+        .insert(newWorksheet)
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      setWorksheets(prev => [data, ...prev]);
       
-      setWorksheets(prev => [...prev, newWorksheet]);
-      return { success: true, data: newWorksheet };
+      toast({
+        title: "Worksheet Created",
+        description: "Your worksheet has been created successfully."
+      });
+
+      return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      console.error('Error creating worksheet:', error);
+      toast({
+        title: "Creation Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { success: false, error: error.message };
     }
   };
 
   const updateWorksheet = async (id, updates) => {
+    setSaving(true);
     try {
-      // This will be replaced with Supabase update
+      const { data, error } = await supabase
+        .from('worksheets')
+        .update(updates)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+
       setWorksheets(prev => 
         prev.map(worksheet => 
-          worksheet.id === id ? { ...worksheet, ...updates } : worksheet
+          worksheet.id === id ? { ...worksheet, ...data } : worksheet
         )
       );
-      return { success: true };
+
+      return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      console.error('Error updating worksheet:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { success: false, error: error.message };
+    } finally {
+      setSaving(false);
     }
   };
 
-  const promoteToLive = async (id) => {
+  const calculateWorksheet = async (id, inputs) => {
     try {
-      // This will include dual-confirmation logic
-      return await updateWorksheet(id, { status: 'live' });
+      const worksheet = worksheets.find(w => w.id === id);
+      if (!worksheet) throw new Error('Worksheet not found');
+
+      // Validate inputs
+      const validation = financialEngine.validateInputs(worksheet.type, inputs);
+      if (!validation.valid) {
+        throw new Error(`Missing required fields: ${validation.missing.join(', ')}`);
+      }
+
+      // Calculate outputs using financial engine
+      const outputs = financialEngine.calculate(worksheet.type, inputs);
+      if (outputs.error) {
+        throw new Error(outputs.error);
+      }
+
+      // Update worksheet with new inputs and outputs
+      const result = await updateWorksheet(id, {
+        inputs,
+        outputs,
+        confidence_level: 'calculated'
+      });
+
+      if (result.success) {
+        // Update related KPIs if this is a venture worksheet
+        if (ventureId) {
+          await updateKPIsFromWorksheet(worksheet.type, outputs);
+        }
+      }
+
+      return result;
     } catch (error) {
-      return { success: false, error };
+      console.error('Error calculating worksheet:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateKPIsFromWorksheet = async (worksheetType, outputs) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !ventureId) return;
+
+      // Map worksheet outputs to KPIs
+      const kpiMappings = {
+        roi: [
+          { name: 'ROI Percentage', value: outputs.roi, confidence_level: 'calculated' },
+          { name: 'Net Profit', value: outputs.netProfit, confidence_level: 'calculated' }
+        ],
+        cashflow: [
+          { name: 'Monthly Cashflow', value: outputs.averageMonthlyCashflow, confidence_level: 'calculated' },
+          { name: 'Total Cashflow', value: outputs.totalCashflow, confidence_level: 'calculated' }
+        ],
+        breakeven: [
+          { name: 'Break-even Units', value: outputs.breakEvenUnits, confidence_level: 'calculated' },
+          { name: 'Break-even Revenue', value: outputs.breakEvenRevenue, confidence_level: 'calculated' }
+        ],
+        unitEconomics: [
+          { name: 'Unit Profit', value: outputs.unitProfit, confidence_level: 'calculated' },
+          { name: 'LTV/CAC Ratio', value: outputs.ltvCacRatio, confidence_level: 'calculated' }
+        ]
+      };
+
+      const kpis = kpiMappings[worksheetType] || [];
+      
+      for (const kpi of kpis) {
+        // Upsert KPI
+        await supabase
+          .from('kpis')
+          .upsert({
+            venture_id: ventureId,
+            name: kpi.name,
+            value: kpi.value,
+            confidence_level: kpi.confidence_level
+          }, { 
+            onConflict: 'venture_id,name' 
+          });
+      }
+    } catch (error) {
+      console.error('Error updating KPIs:', error);
+    }
+  };
+
+  const deleteWorksheet = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('worksheets')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setWorksheets(prev => prev.filter(w => w.id !== id));
+      
+      toast({
+        title: "Worksheet Deleted",
+        description: "The worksheet has been deleted successfully."
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting worksheet:', error);
+      toast({
+        title: "Deletion Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
+  const autoSave = async (id, data) => {
+    try {
+      // Debounced auto-save
+      const result = await updateWorksheet(id, data);
+      if (result.success) {
+        toast({
+          title: "Auto-saved",
+          description: "Your changes have been saved automatically.",
+          duration: 2000
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      return { success: false, error: error.message };
     }
   };
 
   return { 
     worksheets, 
     loading, 
-    error, 
+    error,
+    saving,
     createWorksheet, 
-    updateWorksheet, 
-    promoteToLive 
+    updateWorksheet,
+    calculateWorksheet,
+    deleteWorksheet,
+    autoSave,
+    fetchWorksheets
   };
 };
