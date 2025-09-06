@@ -39,6 +39,12 @@ const ConversationalOnboarding = ({ onComplete }) => {
     setIsLoading(true);
 
     try {
+      // Get current user session for auth
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session) {
+        throw new Error('Authentication required');
+      }
+
       // Call the enhanced openai-chat function with onboarding context
       const { data, error } = await supabase.functions.invoke('openai-chat', {
         body: {
@@ -47,7 +53,10 @@ const ConversationalOnboarding = ({ onComplete }) => {
           sessionId: `onboarding_${Date.now()}`,
           onboardingStep: step,
           profileData
-        }
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) throw error;

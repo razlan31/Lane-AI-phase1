@@ -18,6 +18,12 @@ export class AIMetaHandler {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Get current user session for auth
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session) {
+        throw new Error('Authentication required');
+      }
+
       // Use the enhanced openai-chat function with meta context
       const { data, error } = await supabase.functions.invoke('openai-chat', {
         body: {
@@ -25,7 +31,10 @@ export class AIMetaHandler {
           context: 'meta-operations',
           sessionId: `meta_${Date.now()}`,
           metaContext: context
-        }
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) throw error;

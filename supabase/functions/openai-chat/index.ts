@@ -110,7 +110,148 @@ serve(async (req) => {
       if (resetErr) console.error('Quota reset update error:', resetErr);
     }
 
-    // Enforce quota before proceeding
+    // Validate and fix session ID if needed
+    let sid = sessionId;
+    if (!sid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sid)) {
+      // Generate proper UUID if session ID is missing or invalid
+      sid = crypto.randomUUID();
+      console.log(`Generated new session ID: ${sid} (original: ${sessionId})`);
+    }
+
+    // CONFIRMATION FAST-PATH: Handle "yes/ok/proceed" BEFORE any rate limiting or quota checks
+    const isConfirm = /^\s*(yes|y|ok|okay|proceed|go ahead|confirm)\s*$/i.test(message);
+    
+    if (isConfirm) {
+      console.log('🚀 Confirmation fast-path triggered');
+      
+      // Ensure session exists
+      await supabase
+        .from('chat_sessions')
+        .upsert({ 
+          id: sid, 
+          user_id: userId, 
+          title: 'Confirmation Session',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+
+      // Save user message
+      await supabase
+        .from('chat_messages')
+        .insert([{
+          session_id: sid,
+          role: 'user',
+          content: message,
+          created_at: new Date().toISOString()
+        }]);
+
+      // Get recent chat history to infer business type
+      const { data: recentMsgs } = await supabase
+        .from('chat_messages')
+        .select('content')
+        .eq('session_id', sid)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      const historyText = (recentMsgs || []).map(m => m.content).join(' ').toLowerCase();
+
+      let inferredType: string = 'other';
+      if (/food\s*truck|street\s*food|food\s*cart/.test(historyText)) inferredType = 'food_truck';
+      else if (/saas|subscription|mrr/.test(historyText)) inferredType = 'saas';
+      else if (/consult(ing|ant)/.test(historyText)) inferredType = 'consulting';
+
+      // Try to attach to most recent venture; otherwise create one quickly
+      let targetVentureId: string | null = null;
+      let ventureName = inferredType === 'food_truck' ? 'Food Truck' : (inferredType === 'saas' ? 'SaaS Venture' : 'New Venture');
+
+      const { data: lastVenture } = await supabase
+        .from('ventures')
+        .select('id, name')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastVenture?.id) {
+        targetVentureId = lastVenture.id;
+        ventureName = lastVenture.name;
+      }
+
+      if (!targetVentureId) {
+        const { data: v, error: vErr } = await supabase
+          .from('ventures')
+          .insert({ user_id: userId, name: ventureName, description: `${ventureName} created from confirmation`, type: 'local_business', stage: 'growth' })
+          .select()
+          .maybeSingle();
+        if (vErr) console.error('Venture creation error:', vErr);
+        targetVentureId = v?.id || null;
+      }
+
+      if (targetVentureId) {
+        const templates = getWorksheetTemplates(inferredType, 'real_data', null, 'existing_business');
+        const created = [] as any[];
+        for (const t of templates) {
+          try {
+            const { data: w, error: wErr } = await supabase
+              .from('worksheets')
+              .insert({ 
+                user_id: userId,
+                venture_id: targetVentureId, 
+                type: t.type, 
+                template_category: t.type, 
+                inputs: { fields: t.fields || [] }, 
+                confidence_level: 'actual' 
+              })
+              .select()
+              .maybeSingle();
+            if (w && !wErr) created.push(w);
+            else console.error('Worksheet insert error:', wErr);
+          } catch (e) {
+            console.error('Worksheet insert exception:', e);
+          }
+        }
+        const names = templates.map(t => t.name).join(', ');
+        
+        // Save assistant response to chat
+        await supabase
+          .from('chat_messages')
+          .insert([{
+            session_id: sid,
+            role: 'assistant',
+            content: `🎉 Created ${created.length} worksheets: ${names} for "${ventureName}". Open your HQ Dashboard to view them.`,
+            created_at: new Date().toISOString()
+          }]);
+        
+        return new Response(JSON.stringify({
+          sessionId: sid,
+          message: `🎉 Created ${created.length} worksheets: ${names} for "${ventureName}". Open your HQ Dashboard to view them.`,
+          model: 'fast-path',
+          usage: { fast_path: true },
+          selectedRole: 'venture_creator',
+          roleJustification: 'Confirmation detected; executing action without LLM.'
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      
+      // If no venture context, fall back to generic confirmation response
+      await supabase
+        .from('chat_messages')
+        .insert([{
+          session_id: sid,
+          role: 'assistant',
+          content: "Great! I'm ready to help you with your business needs. What would you like to work on?",
+          created_at: new Date().toISOString()
+        }]);
+      
+      return new Response(JSON.stringify({
+        sessionId: sid,
+        message: "Great! I'm ready to help you with your business needs. What would you like to work on?",
+        model: 'fast-path',
+        usage: { fast_path: true },
+        selectedRole: 'assistant',
+        roleJustification: 'Confirmation processed without rate limits.'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Normal flow: Enforce quota before proceeding
     if (quotaRemaining <= 0) {
       const windowText = isPaid ? 'month' : 'day';
       return new Response(JSON.stringify({ error: `AI quota exceeded. Please wait until your ${windowText} resets.` }), {
@@ -122,19 +263,16 @@ serve(async (req) => {
     // Dynamic cooldown based on plan
     const cooldownMs = isPaid ? 2000 : 10000;
 
-    // Confirmation intents should bypass cooldown ("yes", "ok", "proceed")
-    const isConfirm = /^\s*(yes|y|ok|okay|proceed|go ahead|confirm)\s*$/i.test(message);
-
     // Rate limiting: Check last message timestamp for this session
     const { data: lastMsg } = await supabase
       .from('chat_messages')
       .select('created_at')
-      .eq('session_id', sessionId || 'default')
+      .eq('session_id', sid)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (!isConfirm && lastMsg && now.getTime() - new Date(lastMsg.created_at).getTime() < cooldownMs) {
+    if (lastMsg && now.getTime() - new Date(lastMsg.created_at).getTime() < cooldownMs) {
       const seconds = Math.ceil(cooldownMs / 1000);
       return new Response(JSON.stringify({ error: `Rate limit exceeded. Please wait ${seconds} seconds between messages.` }), {
         status: 429,
@@ -200,10 +338,7 @@ serve(async (req) => {
       }
     }
 
-    // Create or get session
-    const sid = sessionId || `session_${Date.now()}_${userId}`;
-    
-    // Ensure session exists
+    // Ensure session exists (sid is already validated and set above)
     const { error: sessionError } = await supabase
       .from('chat_sessions')
       .upsert({ 
@@ -794,9 +929,15 @@ When users request these actions, use the available functions to perform them im
 
   } catch (error) {
     console.error('OpenAI chat error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return new Response(JSON.stringify({ 
       error: 'Internal server error', 
-      detail: error.message 
+      detail: error.message,
+      errorType: error.name || 'Unknown'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
