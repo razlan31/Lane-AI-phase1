@@ -61,10 +61,10 @@ const QuickDock = ({ className = "", onNavigate }) => {
   return (
     <TooltipProvider>
       <div className={cn(
-        "fixed z-50 transition-all duration-300",
+        "fixed z-40 transition-all duration-300",
         isMobile 
-          ? `bottom-20 right-4 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}` 
-          : "bottom-6 right-6",
+          ? `bottom-24 right-4 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}` 
+          : "bottom-8 right-8",
         className
       )}>
         {/* Scratchpad Panel */}
