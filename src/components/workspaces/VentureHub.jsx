@@ -12,6 +12,7 @@ import NewWorksheetModal from '../modals/NewWorksheetModal';
 import NewReportModal from '../modals/NewReportModal';
 import TemplateChooser from '../templates/TemplateChooser';
 import FounderModeOverlay from '../overlays/FounderModeOverlay';
+import WorksheetBuilder from '../modals/WorksheetBuilder';
 import { useVentureKpis } from '../../hooks/useKpiData';
 import { useWorksheets } from '../../hooks/useWorksheets';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -25,6 +26,7 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
   const [isTemplateChooserOpen, setIsTemplateChooserOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [founderModeOpen, setFounderModeOpen] = useState(false);
+  const [isWorksheetBuilderOpen, setIsWorksheetBuilderOpen] = useState(false);
 
   // Get venture-specific data
   const { kpis: ventureKpis, loading: kpisLoading } = useVentureKpis(ventureId);
@@ -94,10 +96,31 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
               <p className="text-sm text-muted-foreground">Venture Hub • ID: {ventureId}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const csvData = "Name,Value,Date\nRevenue,25000,2024-01-01\nExpenses,18000,2024-01-01";
+                  const blob = new Blob([csvData], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${ventureName.toLowerCase().replace(/\s+/g, '-')}-data-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+              >
                 Export Data
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  // TODO: Add toast notification
+                  console.log('Workspace link copied to clipboard');
+                }}
+              >
                 Share Workspace
               </Button>
               <Button 
@@ -287,7 +310,17 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
                         }`}>
                           {worksheet.status === 'live' ? 'Live' : 'Draft'}
                         </span>
-                        <Button variant="outline" size="sm" className="px-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="px-4"
+                          onClick={() => {
+                            // Open worksheet in renderer
+                            window.dispatchEvent(new CustomEvent('openWorksheet', {
+                              detail: { worksheetId: worksheet.id, worksheetData: worksheet }
+                            }));
+                          }}
+                        >
                           Open
                         </Button>
                       </div>
@@ -408,6 +441,16 @@ const VentureHub = ({ ventureId = 1, ventureName = "Coffee Kiosk" }) => {
       <FounderModeOverlay 
         isOpen={founderModeOpen} 
         onClose={() => setFounderModeOpen(false)} 
+      />
+
+      {/* Worksheet Builder */}
+      <WorksheetBuilder
+        isOpen={isWorksheetBuilderOpen}
+        onClose={() => setIsWorksheetBuilderOpen(false)}
+        onCreateWorksheet={(worksheetData) => {
+          console.log('Creating worksheet:', worksheetData);
+          // TODO: Integrate with createWorksheet hook
+        }}
       />
     </div>
   );

@@ -66,14 +66,22 @@ const ReportsList = ({ ventureId }) => {
   }, [ventureId]);
 
   const handleExport = async (reportId, reportName) => {
-    console.log('Exporting report:', { reportId, reportName });
-    // In real app: call Supabase function to generate/download report
-    // Example: await supabase.functions.invoke('export-report', { body: { reportId } });
+    // Simulate report download
+    const reportData = `Report: ${reportName}\nGenerated: ${new Date().toISOString()}\n\nSample report content...`;
+    const blob = new Blob([reportData], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${reportName.toLowerCase().replace(/\s+/g, '-')}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const handleView = (reportId, reportName) => {
-    console.log('Viewing report:', { reportId, reportName });
-    // In real app: open report preview or navigate to report detail page
+    // Open report in new window/modal
+    window.dispatchEvent(new CustomEvent('openReportViewer', {
+      detail: { reportId, reportName }
+    }));
   };
 
   const getStatusIcon = (status) => {
@@ -174,7 +182,17 @@ const ReportsList = ({ ventureId }) => {
       <div className="border border-dashed border-border rounded-lg p-8 text-center">
         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground mb-4">No reports generated yet</p>
-        <Button variant="outline">
+        <Button 
+          variant="outline"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('openAIChat', {
+              detail: { 
+                message: 'Generate my first business report with key insights and analysis',
+                context: 'report-generation'
+              }
+            }));
+          }}
+        >
           Generate First Report
         </Button>
       </div>

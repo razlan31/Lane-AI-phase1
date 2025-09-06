@@ -98,7 +98,13 @@ const TopBar = ({ onSearchClick, onProfileClick, onFounderMode, onHomeClick, onT
           <Button 
             variant="outline" 
             size="sm"
-            onClick={onToggleCoPilot || (() => console.log('Toggle Co-Pilot'))}
+            onClick={() => {
+              if (onToggleCoPilot) {
+                onToggleCoPilot();
+              } else {
+                window.dispatchEvent(new CustomEvent('toggleAICopilot'));
+              }
+            }}
             className="hidden sm:flex items-center gap-2"
           >
             <Bot className="h-4 w-4" />

@@ -271,7 +271,34 @@ const AICoPilot = ({
                           variant="outline"
                           size="sm"
                           className="text-xs h-6"
-                          onClick={() => console.log('Action:', action.action)}
+                          onClick={() => {
+                            switch (action.action) {
+                              case 'create_dashboard':
+                                window.dispatchEvent(new CustomEvent('openAIChat', {
+                                  detail: { 
+                                    message: 'Create a dashboard for my business with key metrics and visualizations',
+                                    context: 'dashboard-creation'
+                                  }
+                                }));
+                                break;
+                              case 'build_worksheets':
+                                window.dispatchEvent(new CustomEvent('openWorksheetBuilder'));
+                                break;
+                              case 'add_worksheets':
+                                window.dispatchEvent(new CustomEvent('openWorksheetBuilder'));
+                                break;
+                              case 'generate_kpis':
+                                window.dispatchEvent(new CustomEvent('openAIChat', {
+                                  detail: { 
+                                    message: 'Generate relevant KPIs and metrics for my business based on my industry and goals',
+                                    context: 'kpi-generation'
+                                  }
+                                }));
+                                break;
+                              default:
+                                console.log('Action:', action.action);
+                            }
+                          }}
                         >
                           {action.label}
                         </Button>

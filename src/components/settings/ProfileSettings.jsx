@@ -321,7 +321,18 @@ const ProfileSettings = ({ userProfile }) => {
               Contact our support team for assistance with your account
             </p>
           </div>
-          <Button variant="outline" onClick={() => window.open('mailto:support@laneai.com')}>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Open support chat or email
+              window.dispatchEvent(new CustomEvent('openAIChat', {
+                detail: { 
+                  message: 'I need help with my account and have some questions about using the platform',
+                  context: 'support-request'
+                }
+              }));
+            }}
+          >
             Contact Support
           </Button>
         </div>

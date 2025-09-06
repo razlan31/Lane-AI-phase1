@@ -151,7 +151,18 @@ const MainNavigation = ({
     <Button
       variant="outline"
       className="w-full justify-start border-dashed"
-      onClick={onAddVenture || (() => console.log('Add venture'))}
+      onClick={() => {
+        if (onAddVenture) {
+          onAddVenture();
+        } else {
+          window.dispatchEvent(new CustomEvent('openAIChat', {
+            detail: { 
+              message: 'I want to create a new venture workspace. Help me set it up.',
+              context: 'venture-creation'
+            }
+          }));
+        }
+      }}
     >
       <Plus className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
       {!isCollapsed && "Add Venture"}
