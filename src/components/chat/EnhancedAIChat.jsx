@@ -26,6 +26,10 @@ import { useOpenAIChat } from '../../hooks/useOpenAIChat';
 import { useDebouncedChatInput } from '../../hooks/useDebounce';
 import { PromptReuseChip } from '../ui/prompt-reuse-chip';
 import { VoiceInputButton } from '../VoiceInputButton';
+import { detectChatCommands, generateCommandResponse } from '../../utils/aiChatBuilder';
+import { getCapabilities } from '../../utils/capabilities';
+import { WorksheetBuilder } from '../modals/WorksheetBuilder';
+import { PersonalFieldModal } from '../modals/PersonalFieldModal';
 
 const EnhancedAIChat = ({ 
   isOpen = true, 
@@ -63,6 +67,8 @@ const EnhancedAIChat = ({
   const [showHistory, setShowHistory] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [lastUserPrompts, setLastUserPrompts] = useState([]);
+  const [showWorksheetBuilder, setShowWorksheetBuilder] = useState(false);
+  const [showPersonalFieldModal, setShowPersonalFieldModal] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -113,6 +119,40 @@ const EnhancedAIChat = ({
     if (!inputValue.trim() || !activeChatId || aiLoading) return;
 
     const userMessage = inputValue.trim();
+    
+    // Check for chat builder commands before sending to AI
+    const command = detectChatCommands(userMessage);
+    if (command) {
+      // Get user capabilities for feature gating
+      const capabilities = getCapabilities({}); // Will be replaced with actual profile
+      const commandResponse = generateCommandResponse(command, capabilities);
+      
+      if (commandResponse) {
+        clearInput();
+        
+        // Track prompt for reuse
+        setLastUserPrompts(prev => {
+          const updated = [userMessage, ...prev.filter(p => p !== userMessage)];
+          return updated.slice(0, 3);
+        });
+
+        // Handle different command actions
+        if (commandResponse.suggestedAction === 'personal_field_form') {
+          setShowPersonalFieldModal(true);
+        } else if (commandResponse.suggestedAction === 'worksheet_builder_form') {
+          setShowWorksheetBuilder(true);
+        }
+        
+        // Add response to chat
+        await addMessage(activeChatId, userMessage, 'user');
+        setTimeout(async () => {
+          await addMessage(activeChatId, commandResponse.message, 'assistant');
+        }, 500);
+        
+        return;
+      }
+    }
+
     clearInput();
 
     // Track recent prompts for reuse
@@ -404,6 +444,25 @@ const EnhancedAIChat = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Chat Builder Modals */}
+      <WorksheetBuilder
+        isOpen={showWorksheetBuilder}
+        onClose={() => setShowWorksheetBuilder(false)}
+        onSave={(worksheetData) => {
+          console.log('Saving worksheet:', worksheetData);
+          // TODO: Save to database
+        }}
+      />
+
+      <PersonalFieldModal
+        isOpen={showPersonalFieldModal}
+        onClose={() => setShowPersonalFieldModal(false)}
+        onSave={(fieldData) => {
+          console.log('Saving personal field:', fieldData);
+          // TODO: Save to database
+        }}
+      />
     </>
   );
 };

@@ -239,6 +239,15 @@ serve(async (req) => {
       systemPrompt = "You are Lane AI helping with business brainstorming. Help organize thoughts, identify patterns, and suggest next steps. Be encouraging and insightful.";
     }
 
+    // Enhanced system prompt with chat builder capabilities
+    systemPrompt += `\n\nYou can also help users modify their workspace:
+- Add custom fields to personal metrics (paid feature)
+- Create custom calculators and worksheets (paid feature) 
+- Convert scratchpad notes to KPIs (paid feature)
+- Add venture KPIs and metrics
+
+When users ask for these features, guide them through the process and confirm before making changes.`;
+
     // Get recent conversation history for context (last 12 messages = 6 turns)
     const { data: recentMessages } = await supabase
       .from('chat_messages')
