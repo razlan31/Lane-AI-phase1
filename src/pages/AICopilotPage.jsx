@@ -50,6 +50,9 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
     autoGenerateTitle
   } = useEnhancedChat();
 
+  // Get all messages for chat history (using a workaround since allMessages isn't directly available)
+  const [allSessionMessages, setAllSessionMessages] = useState({});
+
   const { sendMessage: sendOpenAIMessage, loading: aiLoading } = useOpenAIChat();
 
   const { 
@@ -378,7 +381,15 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setShowHistory(true)} className="h-8 w-8 p-0">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => {
+              console.log('🔥 CHAT HISTORY BUTTON CLICKED');
+              setShowHistory(true);
+            }} 
+            className="h-8 w-8 p-0"
+          >
             <History className="h-4 w-4" />
           </Button>
           <Button size="sm" variant="ghost" onClick={handleNewChat} className="flex-shrink-0">
@@ -673,6 +684,95 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
                   </ul>
                 </div>
               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat History Modal */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Chat History</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              {chatSessions.length} chat session{chatSessions.length !== 1 ? 's' : ''}
+            </div>
+            
+            <div className="max-h-[60vh] overflow-y-auto space-y-3">
+              {chatSessions.map((session) => (
+                <div 
+                  key={session.id} 
+                  className={cn(
+                    "p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors",
+                    session.id === activeChatId && "ring-2 ring-primary"
+                  )}
+                  onClick={() => {
+                    setActiveChatId(session.id);
+                    setShowHistory(false);
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium truncate flex-1">
+                      {session.title || `Chat ${session.id}`}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      {session.id === activeChatId && (
+                        <span className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded-full">
+                          Active
+                        </span>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteChat(session.id);
+                        }}
+                        className="h-6 w-6 p-0"
+                        disabled={chatSessions.length <= 1}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Created: {new Date(session.created_at).toLocaleDateString()}
+                    {session.updated_at && session.updated_at !== session.created_at && (
+                      <span> • Updated: {new Date(session.updated_at).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                  
+                  {/* Preview of messages */}
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {messages?.length || 0} message{(messages?.length || 0) !== 1 ? 's' : ''} in current chat
+                  </div>
+                </div>
+              ))}
+              
+              {chatSessions.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No chat sessions yet. Start a conversation to create your first chat!
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between items-center pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  createNewChat('New Chat');
+                  setShowHistory(false);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+              
+              <Button onClick={() => setShowHistory(false)}>
+                Close
+              </Button>
             </div>
           </div>
         </DialogContent>
