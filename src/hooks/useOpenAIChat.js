@@ -2,6 +2,11 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// In-memory client cache (2 min reuse)
+const CHAT_CACHE_TTL_MS = 120000; // 2 minutes
+const chatCache = new Map(); // key -> { ts, payload }
+const explainCache = new Map(); // key -> { ts, payload }
+
 export const useOpenAIChat = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,6 +18,14 @@ export const useOpenAIChat = () => {
     setError(null);
 
     try {
+      // Client-side cache: reuse within 2 minutes
+      const cacheKey = `chat|${sessionId || 'default'}|${context}|${(message || '').trim()}`;
+      const cached = chatCache.get(cacheKey);
+      const now = Date.now();
+      if (cached && (now - cached.ts) < CHAT_CACHE_TTL_MS) {
+        return { success: true, data: cached.payload };
+      }
+
       // Get current user session for auth
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       if (authError || !session) {
@@ -44,14 +57,19 @@ export const useOpenAIChat = () => {
         throw new Error(data.error);
       }
 
+      const payload = {
+        sessionId: data.sessionId,
+        message: data.message,
+        model: data.model,
+        usage: data.usage
+      };
+
+      // Save to client cache
+      chatCache.set(cacheKey, { ts: now, payload });
+
       return {
         success: true,
-        data: {
-          sessionId: data.sessionId,
-          message: data.message,
-          model: data.model,
-          usage: data.usage
-        }
+        data: payload
       };
 
     } catch (err) {
@@ -94,6 +112,14 @@ export const useOpenAIChat = () => {
     setError(null);
 
     try {
+      // Client-side cache for explain within 2 minutes
+      const cacheKey = `explain|${context}|${(question || '').trim()}|${JSON.stringify(contextData || {})}`;
+      const cached = explainCache.get(cacheKey);
+      const now = Date.now();
+      if (cached && (now - cached.ts) < CHAT_CACHE_TTL_MS) {
+        return { success: true, data: cached.payload };
+      }
+
       // Note: explain endpoint doesn't require auth (verify_jwt = false)
       const { data, error: functionError } = await supabase.functions.invoke('openai-explain', {
         body: {
@@ -115,13 +141,18 @@ export const useOpenAIChat = () => {
         throw new Error(data.error);
       }
 
+      const payload = {
+        explanation: data.explanation,
+        context: data.context,
+        usage: data.usage
+      };
+
+      // Save to client cache
+      explainCache.set(cacheKey, { ts: now, payload });
+
       return {
         success: true,
-        data: {
-          explanation: data.explanation,
-          context: data.context,
-          usage: data.usage
-        }
+        data: payload
       };
 
     } catch (err) {

@@ -139,6 +139,64 @@ serve(async (req) => {
       });
     }
 
+    // Hard rate limit: 30 user requests per minute across all sessions
+    const oneMinAgoIso = new Date(now.getTime() - 60_000).toISOString();
+    const { data: userSessions } = await supabase
+      .from('chat_sessions')
+      .select('id')
+      .eq('user_id', userId);
+    const sessionIds = (userSessions || []).map((s: any) => s.id);
+
+    if (sessionIds.length > 0) {
+      const { count: minuteCount } = await supabase
+        .from('chat_messages')
+        .select('id', { count: 'exact', head: true })
+        .in('session_id', sessionIds)
+        .eq('role', 'user')
+        .gte('created_at', oneMinAgoIso);
+
+      if ((minuteCount || 0) >= 30) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait before sending more messages.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Server deduplication within 60s (same prompt)
+      const sixtySecAgoIso = new Date(now.getTime() - 60_000).toISOString();
+      const { data: dupUserMsg } = await supabase
+        .from('chat_messages')
+        .select('session_id, created_at')
+        .in('session_id', sessionIds)
+        .eq('role', 'user')
+        .eq('content', message)
+        .gte('created_at', sixtySecAgoIso)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (dupUserMsg) {
+        const { data: cachedAssistant } = await supabase
+          .from('chat_messages')
+          .select('content')
+          .eq('session_id', dupUserMsg.session_id)
+          .eq('role', 'assistant')
+          .gt('created_at', dupUserMsg.created_at)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (cachedAssistant?.content) {
+          return new Response(JSON.stringify({ 
+            sessionId: dupUserMsg.session_id, 
+            message: cachedAssistant.content,
+            model: 'cached',
+            usage: { cached: true }
+          }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
+    }
+
     // Create or get session
     const sid = sessionId || `session_${Date.now()}_${userId}`;
     
@@ -181,13 +239,13 @@ serve(async (req) => {
       systemPrompt = "You are Lane AI helping with business brainstorming. Help organize thoughts, identify patterns, and suggest next steps. Be encouraging and insightful.";
     }
 
-    // Get recent conversation history for context (last 10 messages)
+    // Get recent conversation history for context (last 12 messages = 6 turns)
     const { data: recentMessages } = await supabase
       .from('chat_messages')
       .select('role, content')
       .eq('session_id', sid)
       .order('created_at', { ascending: true })
-      .limit(10);
+      .limit(12);
 
     // Build conversation messages
     const messages = [
@@ -203,8 +261,8 @@ serve(async (req) => {
     // Add current user message
     messages.push({ role: 'user', content: message });
 
-    // Choose model (default to GPT-3.5 for cost efficiency)
-    const model = modelOverride || Deno.env.get('OPENAI_DEFAULT_MODEL') || 'gpt-3.5-turbo';
+    // Choose model (default to GPT-4o-mini for cost efficiency)
+    const model = modelOverride || Deno.env.get('OPENAI_DEFAULT_MODEL') || 'gpt-4o-mini';
 
     console.log(`Using model: ${model} for user: ${userId}`);
 

@@ -120,6 +120,45 @@ serve(async (req) => {
       }
     }
 
+    // Hard rate limit and server dedup before OpenAI call
+    if (userId) {
+      const now = new Date();
+      const oneMinAgoIso = new Date(now.getTime() - 60_000).toISOString();
+
+      // Hard rate limit: 30 requests/min per user
+      const { count: minuteCount } = await supabase
+        .from('ai_audit')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('created_at', oneMinAgoIso);
+      if ((minuteCount || 0) >= 30) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait before sending more requests.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Server deduplication within 60s (same question)
+      const sixtySecAgoIso = new Date(now.getTime() - 60_000).toISOString();
+      const explainPrompt = `Explain: ${question}`;
+      const { data: dupAudit } = await supabase
+        .from('ai_audit')
+        .select('response')
+        .eq('user_id', userId)
+        .eq('prompt', explainPrompt)
+        .gte('created_at', sixtySecAgoIso)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (dupAudit?.response?.explanation) {
+        return new Response(JSON.stringify({ 
+          explanation: dupAudit.response.explanation,
+          context,
+          usage: { cached: true }
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    }
+
     // Build context-aware system prompt
     let systemPrompt = `You are Lane AI's explanation system. Provide clear, concise explanations in 2-3 sentences. 
 Focus on practical business insights and actionable information. Avoid internal reasoning - just explain the "why" clearly.`;
@@ -155,7 +194,7 @@ Focus on practical business insights and actionable information. Avoid internal 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Use GPT-3.5 for cost-effective explanations
+        model: 'gpt-4o-mini', // Use GPT-4o-mini for cost-effective explanations
         messages,
         temperature: 0.3, // Lower temperature for consistent explanations
         max_tokens: 300 // Shorter responses for explanations
