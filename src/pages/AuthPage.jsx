@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Mail, Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { AlertCircle, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EnhancedAuthFlow from "@/components/auth/EnhancedAuthFlow";
 
 const AuthPage = () => {
-  const [useEnhancedFlow, setUseEnhancedFlow] = useState(false);
+  
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,10 +22,6 @@ const AuthPage = () => {
   const [success, setSuccess] = useState(null);
   const { toast } = useToast();
 
-  // Use enhanced flow for new users
-  if (useEnhancedFlow) {
-    return <EnhancedAuthFlow />;
-  }
 
   const signIn = async () => {
     setError(null);
@@ -125,23 +121,6 @@ const AuthPage = () => {
     }
   };
 
-  const signInWithGoogle = async () => {
-    setError(null);
-    setLoading(true);
-    
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      const { error } = await supabase.auth.signInWithOAuth({ 
-        provider: 'google', 
-        options: { redirectTo: redirectUrl } 
-      });
-      if (error) throw error;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -264,67 +243,37 @@ const AuthPage = () => {
                 {loading ? 'Creating account...' : 'Create account'}
               </Button>
             )}
-            
-            <Button 
-              onClick={signInWithGoogle} 
-              variant="outline" 
-              className="w-full"
-              disabled={loading}
-            >
-              Continue with Google
-            </Button>
           </div>
 
-          <div className="text-center space-y-3">
+          <div className="text-center">
             {mode === 'signin' ? (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
-                  <button 
-                    onClick={() => setUseEnhancedFlow(true)} 
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Sign up with guided setup
-                  </button>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Or{' '}
-                  <button 
-                    onClick={() => {
-                      setMode('signup');
-                      setError(null);
-                      setSuccess(null);
-                    }} 
-                    className="text-primary hover:underline"
-                  >
-                    quick signup
-                  </button>
-                </p>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setUseEnhancedFlow(true)}
-                  className="w-full"
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <button 
+                  onClick={() => {
+                    setMode('signup');
+                    setError(null);
+                    setSuccess(null);
+                  }} 
+                  className="text-primary hover:underline"
                 >
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  Guided Setup (Recommended)
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Already have an account?{' '}
-                  <button 
-                    onClick={() => {
-                      setMode('signin');
-                      setError(null);
-                      setSuccess(null);
-                    }} 
-                    className="text-primary hover:underline"
-                  >
-                    Sign in
-                  </button>
-                </p>
-              </>
+                  Sign up
+                </button>
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <button 
+                  onClick={() => {
+                    setMode('signin');
+                    setError(null);
+                    setSuccess(null);
+                  }} 
+                  className="text-primary hover:underline"
+                >
+                  Sign in
+                </button>
+              </p>
             )}
           </div>
         </CardContent>
