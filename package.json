@@ -24,6 +24,7 @@
     "eslint": "^9.34.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "html-to-image": "^1.11.13",
     "jscodeshift": "^17.3.0",
     "jspdf": "^2.5.1",
     "lovable-tagger": "^1.1.9",
