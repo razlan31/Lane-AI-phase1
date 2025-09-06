@@ -25,12 +25,6 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "zustand"],
-    exclude: ["html-to-image"]
-  },
-  build: {
-    commonjsOptions: {
-      exclude: ["html-to-image"]
-    }
   },
   css: {
     postcss: {
