@@ -628,6 +628,86 @@ const AICopilotPage = ({ mode = 'general', ventureId = null }) => {
               <div ref={messagesEndRef} />
             </div>
           </div>
+          
+          {/* Input for Chat Conversation View */}
+          <div className="p-6 border-t">
+            <div className="flex gap-3 max-w-2xl mx-auto mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-10 w-10 p-0"
+              >
+                <Upload className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowScenarioSandbox(true)}
+                className="h-10 px-3 text-sm"
+                title="Open Scenario Sandbox"
+              >
+                🧮
+              </Button>
+              <VoiceInputButton 
+                onTranscript={handleVoiceTranscript}
+                className="h-10 w-10 p-0"
+                size="sm"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".csv,.xlsx,.xls,.pdf,.png,.jpg,.jpeg"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => {
+                  console.log('🔥 CHAT VIEW INPUT CHANGE:', e.target.value);
+                  setInputValue(e.target.value);
+                }}
+                onFocus={() => console.log('🔥 CHAT VIEW INPUT FOCUSED')}
+                onBlur={() => console.log('🔥 CHAT VIEW INPUT BLURRED')}
+                onClick={() => console.log('🔥 CHAT VIEW INPUT CLICKED')}
+                onKeyDown={(e) => console.log('🔥 CHAT VIEW KEY DOWN:', e.key)}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                placeholder="Continue the conversation..."
+                className="flex-1 p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
+                disabled={false}
+                style={{ pointerEvents: 'auto', zIndex: 1000, position: 'relative' }}
+                autoComplete="off"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || aiLoading || evaluating || loading || !activeChatId}
+                className="h-10 w-10 p-0"
+              >
+                {evaluating ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+            
+            {/* Prompt Reuse Chips for Chat View */}
+            {lastUserPrompts.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto py-2 max-w-2xl mx-auto">
+                {lastUserPrompts.map((prompt, idx) => (
+                  <PromptReuseChip
+                    key={idx}
+                    prompt={prompt}
+                    onClick={() => setInputValue(prompt)}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {isTyping && (
+              <div className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">
+                Typing...
+              </div>
+            )}
+          </div>
         </div>
       )}
 
