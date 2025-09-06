@@ -117,17 +117,90 @@ function App() {
       // You can add scenario sandbox modal here if needed
       setShowCoPilot(true);
     };
-    const handleAutoGenerateKPIs = (e) => {
-      const { type, count } = e.detail;
-      console.log(`Auto-generating ${count} KPIs of type: ${type}`);
-      
-      // The actual KPI generation is now handled by the useRoleBasedKpis hook
-      // This just provides user feedback
-      setTimeout(() => {
-        toast.success('KPIs Generated!', {
-          description: `Generating ${count} new business metrics based on your role and existing data.`,
-        });
-      }, 200);
+    const handleAutoGenerateKPIs = async (e) => {
+      const { type, count = 3, ventureId } = e.detail || {};
+      console.log(`Auto-generating ${count} KPIs of type: ${type}${ventureId ? ` for venture ${ventureId}` : ''}`);
+
+      // If a specific venture is provided, derive and INSERT KPIs based on existing venture data
+      if (ventureId) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            toast.error('Please sign in to generate KPIs.');
+            return;
+          }
+
+          const { data: existingKpis, error: fetchErr } = await supabase
+            .from('kpis')
+            .select('id, name, value')
+            .eq('venture_id', ventureId);
+          if (fetchErr) throw fetchErr;
+
+          const byName = (name) => (existingKpis || []).find(k => (k.name || '').toLowerCase() === name.toLowerCase());
+          const hasName = (name) => !!byName(name);
+          const lookupValue = (names) => {
+            const lower = (existingKpis || []).map(k => ({ n: (k.name || '').toLowerCase(), v: Number(k.value) }));
+            for (const candidate of names) {
+              const hit = lower.find(x => x.n === candidate.toLowerCase());
+              if (hit && !Number.isNaN(hit.v)) return hit.v;
+            }
+            return null;
+          };
+
+          const revenue = lookupValue(['monthly recurring revenue','mrr','monthly revenue','revenue']);
+          const expenses = lookupValue(['expenses','monthly expenses','burn rate']);
+          const customers = lookupValue(['customers','customer count','users','active users']);
+          const churn = lookupValue(['churn rate','churn']);
+
+          const recommendations = [];
+          if (revenue != null && expenses != null && !hasName('Monthly Profit')) {
+            recommendations.push({ name: 'Monthly Profit', value: Number((revenue - expenses).toFixed(2)) });
+          }
+          if (revenue != null && customers != null && customers > 0 && !hasName('Average Revenue Per User')) {
+            recommendations.push({ name: 'Average Revenue Per User', value: Number((revenue / customers).toFixed(2)) });
+          }
+          if (revenue != null && churn != null && !hasName('Net MRR After Churn')) {
+            const net = revenue * (1 - Number(churn) / 100);
+            recommendations.push({ name: 'Net MRR After Churn', value: Number(net.toFixed(2)) });
+          }
+
+          if (recommendations.length === 0) {
+            toast.info('No new KPIs could be derived from existing data.');
+            window.dispatchEvent(new CustomEvent('kpisUpdated'));
+            return;
+          }
+
+          const toInsert = recommendations.slice(0, count).map(r => ({
+            venture_id: ventureId,
+            name: r.name,
+            value: r.value,
+            confidence_level: 'estimate'
+          }));
+
+          const { data: inserted, error: insertErr } = await supabase
+            .from('kpis')
+            .insert(toInsert)
+            .select('id');
+          if (insertErr) throw insertErr;
+
+          toast.success(`Added ${inserted?.length || toInsert.length} KPIs`, {
+            description: 'Derived from your existing venture metrics.'
+          });
+
+          // Notify listeners to refetch
+          window.dispatchEvent(new CustomEvent('kpisUpdated'));
+          return;
+        } catch (err) {
+          console.error('KPI generation error:', err);
+          toast.error('Failed to generate KPIs');
+          return;
+        }
+      }
+
+      // Otherwise, fallback: refresh KPIs from real data
+      toast.success('Refreshing KPIs', {
+        description: `Fetching latest metrics based on your data...`
+      });
     };
     const handleOpenPersonalWorksheet = (e) => {
       const { worksheetType, worksheetName, worksheetDescription } = e.detail;

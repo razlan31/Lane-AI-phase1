@@ -127,10 +127,12 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
     };
 
     window.addEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+    window.addEventListener('kpisUpdated', handleAutoGenerateKPIs);
 
     return () => {
       isCancelled = true;
       window.removeEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
+      window.removeEventListener('kpisUpdated', handleAutoGenerateKPIs);
     };
   }, [userRole, ventureType, refreshCounter]);
 
