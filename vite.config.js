@@ -25,7 +25,10 @@ export default defineConfig(({ mode, command }) => ({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "zustand"],
-    exclude: ["html-to-image"], // ✅ force Vite to skip pre-bundling
+    force: true, // Force complete cache rebuild
+  },
+  esbuild: {
+    exclude: ["html-to-image"], // Additional exclusion at build level
   },
   css: {
     postcss: {

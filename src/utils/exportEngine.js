@@ -1,6 +1,9 @@
+// Cache buster to force module reload
+const CACHE_BUSTER = Date.now();
+console.log(`ExportEngine v${CACHE_BUSTER} - no html-to-image dependencies`);
+
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
-
 
 // Export utilities for Lane AI data (CSV, PDF, JSON)
 
