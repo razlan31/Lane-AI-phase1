@@ -217,18 +217,18 @@ Would you like me to proceed with any of these suggestions?`,
             <div className="flex gap-3 max-w-2xl mx-auto">
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                 placeholder="Describe what you want to build or analyze..."
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!activeSessionId}
               />
               <VoiceInputButton 
-                onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                onTranscript={(text) => setInputValue(prev => prev + (prev ? ' ' : '') + text)}
                 disabled={!activeSessionId}
               />
-              <Button onClick={sendMessage} disabled={!input.trim() || !activeSessionId}>
+              <Button onClick={sendMessage} disabled={!inputValue.trim() || !activeSessionId}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>
