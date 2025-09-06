@@ -97,8 +97,8 @@ function App() {
   const handleOnboardingComplete = async (profileData) => {
     // Handle skipped onboarding
     if (profileData.skipped) {
-      await userProfile.completeOnboarding({ skipped: true, role: 'founder', ventureType: 'startup' });
-      setUserProfileData({ skipped: true });
+      await userProfile.completeOnboarding({ role: 'founder', venture_type: 'startup' });
+      setUserProfileData({ role: 'founder', venture_type: 'startup' });
       setIsOnboarded(true);
       setCurrentView('copilot');
       return;
@@ -305,7 +305,6 @@ function App() {
   return (
     <div className="min-h-screen bg-background w-full">
       <EnvChecker>
-        <ServiceChecker />
         <div className="min-h-screen bg-background w-full">
         <div className="flex h-screen overflow-hidden">
         {/* Main Navigation */}

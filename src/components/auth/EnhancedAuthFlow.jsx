@@ -118,10 +118,7 @@ const EnhancedAuthFlow = () => {
         
         if (error) throw error;
         
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in."
-        });
+        toast.success("Welcome back! You have successfully signed in.");
       } else {
         // Sign up
         const redirectUrl = `${window.location.origin}/`;
@@ -142,25 +139,15 @@ const EnhancedAuthFlow = () => {
         if (error) throw error;
         
         if (data?.user && !data?.session) {
-          toast({
-            title: "Account Created!",
-            description: "Please check your email and click the confirmation link.",
-          });
+          toast.success("Account Created! Please check your email and click the confirmation link.");
           setStep(4); // Show email confirmation step
         } else {
-          toast({
-            title: "Welcome to Lane AI!",
-            description: "Your account has been created successfully."
-          });
+          toast.success("Welcome to Lane AI! Your account has been created successfully.");
         }
       }
     } catch (error) {
       console.error('Auth error:', error);
-      toast({
-        title: "Authentication Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(`Authentication Failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
