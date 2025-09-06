@@ -21,10 +21,10 @@ export default defineConfig(({ mode }) => ({
       react: path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ["react", "react-dom"],  // 👈 important
+    dedupe: ["react", "react-dom", "zustand"],  // ✅ ensure single zustand copy
   },
   optimizeDeps: {
-    include: ["react", "react-dom"], // 👈 force prebundle single version
+    include: ["react", "react-dom", "zustand"],  // ✅ prebundle zustand
   },
   css: {
     postcss: {
