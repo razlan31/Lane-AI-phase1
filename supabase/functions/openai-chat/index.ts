@@ -60,7 +60,69 @@ serve(async (req) => {
 
     const userId = user.id;
 
-    // Rate limiting: Check last message timestamp
+    // Fetch user profile to determine plan and AI quota
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('plan, subscription_plan, is_founder, ai_quota_remaining, ai_quota_reset_date, ai_requests_used')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+    }
+
+    const paidPlans = ['pro_promo', 'pro_standard', 'weekly', 'annual'];
+    const plan = (profile?.plan || profile?.subscription_plan || 'free') as string;
+    const isPaid = paidPlans.includes(plan);
+
+    // Reset quota window if needed: daily for free, monthly for paid
+    const now = new Date();
+    let quotaRemaining = typeof profile?.ai_quota_remaining === 'number' 
+      ? profile!.ai_quota_remaining 
+      : (isPaid ? 500 : 10);
+
+    const resetDate = profile?.ai_quota_reset_date ? new Date(profile.ai_quota_reset_date) : null;
+    const needsDailyReset = () => {
+      if (!resetDate) return true;
+      const a = new Date(resetDate); a.setHours(0,0,0,0);
+      const b = new Date(now); b.setHours(0,0,0,0);
+      return a.getTime() !== b.getTime();
+    };
+    const needsMonthlyReset = () => {
+      if (!resetDate) return true;
+      return resetDate.getUTCFullYear() !== now.getUTCFullYear() || resetDate.getUTCMonth() !== now.getUTCMonth();
+    };
+
+    let didReset = false;
+    if (!isPaid && needsDailyReset()) {
+      quotaRemaining = 10;
+      didReset = true;
+    } else if (isPaid && needsMonthlyReset()) {
+      quotaRemaining = 500;
+      didReset = true;
+    }
+
+    if (didReset) {
+      const { error: resetErr } = await supabase
+        .from('profiles')
+        .update({ ai_quota_remaining: quotaRemaining, ai_quota_reset_date: now.toISOString() })
+        .eq('id', userId);
+      if (resetErr) console.error('Quota reset update error:', resetErr);
+    }
+
+    // Enforce quota before proceeding
+    if (quotaRemaining <= 0) {
+      const windowText = isPaid ? 'month' : 'day';
+      return new Response(JSON.stringify({ error: `AI quota exceeded. Please wait until your ${windowText} resets.` }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Dynamic cooldown based on plan
+    const cooldownMs = isPaid ? 2000 : 10000;
+
+    // Rate limiting: Check last message timestamp for this session
     const { data: lastMsg } = await supabase
       .from('chat_messages')
       .select('created_at')
@@ -69,9 +131,9 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const minIntervalMs = 2000; // 2 seconds between messages
-    if (lastMsg && new Date().getTime() - new Date(lastMsg.created_at).getTime() < minIntervalMs) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait 2 seconds between messages.' }), {
+    if (lastMsg && now.getTime() - new Date(lastMsg.created_at).getTime() < cooldownMs) {
+      const seconds = Math.ceil(cooldownMs / 1000);
+      return new Response(JSON.stringify({ error: `Rate limit exceeded. Please wait ${seconds} seconds between messages.` }), {
         status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -195,6 +257,22 @@ serve(async (req) => {
       .from('chat_sessions')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', sid);
+
+    // Decrement AI quota after successful response
+    try {
+      const newRemaining = Math.max(0, (quotaRemaining ?? (isPaid ? 500 : 10)) - 1);
+      const { error: decErr } = await supabase
+        .from('profiles')
+        .update({ 
+          ai_quota_remaining: newRemaining,
+          ai_requests_used: (profile?.ai_requests_used ?? 0) + 1,
+          ai_quota_reset_date: profile?.ai_quota_reset_date || new Date().toISOString()
+        })
+        .eq('id', userId);
+      if (decErr) console.error('Quota decrement error:', decErr);
+    } catch (e) {
+      console.error('Quota decrement exception:', e);
+    }
 
     return new Response(JSON.stringify({ 
       sessionId: sid, 
