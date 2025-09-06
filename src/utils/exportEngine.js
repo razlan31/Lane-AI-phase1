@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
-import * as htmlToImage from 'html-to-image';
+// Dynamic import for html-to-image to avoid bundling issues
 
 export class ExportEngine {
   static async exportData(format, options = {}) {
@@ -220,19 +220,27 @@ export class ExportEngine {
       throw new Error(`Element with ID "${elementId}" not found`);
     }
     
-    const dataUrl = await htmlToImage.toPng(element, {
-      quality: 1.0,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff'
-    });
-    
-    // Convert to blob and download
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-    const filename = `laneai-dashboard-${new Date().toISOString().split('T')[0]}.${format}`;
-    this.downloadFile(blob, filename);
-    
-    return { success: true, filename };
+    try {
+      // Dynamic import to avoid bundling issues
+      const { toPng } = await import('html-to-image');
+      
+      const dataUrl = await toPng(element, {
+        quality: 1.0,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Convert to blob and download
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const filename = `laneai-dashboard-${new Date().toISOString().split('T')[0]}.${format}`;
+      this.downloadFile(blob, filename);
+      
+      return { success: true, filename };
+    } catch (error) {
+      console.error('Image export failed:', error);
+      throw new Error(`Failed to export image: ${error.message}`);
+    }
   }
 
   static async fetchExportData(userId, options = {}) {
