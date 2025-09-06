@@ -65,6 +65,15 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unable to determine user id" }), { status: 500, headers: corsHeaders });
     }
 
+    // Ensure requested password is applied and metadata is set (handles existing users too)
+    const upd = await admin.auth.admin.updateUserById(userId, {
+      password,
+      user_metadata: { seeded: true, role: "founder" },
+    });
+    if (upd.error) {
+      return new Response(JSON.stringify({ error: upd.error.message }), { status: 500, headers: corsHeaders });
+    }
+
     // Ensure profile exists and mark as founder
     // First attempt an update; if missing, upsert with id
     const profileUpdates: Record<string, any> = {
@@ -94,6 +103,6 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ ok: true, userId }), { status: 200, headers: corsHeaders });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
   }
 });
