@@ -118,89 +118,117 @@ function App() {
       setShowCoPilot(true);
     };
     const handleAutoGenerateKPIs = async (e) => {
-      const { type, count = 3, ventureId } = e.detail || {};
-      console.log(`Auto-generating ${count} KPIs of type: ${type}${ventureId ? ` for venture ${ventureId}` : ''}`);
+      const { type, count = 3, ventureId: evtVentureId } = e.detail || {};
+      console.log(`Auto-generating ${count} KPIs of type: ${type}${evtVentureId ? ` for venture ${evtVentureId}` : ''}`);
 
-      // If a specific venture is provided, derive and INSERT KPIs based on existing venture data
-      if (ventureId) {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) {
-            toast.error('Please sign in to generate KPIs.');
-            return;
+      // Resolve ventureId: use provided or user's first venture
+      let ventureId = evtVentureId;
+      if (!ventureId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error('Please sign in to generate KPIs.');
+          return;
+        }
+        const { data: ventures } = await supabase
+          .from('ventures')
+          .select('id, name')
+          .eq('user_id', user.id);
+        if (!ventures || !ventures.length) {
+          toast.info('Create a venture first to generate KPIs.');
+          return;
+        }
+        ventureId = ventures[0].id;
+      }
+
+      try {
+        // Fetch existing KPIs
+        const { data: existingKpis } = await supabase
+          .from('kpis')
+          .select('id, name, value')
+          .eq('venture_id', ventureId);
+        const hasName = (name) => (existingKpis || []).some(k => (k.name || '').toLowerCase() === name.toLowerCase());
+
+        // Try to derive recommendations from existing KPIs first
+        const byName = (name) => (existingKpis || []).find(k => (k.name || '').toLowerCase() === name.toLowerCase());
+        const lookupValue = (names) => {
+          const lower = (existingKpis || []).map(k => ({ n: (k.name || '').toLowerCase(), v: Number(k.value) }));
+          for (const candidate of names) {
+            const hit = lower.find(x => x.n === candidate.toLowerCase());
+            if (hit && !Number.isNaN(hit.v)) return hit.v;
           }
+          return null;
+        };
 
-          const { data: existingKpis, error: fetchErr } = await supabase
-            .from('kpis')
-            .select('id, name, value')
+        let revenue = lookupValue(['monthly recurring revenue','mrr','monthly revenue','revenue']);
+        let expenses = lookupValue(['monthly expenses','burn rate','expenses']);
+        let customers = lookupValue(['customers','customer count','users','active users']);
+        let churn = lookupValue(['churn rate','churn']);
+
+        // If there are no existing KPI values, derive from worksheets outputs
+        if (!revenue && !expenses && !customers && !churn) {
+          const { data: worksheets } = await supabase
+            .from('worksheets')
+            .select('type, outputs')
             .eq('venture_id', ventureId);
-          if (fetchErr) throw fetchErr;
-
-          const byName = (name) => (existingKpis || []).find(k => (k.name || '').toLowerCase() === name.toLowerCase());
-          const hasName = (name) => !!byName(name);
-          const lookupValue = (names) => {
-            const lower = (existingKpis || []).map(k => ({ n: (k.name || '').toLowerCase(), v: Number(k.value) }));
-            for (const candidate of names) {
-              const hit = lower.find(x => x.n === candidate.toLowerCase());
-              if (hit && !Number.isNaN(hit.v)) return hit.v;
+          const safeParseJSON = (str) => { try { return JSON.parse(str); } catch { return {}; } };
+          const pickFirstNumber = (obj, keys) => {
+            for (const k of keys) {
+              const v = obj?.[k];
+              const n = typeof v === 'string' ? Number(v) : v;
+              if (typeof n === 'number' && !Number.isNaN(n)) return n;
             }
             return null;
           };
+          const merged = (worksheets || []).reduce((acc, w) => {
+            const o = typeof w.outputs === 'string' ? safeParseJSON(w.outputs) : (w.outputs || {});
+            return { ...acc, ...o };
+          }, {});
+          revenue = pickFirstNumber(merged, ['monthly_revenue','mrr','revenue']);
+          expenses = pickFirstNumber(merged, ['monthly_expenses','burn_rate','expenses']);
+          customers = pickFirstNumber(merged, ['customers','active_users','users']);
+          churn = pickFirstNumber(merged, ['churn_rate','churn']);
+        }
 
-          const revenue = lookupValue(['monthly recurring revenue','mrr','monthly revenue','revenue']);
-          const expenses = lookupValue(['expenses','monthly expenses','burn rate']);
-          const customers = lookupValue(['customers','customer count','users','active users']);
-          const churn = lookupValue(['churn rate','churn']);
+        const recommendations = [];
+        if (revenue != null && expenses != null && !hasName('Monthly Profit')) {
+          recommendations.push({ name: 'Monthly Profit', value: Number((revenue - expenses).toFixed(2)) });
+        }
+        if (revenue != null && customers && customers > 0 && !hasName('Average Revenue Per User')) {
+          recommendations.push({ name: 'Average Revenue Per User', value: Number((revenue / customers).toFixed(2)) });
+        }
+        if (revenue != null && churn != null && !hasName('Net MRR After Churn')) {
+          const net = revenue * (1 - Number(churn) / 100);
+          recommendations.push({ name: 'Net MRR After Churn', value: Number(net.toFixed(2)) });
+        }
 
-          const recommendations = [];
-          if (revenue != null && expenses != null && !hasName('Monthly Profit')) {
-            recommendations.push({ name: 'Monthly Profit', value: Number((revenue - expenses).toFixed(2)) });
-          }
-          if (revenue != null && customers != null && customers > 0 && !hasName('Average Revenue Per User')) {
-            recommendations.push({ name: 'Average Revenue Per User', value: Number((revenue / customers).toFixed(2)) });
-          }
-          if (revenue != null && churn != null && !hasName('Net MRR After Churn')) {
-            const net = revenue * (1 - Number(churn) / 100);
-            recommendations.push({ name: 'Net MRR After Churn', value: Number(net.toFixed(2)) });
-          }
-
-          if (recommendations.length === 0) {
-            toast.info('No new KPIs could be derived from existing data.');
-            window.dispatchEvent(new CustomEvent('kpisUpdated'));
-            return;
-          }
-
-          const toInsert = recommendations.slice(0, count).map(r => ({
-            venture_id: ventureId,
-            name: r.name,
-            value: r.value,
-            confidence_level: 'estimate'
-          }));
-
-          const { data: inserted, error: insertErr } = await supabase
-            .from('kpis')
-            .insert(toInsert)
-            .select('id');
-          if (insertErr) throw insertErr;
-
-          toast.success(`Added ${inserted?.length || toInsert.length} KPIs`, {
-            description: 'Derived from your existing venture metrics.'
-          });
-
-          // Notify listeners to refetch
+        if (!recommendations.length) {
+          toast.info('No new KPIs could be derived from your data.');
           window.dispatchEvent(new CustomEvent('kpisUpdated'));
           return;
-        } catch (err) {
-          console.error('KPI generation error:', err);
-          toast.error('Failed to generate KPIs');
-          return;
         }
-      }
 
-      // Otherwise, fallback: refresh KPIs from real data
-      toast.success('Refreshing KPIs', {
-        description: `Fetching latest metrics based on your data...`
-      });
+        const toInsert = recommendations.slice(0, count).map(r => ({
+          venture_id: ventureId,
+          name: r.name,
+          value: r.value,
+          confidence_level: 'estimate'
+        }));
+
+        const { data: inserted, error: insertErr } = await supabase
+          .from('kpis')
+          .insert(toInsert)
+          .select('id');
+        if (insertErr) throw insertErr;
+
+        toast.success(`Added ${inserted?.length || toInsert.length} KPIs`, {
+          description: 'Derived from your venture data.'
+        });
+
+        window.dispatchEvent(new CustomEvent('kpisUpdated'));
+      } catch (err) {
+        console.error('KPI generation error:', err);
+        toast.error('Failed to generate KPIs');
+      }
     };
     const handleOpenPersonalWorksheet = (e) => {
       const { worksheetType, worksheetName, worksheetDescription } = e.detail;

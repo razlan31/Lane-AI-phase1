@@ -1,5 +1,30 @@
 import { useState, useEffect } from 'react';
 
+// Helpers for worksheet parsing
+const safeParseJSON = (str) => {
+  try { return JSON.parse(str); } catch { return {}; }
+};
+const pickFirstNumber = (obj, keys) => {
+  for (const k of keys) {
+    const v = obj?.[k];
+    const n = typeof v === 'string' ? Number(v) : v;
+    if (typeof n === 'number' && !Number.isNaN(n)) return n;
+  }
+  return null;
+};
+const kpiItem = (title, value, venture, unit = 'number') => ({
+  title,
+  description: `Belongs to venture: ${venture.name}`,
+  value: Number(value),
+  unit,
+  trend: 0,
+  trendDirection: 'up',
+  icon: TrendingUp,
+  state: 'success',
+  belongsTo: { type: 'venture', ventureId: venture.id, ventureName: venture.name }
+});
+
+
 // CACHE BUST: Force Vite to rebuild React chunks after import standardization
 import { TrendingUp, DollarSign, AlertTriangle, Users, Target, CreditCard, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,52 +71,18 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
           ventures = venturesRefetch.data || [];
         }
 
-        // Optional: fetch profile KPI-like fields
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('ai_requests_used, ai_quota_remaining')
-          .eq('id', user.id)
-          .maybeSingle();
-
+        // Remove profile AI quota KPIs; focus on venture data only
         let aggregated = [];
-
-        // Add profile-level KPIs if available
-        if (profile) {
-          if (typeof profile.ai_requests_used === 'number') {
-            aggregated.push({
-              title: 'AI Requests Used',
-              description: 'Profile usage in current period',
-              value: profile.ai_requests_used,
-              unit: 'number',
-              trend: 0,
-              trendDirection: 'up',
-              icon: Activity,
-              state: 'success',
-              belongsTo: { type: 'profile' }
-            });
-          }
-          if (typeof profile.ai_quota_remaining === 'number') {
-            aggregated.push({
-              title: 'AI Quota Remaining',
-              description: 'Remaining AI request quota',
-              value: profile.ai_quota_remaining,
-              unit: 'number',
-              trend: 0,
-              trendDirection: 'up',
-              icon: Activity,
-              state: 'success',
-              belongsTo: { type: 'profile' }
-            });
-          }
-        }
 
         // Collect KPIs from each venture
         for (const v of ventures) {
+          // 1) Fetch saved KPIs
           const { data: vKpis } = await supabase
             .from('kpis')
             .select('id, name, value, confidence_level, updated_at')
             .eq('venture_id', v.id);
-          const mapped = (vKpis || [])
+
+          let mapped = (vKpis || [])
             .filter(k => k.value !== null && k.value !== undefined)
             .map(k => ({
               title: k.name,
@@ -104,6 +95,40 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
               state: k.confidence_level === 'mock' ? 'warning' : 'success',
               belongsTo: { type: 'venture', ventureId: v.id, ventureName: v.name, kpiId: k.id }
             }));
+
+          // 2) If no saved KPIs, derive from worksheets outputs
+          if (!mapped.length) {
+            const { data: worksheets } = await supabase
+              .from('worksheets')
+              .select('type, outputs')
+              .eq('venture_id', v.id);
+
+            const derived = [];
+            if (worksheets && worksheets.length) {
+              const mergeOutputs = (acc, w) => {
+                const o = typeof w.outputs === 'string' ? safeParseJSON(w.outputs) : (w.outputs || {});
+                return { ...acc, ...o };
+              };
+              const all = worksheets.reduce(mergeOutputs, {});
+
+              const revenue = pickFirstNumber(all, ['monthly_revenue','mrr','revenue']);
+              const expenses = pickFirstNumber(all, ['monthly_expenses','burn_rate','expenses']);
+              const runway = pickFirstNumber(all, ['runway_months','runway']);
+              const churn = pickFirstNumber(all, ['churn_rate','churn']);
+              const customers = pickFirstNumber(all, ['customers','active_users','users']);
+
+              if (revenue != null) derived.push(kpiItem('Monthly Recurring Revenue', revenue, v));
+              if (expenses != null) derived.push(kpiItem('Monthly Expenses', expenses, v));
+              if (runway != null) derived.push(kpiItem('Runway (Months)', runway, v));
+              if (churn != null) derived.push(kpiItem('Churn Rate', churn, v, 'percentage'));
+              if (revenue != null && customers && customers > 0) {
+                derived.push(kpiItem('Average Revenue Per User', Number((revenue / customers).toFixed(2)), v));
+              }
+
+              mapped = derived;
+            }
+          }
+
           aggregated = aggregated.concat(mapped);
         }
 
