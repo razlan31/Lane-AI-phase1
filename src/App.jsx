@@ -13,6 +13,7 @@ import { useVentures } from './hooks/useVentures.jsx';
 import { useAuth } from './hooks/useAuth.jsx';
 import { useRouter } from './hooks/useRouter';
 import { supabase } from '@/integrations/supabase/client';
+import { useKeyboardShortcuts, useGlobalShortcuts } from './hooks/useKeyboardShortcuts';
 
 import OnboardingWelcome from './components/onboarding/OnboardingWelcome';
 import OnboardingSteps from './components/onboarding/OnboardingSteps';
@@ -28,6 +29,7 @@ import SettingsPage from './pages/SettingsPage';
 import CommandPalette from './components/modals/CommandPalette';
 import NewVentureModal from './components/modals/NewVentureModal';
 import ExportModal from './components/export/ExportModal';
+import HelpModal from './components/modals/HelpModal';
 import AICopilotPage from './pages/AICopilotPage';
 import { PersonalPage } from './pages/PersonalPage';
 import PortfolioDashboard from './components/PortfolioDashboard';
@@ -50,9 +52,30 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [newVentureModalOpen, setNewVentureModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const { ventures, loading: venturesLoading, createVenture } = useVentures();
   const { user: currentUser } = useAuth();
   const { showPlainExplanations } = useDisplaySettings();
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts();
+  
+  // Handle global shortcuts
+  useGlobalShortcuts({
+    onNavigate: setCurrentView,
+    onOpenCommandPalette: () => setCommandPaletteOpen(true),
+    onToggleCopilot: () => setShowCoPilot(!showCoPilot),
+    onToggleFounderMode: () => setShowFounderMode(true),
+    onOpenSearch: () => setCommandPaletteOpen(true),
+    onEscape: () => {
+      setShowCoPilot(false);
+      setShowFounderMode(false);
+      setCommandPaletteOpen(false);
+      setNewVentureModalOpen(false);
+      setExportModalOpen(false);
+      setHelpModalOpen(false);
+    },
+  });
 
   // Get user profile and check onboarding status
   useEffect(() => {
@@ -77,17 +100,6 @@ function App() {
     };
 
     setupUserProfile();
-
-    // Global keyboard shortcuts
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCommandPaletteOpen(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [currentUser]);
 
   console.log('User authenticated:', !!currentUser);
@@ -197,58 +209,62 @@ function App() {
         return (
           <div className="min-h-screen bg-background">
             {/* Main Content */}
-            <main className="px-6 py-8">
+            <main className="px-4 sm:px-6 py-8">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-foreground">Workspace</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Workspace</h1>
                 <p className="text-muted-foreground mt-2">Manage your ventures and projects</p>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
                 {ventures.map(venture => (
-                  <div key={venture.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-200 cursor-pointer" 
+                  <div key={venture.id} className="bg-card border border-border rounded-lg p-4 sm:p-6 hover-lift cursor-pointer animate-fade-in" 
                        onClick={() => setCurrentView(`venture-${venture.id}`)}>
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-xl font-bold text-foreground">{venture.name}</h2>
-                        <p className="text-sm text-muted-foreground mt-1">{venture.description}</p>
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-lg sm:text-xl font-bold text-foreground truncate">{venture.name}</h2>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{venture.description}</p>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 ml-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span className="text-xs text-muted-foreground">Active</span>
                       </div>
                     </div>
                     
                     {/* Mini Dashboard Metrics */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
                       <div className="text-center p-3 bg-muted/50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">${venture.revenue.toLocaleString()}</div>
+                        <div className="text-lg sm:text-2xl font-bold text-green-600">${venture.revenue?.toLocaleString() || '0'}</div>
                         <div className="text-xs text-muted-foreground">Monthly Revenue</div>
                       </div>
                       <div className="text-center p-3 bg-muted/50 rounded-lg">
-                        <div className={`text-2xl font-bold ${venture.cashflow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ${Math.abs(venture.cashflow).toLocaleString()}
+                        <div className={`text-lg sm:text-2xl font-bold ${(venture.cashflow || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ${Math.abs(venture.cashflow || 0).toLocaleString()}
                         </div>
                         <div className="text-xs text-muted-foreground">Cashflow</div>
                       </div>
                       <div className="text-center p-3 bg-muted/50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{venture.runway}m</div>
+                        <div className="text-lg sm:text-2xl font-bold text-blue-600">{venture.runway || 0}m</div>
                         <div className="text-xs text-muted-foreground">Runway</div>
                       </div>
                       <div className="text-center p-3 bg-muted/50 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">${venture.burnRate.toLocaleString()}</div>
+                        <div className="text-lg sm:text-2xl font-bold text-orange-600">${(venture.burnRate || 0).toLocaleString()}</div>
                         <div className="text-xs text-muted-foreground">Burn Rate</div>
                       </div>
                     </div>
                     
                     {/* Quick Actions */}
                     <div className="flex justify-between items-center pt-4 border-t border-border">
-                      <span className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-2">
+                      <span className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-2 text-sm">
                         Open Workspace →
                       </span>
                       <div className="flex gap-2">
-                        <button className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">View Metrics</button>
-                        <button className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Settings</button>
+                        <button className="text-xs bg-primary/10 text-primary px-2 py-1 rounded touch-manipulation">
+                          View Metrics
+                        </button>
+                        <button className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded touch-manipulation">
+                          Settings
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -256,12 +272,12 @@ function App() {
                 
                 {/* Add New Venture Card */}
                 <div 
-                  className="bg-card border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]"
+                  className="bg-card border-2 border-dashed border-border rounded-lg p-4 sm:p-6 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-center min-h-[280px] sm:min-h-[300px] hover-lift"
                   onClick={() => setNewVentureModalOpen(true)}
                 >
                   <div className="text-center">
                     <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <span className="text-2xl">+</span>
+                      <span className="text-2xl text-primary">+</span>
                     </div>
                     <h3 className="font-semibold mb-2">Add New Venture</h3>
                     <p className="text-sm text-muted-foreground">Create a new workspace for your business</p>
@@ -383,11 +399,17 @@ function App() {
         onClose={() => setExportModalOpen(false)}
       />
 
+      <HelpModal
+        isOpen={helpModalOpen}
+        onClose={() => setHelpModalOpen(false)}
+      />
+
       <GlobalUpgradeHandler />
       </div>
       </EnvChecker>
     </div>
   );
+}
 }
 
 export default App;
