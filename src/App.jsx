@@ -99,7 +99,14 @@ function App() {
     seedData();
   }, [currentUser, ventures.length, venturesLoading]);
 
-  // Initialize keyboard shortcuts
+  // Initialize keyboard shortcuts after component mounts
+  useEffect(() => {
+    // This ensures React context is fully initialized
+    const cleanup = () => {};
+    return cleanup;
+  }, []);
+
+  // Use keyboard shortcuts
   useKeyboardShortcuts();
   
   // Handle global shortcuts

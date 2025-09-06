@@ -1,6 +1,12 @@
 import { useEffect, useCallback } from 'react';
 
 export function useKeyboardShortcuts() {
+  // Defensive programming - check if React hooks are available
+  if (typeof useCallback !== 'function') {
+    console.error('React hooks not available');
+    return null;
+  }
+
   const handleKeyDown = useCallback((event) => {
     // Only trigger if not in an input field
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
