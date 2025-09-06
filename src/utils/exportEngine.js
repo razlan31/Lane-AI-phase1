@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
-// Dynamic import for html-to-image to avoid bundling issues
+// Export utilities for Lane AI data (CSV, PDF, JSON)
 
 export class ExportEngine {
   static async exportData(format, options = {}) {
@@ -213,34 +213,8 @@ export class ExportEngine {
   }
 
   static async exportImage(options) {
-    const { elementId = 'hq-dashboard', format = 'png' } = options;
-    
-    const element = document.getElementById(elementId);
-    if (!element) {
-      throw new Error(`Element with ID "${elementId}" not found`);
-    }
-    
-    try {
-      // Dynamic import to avoid bundling issues
-      const { toPng } = await import('html-to-image');
-      
-      const dataUrl = await toPng(element, {
-        quality: 1.0,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff'
-      });
-      
-      // Convert to blob and download
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const filename = `laneai-dashboard-${new Date().toISOString().split('T')[0]}.${format}`;
-      this.downloadFile(blob, filename);
-      
-      return { success: true, filename };
-    } catch (error) {
-      console.error('Image export failed:', error);
-      throw new Error(`Failed to export image: ${error.message}`);
-    }
+    // Temporarily disabled due to html-to-image import issues
+    throw new Error('Image export temporarily unavailable. Please use PDF export instead.');
   }
 
   static async fetchExportData(userId, options = {}) {
