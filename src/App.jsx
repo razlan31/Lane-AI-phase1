@@ -106,7 +106,12 @@ function App() {
       setShowCoPilot(true);
       // Optional: pass context for AI chat initialization
     };
+    const handleToggleAICopilot = () => setShowCoPilot(!showCoPilot);
     const handleOpenNewVentureModal = () => setNewVentureModalOpen(true);
+    const handleOpenWorksheetBuilder = () => {
+      // Forward the event to the current view component
+      setShowCoPilot(true);
+    };
     const handleOpenScenarioSandbox = () => {
       // You can add scenario sandbox modal here if needed
       setShowCoPilot(true);
@@ -115,14 +120,18 @@ function App() {
     window.addEventListener('showFeatureDiscovery', handleFeatureDiscovery);
     window.addEventListener('showComprehensiveHelp', handleComprehensiveHelp);
     window.addEventListener('openAIChat', handleOpenAIChat);
+    window.addEventListener('toggleAICopilot', handleToggleAICopilot);
     window.addEventListener('openNewVentureModal', handleOpenNewVentureModal);
+    window.addEventListener('openWorksheetBuilder', handleOpenWorksheetBuilder);
     window.addEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
 
     return () => {
       window.removeEventListener('showFeatureDiscovery', handleFeatureDiscovery);
       window.removeEventListener('showComprehensiveHelp', handleComprehensiveHelp);
       window.removeEventListener('openAIChat', handleOpenAIChat);
+      window.removeEventListener('toggleAICopilot', handleToggleAICopilot);
       window.removeEventListener('openNewVentureModal', handleOpenNewVentureModal);
+      window.removeEventListener('openWorksheetBuilder', handleOpenWorksheetBuilder);
       window.removeEventListener('openScenarioSandbox', handleOpenScenarioSandbox);
     };
   }, []);

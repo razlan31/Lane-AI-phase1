@@ -14,7 +14,8 @@ import {
   FileText,
   Image,
   Check,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
