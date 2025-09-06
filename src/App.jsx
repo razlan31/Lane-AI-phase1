@@ -45,6 +45,7 @@ import PlaygroundCanvas from './components/playground/PlaygroundCanvas';
 import VentureHub from './components/workspaces/VentureHub';
 import ErrorBoundary from './components/ErrorBoundary';
 import GlobalUpgradeHandler from './components/gating/GlobalUpgradeHandler';
+import { createTestVentures } from './utils/seedTestData';
 
 
 function App() {
@@ -74,8 +75,13 @@ function App() {
   useEffect(() => {
     const seedData = async () => {
       if (currentUser && ventures.length === 0 && !venturesLoading) {
-        console.log('🌱 Creating test ventures...');
-        await createTestVentures();
+        console.log('🌱 Triggering test ventures creation...');
+        try {
+          await createTestVentures();
+          console.log('✅ Test ventures created successfully');
+        } catch (error) {
+          console.error('❌ Failed to create test ventures:', error);
+        }
       }
     };
     seedData();
