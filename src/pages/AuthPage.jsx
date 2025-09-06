@@ -46,10 +46,7 @@ const AuthPage = () => {
           setError(error.message);
         }
       } else {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in."
-        });
+        toast.success("Welcome back! You have successfully signed in.");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -90,10 +87,7 @@ const AuthPage = () => {
           setSuccess(null);
         }, 3000);
       } else {
-        toast({
-          title: "Account created!",
-          description: "Welcome to Lane AI!"
-        });
+        toast.success("Account created! Welcome to Lane AI!");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -119,17 +113,10 @@ const AuthPage = () => {
       
       if (error) {
         setError(error.message);
-        toast({
-          title: "Password Reset Failed",
-          description: error.message,
-          variant: "destructive"
-        });
+        toast.error(`Password Reset Failed: ${error.message}`);
       } else {
         setSuccess("Password reset email sent! Please check your inbox.");
-        toast({
-          title: "Reset Email Sent",
-          description: "Please check your email and follow the link to reset your password."
-        });
+        toast.success("Reset Email Sent - Please check your email and follow the link to reset your password.");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");

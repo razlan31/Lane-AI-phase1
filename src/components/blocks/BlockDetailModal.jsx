@@ -69,11 +69,7 @@ export const BlockDetailModal = ({ block, isOpen, onClose, onStatusChange }) => 
 
     } catch (error) {
       console.error('Error fetching block data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load block data. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to load block data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -81,10 +77,7 @@ export const BlockDetailModal = ({ block, isOpen, onClose, onStatusChange }) => 
 
   const handleStatusChange = (newStatus) => {
     onStatusChange(block.id, newStatus);
-    toast({
-      title: "Status Updated",
-      description: `Block status changed to ${newStatus}`,
-    });
+    toast.success(`Block status changed to ${newStatus}`);
   };
 
   const handleGenerateWorksheet = async () => {
@@ -93,25 +86,14 @@ export const BlockDetailModal = ({ block, isOpen, onClose, onStatusChange }) => 
       const result = await generateWorksheetFromBlocks([block.id], block.venture_id);
       
       if (result) {
-        toast({
-          title: "Worksheet Generated",
-          description: `Created worksheet from ${block.name}`,
-        });
+        toast.success(`Created worksheet from ${block.name}`);
         fetchBlockData(); // Refresh to show new worksheet
       } else {
-        toast({
-          title: "Generation Failed",
-          description: "Could not generate worksheet from this block.",
-          variant: "destructive"
-        });
+        toast.error("Could not generate worksheet from this block.");
       }
     } catch (error) {
       console.error('Error generating worksheet:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate worksheet. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to generate worksheet. Please try again.");
     } finally {
       setLoading(false);
     }

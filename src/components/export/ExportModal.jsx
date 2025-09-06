@@ -66,18 +66,12 @@ const ExportModal = ({ isOpen, onClose, data = {} }) => {
 
       const result = await ExportEngine.exportData(selectedFormat, options);
       
-      toast({
-        title: "Export Complete",
-        description: `Successfully exported as ${result.filename}`,
-      });
+      toast.success(`Successfully exported as ${result.filename}`);
       
       onClose();
     } catch (error) {
       console.error('Export failed:', error);
-      toast({
-        title: "Export Failed",
-        description: error.message || "An error occurred during export",
-        variant: "destructive"
+      toast.error(error.message || "An error occurred during export");
       });
     } finally {
       setIsExporting(false);

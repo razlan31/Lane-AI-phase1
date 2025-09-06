@@ -52,11 +52,7 @@ const BillingTab = () => {
       // Open customer portal in new tab
       window.open(data.url, '_blank');
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to open billing portal. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to open billing portal. Please try again.");
     } finally {
       setLoadingPortal(false);
     }

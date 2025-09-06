@@ -42,11 +42,7 @@ const ImportModal = ({ isOpen, onClose, onImportComplete }) => {
     const fileExtension = '.' + selectedFile.name.split('.').pop().toLowerCase();
     
     if (!allowedTypes.includes(selectedFile.type) && !allowedExtensions.includes(fileExtension)) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please select a JSON or CSV file",
-        variant: "destructive"
-      });
+      toast.error("Invalid File Type - Please select a JSON or CSV file");
       return;
     }
 
@@ -87,11 +83,7 @@ const ImportModal = ({ isOpen, onClose, onImportComplete }) => {
       onClose();
     } catch (error) {
       console.error('Import failed:', error);
-      toast({
-        title: "Import Failed",
-        description: error.message || "An error occurred during import",
-        variant: "destructive"
-      });
+      toast.error(error.message || "An error occurred during import");
     } finally {
       setIsImporting(false);
     }
