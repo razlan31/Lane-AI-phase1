@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import AuthPage from '../../pages/AuthPage';
+import ResetPasswordPage from '../../pages/ResetPasswordPage';
 import UpgradeModal from '../modals/UpgradeModal';
 
 export const AuthWrapper = ({ children }) => {
@@ -18,6 +19,11 @@ export const AuthWrapper = ({ children }) => {
     window.addEventListener('showUpgradeModal', handleShowUpgradeModal);
     return () => window.removeEventListener('showUpgradeModal', handleShowUpgradeModal);
   }, []);
+  
+  const isResetPasswordRoute = typeof window !== 'undefined' && window.location.hash.includes('reset-password');
+  if (isResetPasswordRoute) {
+    return <ResetPasswordPage />;
+  }
 
   if (loading) {
     return (

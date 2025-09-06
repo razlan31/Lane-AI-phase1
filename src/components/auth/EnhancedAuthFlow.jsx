@@ -124,10 +124,12 @@ const EnhancedAuthFlow = () => {
         });
       } else {
         // Sign up
+        const redirectUrl = `${window.location.origin}/`;
         const { error, data } = await supabase.auth.signUp({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
           options: {
+            emailRedirectTo: redirectUrl,
             data: {
               full_name: formData.fullName,
               experience_level: formData.experienceLevel,
