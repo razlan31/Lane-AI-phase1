@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
 // CACHE BUST: Force Vite to rebuild React chunks after import standardization
-import { TrendingUp, DollarSign, AlertTriangle, Users, Target, CreditCard } from 'lucide-react';
+import { TrendingUp, DollarSign, AlertTriangle, Users, Target, CreditCard, Activity } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Supabase-ready hook for role-based KPI generation
 export const useRoleBasedKpis = (userRole, ventureType) => {
@@ -16,210 +17,122 @@ export const useRoleBasedKpis = (userRole, ventureType) => {
   };
 
   useEffect(() => {
-    const generateKpis = async () => {
+    let isCancelled = false;
+
+    const loadKpis = async () => {
       setLoading(true);
-      
-      // Simulate API call - will be replaced with Supabase function
-      await new Promise(resolve => setTimeout(resolve, 300));
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setKpis([]);
+          setLoading(false);
+          return;
+        }
 
-      switch (userRole) {
-        case 'entrepreneur':
-          roleKpis = [
-            {
-              title: "Revenue Growth",
-              description: "How fast your income is increasing over time",
-              value: 23.5,
-              unit: "percentage",
-              trend: 8.2,
-              trendDirection: "up",
+        // Fetch ventures for the user
+        let { data: ventures, error: venturesError } = await supabase
+          .from('ventures')
+          .select('id, name')
+          .eq('user_id', user.id);
+        if (venturesError) throw venturesError;
+
+        // If no ventures, seed sample data
+        if (!ventures || ventures.length === 0) {
+          await supabase.rpc('create_sample_data_for_user', { user_id: user.id });
+          const venturesRefetch = await supabase
+            .from('ventures')
+            .select('id, name')
+            .eq('user_id', user.id);
+          ventures = venturesRefetch.data || [];
+        }
+
+        // Optional: fetch profile KPI-like fields
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('ai_requests_used, ai_quota_remaining')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        let aggregated = [];
+
+        // Add profile-level KPIs if available
+        if (profile) {
+          if (typeof profile.ai_requests_used === 'number') {
+            aggregated.push({
+              title: 'AI Requests Used',
+              description: 'Profile usage in current period',
+              value: profile.ai_requests_used,
+              unit: 'number',
+              trend: 0,
+              trendDirection: 'up',
+              icon: Activity,
+              state: 'success',
+              belongsTo: { type: 'profile' }
+            });
+          }
+          if (typeof profile.ai_quota_remaining === 'number') {
+            aggregated.push({
+              title: 'AI Quota Remaining',
+              description: 'Remaining AI request quota',
+              value: profile.ai_quota_remaining,
+              unit: 'number',
+              trend: 0,
+              trendDirection: 'up',
+              icon: Activity,
+              state: 'success',
+              belongsTo: { type: 'profile' }
+            });
+          }
+        }
+
+        // Collect KPIs from each venture
+        for (const v of ventures) {
+          const { data: vKpis } = await supabase
+            .from('kpis')
+            .select('id, name, value, confidence_level, updated_at')
+            .eq('venture_id', v.id);
+          const mapped = (vKpis || [])
+            .filter(k => k.value !== null && k.value !== undefined)
+            .map(k => ({
+              title: k.name,
+              description: `Belongs to venture: ${v.name}`,
+              value: Number(k.value),
+              unit: 'number',
+              trend: 0,
+              trendDirection: 'up',
               icon: TrendingUp,
-              state: "success"
-            },
-            {
-              title: "Burn Rate",
-              description: "How much money you're spending each month",
-              value: 12500,
-              unit: "currency",
-              trend: -8,
-              trendDirection: "down",
-              icon: DollarSign,
-              state: "warning"
-            },
-            {
-              title: "Customer Acquisition",
-              description: "Number of new customers gained this period",
-              value: 47,
-              unit: "number",
-              trend: 12,
-              trendDirection: "up",
-              icon: Users,
-              state: "success"
-            },
-            {
-              title: "Product-Market Fit",
-              description: "How well your product meets customer needs",
-              value: 7.8,
-              unit: "score",
-              trend: 0.5,
-              trendDirection: "up",
-              icon: Target
-            },
-            {
-              title: "Risk Indicators",
-              description: "Warning signs that need your attention",
-              value: 3,
-              unit: "alerts",
-              trend: 1,
-              trendDirection: "up",
-              icon: AlertTriangle,
-              state: "alert"
-            }
-          ];
-          break;
+              state: k.confidence_level === 'mock' ? 'warning' : 'success',
+              belongsTo: { type: 'venture', ventureId: v.id, ventureName: v.name, kpiId: k.id }
+            }));
+          aggregated = aggregated.concat(mapped);
+        }
 
-        case 'student':
-          roleKpis = [
-            {
-              title: "Monthly Budget",
-              description: "Total money available to spend this month",
-              value: 1200,
-              unit: "currency",
-              trend: -5,
-              trendDirection: "down",
-              icon: DollarSign
-            },
-            {
-              title: "Expenses",
-              description: "Money spent on necessities and wants",
-              value: 980,
-              unit: "currency",
-              trend: 15,
-              trendDirection: "up",
-              icon: CreditCard,
-              state: "warning"
-            },
-            {
-              title: "Savings Goal",
-              description: "Progress toward your savings target",
-              value: 65,
-              unit: "percentage",
-              trend: 8,
-              trendDirection: "up",
-              icon: Target,
-              state: "success"
-            },
-            {
-              title: "Net Balance",
-              description: "Money left after expenses",
-              value: 220,
-              unit: "currency",
-              trend: -12,
-              trendDirection: "down",
-              icon: TrendingUp
-            }
-          ];
-          break;
-
-        case 'dropshipper':
-          roleKpis = [
-            {
-              title: "Sales Revenue",
-              description: "Total money earned from product sales",
-              value: 8500,
-              unit: "currency",
-              trend: 22,
-              trendDirection: "up",
-              icon: TrendingUp,
-              state: "success"
-            },
-            {
-              title: "Order Volume",
-              description: "Number of orders processed this period",
-              value: 142,
-              unit: "number",
-              trend: 18,
-              trendDirection: "up",
-              icon: Users
-            },
-            {
-              title: "Ad Spend",
-              description: "Money invested in advertising campaigns",
-              value: 2100,
-              unit: "currency",
-              trend: 10,
-              trendDirection: "up",
-              icon: DollarSign
-            },
-            {
-              title: "Profit Margin",
-              description: "Percentage of revenue kept as profit",
-              value: 28.5,
-              unit: "percentage",
-              trend: -2,
-              trendDirection: "down",
-              icon: Target,
-              state: "warning"
-            },
-            {
-              title: "Inventory Turnover",
-              description: "How quickly products are selling",
-              value: 4.2,
-              unit: "ratio",
-              trend: 0.8,
-              trendDirection: "up",
-              icon: AlertTriangle
-            }
-          ];
-          break;
-
-        default:
-          // Default entrepreneur KPIs
-          roleKpis = [
-            {
-              title: "Revenue",
-              description: "Total income from all sources",
-              value: 15000,
-              unit: "currency",
-              trend: 12,
-              trendDirection: "up",
-              icon: TrendingUp
-            },
-            {
-              title: "Expenses",
-              description: "Total money spent on operations",
-              value: 8500,
-              unit: "currency",
-              trend: 5,
-              trendDirection: "up",
-              icon: DollarSign
-            }
-          ];
+        if (!isCancelled) {
+          setKpis(aggregated);
+          setLoading(false);
+        }
+      } catch (e) {
+        if (!isCancelled) {
+          console.error('Error loading KPIs:', e);
+          setKpis([]);
+          setLoading(false);
+        }
       }
-
-      setKpis(roleKpis);
-      setLoading(false);
     };
 
-    if (userRole) {
-      generateKpis();
-    }
+    loadKpis();
 
-    // Set up event listener for auto-generate KPIs
-    const handleAutoGenerateKPIs = (event) => {
-      const { type, count } = event.detail;
-      const additionalKpis = generateAdditionalKpis(count, kpis, userRole);
-      if (additionalKpis.length > 0) {
-        addKpis(additionalKpis);
-      }
+    const handleAutoGenerateKPIs = () => {
+      loadKpis();
     };
 
     window.addEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
-    
-    // Cleanup listener
+
     return () => {
+      isCancelled = true;
       window.removeEventListener('autoGenerateKPIs', handleAutoGenerateKPIs);
     };
-  }, [userRole, ventureType, kpis]);
+  }, [userRole, ventureType, refreshCounter]);
 
   return { kpis, loading, addKpis, refreshCounter };
 };

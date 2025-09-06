@@ -119,7 +119,7 @@ const HQDashboard = () => {
                   <MetricCard
                     key={index}
                     title={kpi.title}
-                    description={kpi.description}
+                    description={`${kpi.description || ''}${kpi.belongsTo ? ' • ' + (kpi.belongsTo.type === 'venture' ? 'Venture: ' + kpi.belongsTo.ventureName : 'Profile') : ''}`}
                     value={kpi.value}
                     trend={kpi.trend}
                     trendDirection={kpi.trendDirection}
