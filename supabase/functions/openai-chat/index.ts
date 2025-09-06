@@ -1033,7 +1033,7 @@ async function createCompleteVentureWithWorksheets(args: any, userId: string, su
     
   return { 
     success: true, 
-    message: `🎉 Created "${name}" ${approachText}! Generated ${createdWorksheets.length} worksheets: ${createdWorksheets.map(w => w.name).join(', ')}. Visit your HQ Dashboard to explore your complete business setup!`,
+    message: `🎉 Created "${name}" ${approachText}! Generated ${worksheetTemplates.length} worksheets: ${worksheetTemplates.map(t => t.name).join(', ')}. Visit your HQ Dashboard to explore your complete business setup!`,
     data: { 
       venture: newVenture, 
       worksheets: createdWorksheets,
