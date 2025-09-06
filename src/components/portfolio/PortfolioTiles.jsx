@@ -8,6 +8,7 @@ import { useVentures } from '../../hooks/useVentures.jsx';
 
 const PortfolioTiles = ({ onVentureClick }) => {
   const { ventures, loading, deleteVenture } = useVentures();
+  const [deletingId, setDeletingId] = useState(null);
 
   if (loading) {
     return (

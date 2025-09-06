@@ -70,6 +70,17 @@ function App() {
   const { user: currentUser } = useAuth();
   const { showPlainExplanations } = useDisplaySettings();
 
+  // Create test ventures automatically
+  useEffect(() => {
+    const seedData = async () => {
+      if (currentUser && ventures.length === 0 && !venturesLoading) {
+        console.log('🌱 Creating test ventures...');
+        await createTestVentures();
+      }
+    };
+    seedData();
+  }, [currentUser, ventures.length, venturesLoading]);
+
   // Initialize keyboard shortcuts
   useKeyboardShortcuts();
   
