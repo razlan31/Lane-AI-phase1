@@ -70,6 +70,10 @@ export const VenturesProvider = ({ children }) => {
           setError(null);
         }
       } catch (err) {
+        // Ignore abort errors - they're expected during component unmount
+        if (err.name === 'AbortError') {
+          return;
+        }
         if (!abortController.signal.aborted && isMounted) {
           console.error('Ventures fetch error:', err);
           setError(err);
