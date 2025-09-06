@@ -38,6 +38,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_interaction_history: {
+        Row: {
+          action_payload: Json | null
+          action_type: string | null
+          ai_response: string | null
+          created_at: string | null
+          id: string
+          instruction: string
+          resource_id: string | null
+          resource_type: string | null
+          result_status: string | null
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_payload?: Json | null
+          action_type?: string | null
+          ai_response?: string | null
+          created_at?: string | null
+          id?: string
+          instruction: string
+          resource_id?: string | null
+          resource_type?: string | null
+          result_status?: string | null
+          role: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_payload?: Json | null
+          action_type?: string | null
+          ai_response?: string | null
+          created_at?: string | null
+          id?: string
+          instruction?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          result_status?: string | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string
@@ -97,6 +142,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      available_features: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       billing_subscriptions: {
         Row: {
@@ -285,6 +360,111 @@ export type Database = {
           },
         ]
       }
+      feature_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          priority: string | null
+          request_text: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          priority?: string | null
+          request_text: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          priority?: string | null
+          request_text?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      glossary: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          definition: string
+          example: string | null
+          id: string
+          source: string | null
+          term: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          definition: string
+          example?: string | null
+          id?: string
+          source?: string | null
+          term: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          definition?: string
+          example?: string | null
+          id?: string
+          source?: string | null
+          term?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ideas: {
+        Row: {
+          ai_interaction_id: string | null
+          assumptions: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          risks: Json | null
+          status: string | null
+          suggestions: Json | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_interaction_id?: string | null
+          assumptions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          risks?: Json | null
+          status?: string | null
+          suggestions?: Json | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_interaction_id?: string | null
+          assumptions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          risks?: Json | null
+          status?: string | null
+          suggestions?: Json | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       kpis: {
         Row: {
           confidence: string | null
@@ -468,6 +648,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      personal_journal: {
+        Row: {
+          ai_interaction_id: string | null
+          created_at: string | null
+          entry: string
+          goals: Json | null
+          id: string
+          mood: string | null
+          tags: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_interaction_id?: string | null
+          created_at?: string | null
+          entry: string
+          goals?: Json | null
+          id?: string
+          mood?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_interaction_id?: string | null
+          created_at?: string | null
+          entry?: string
+          goals?: Json | null
+          id?: string
+          mood?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       playground_links: {
         Row: {

@@ -30,6 +30,7 @@ import { detectChatCommands, generateCommandResponse } from '../../utils/aiChatB
 import { getCapabilities } from '../../utils/capabilities';
 import { WorksheetBuilder } from '../modals/WorksheetBuilder';
 import { PersonalFieldModal } from '../modals/PersonalFieldModal';
+import AIMutationPreviewModal from '../modals/AIMutationPreviewModal';
 
 const EnhancedAIChat = ({ 
   isOpen = true, 
@@ -69,6 +70,9 @@ const EnhancedAIChat = ({
   const [lastUserPrompts, setLastUserPrompts] = useState([]);
   const [showWorksheetBuilder, setShowWorksheetBuilder] = useState(false);
   const [showPersonalFieldModal, setShowPersonalFieldModal] = useState(false);
+  const [roleInfo, setRoleInfo] = useState({ role: null, reason: '' });
+  const [proposedAction, setProposedAction] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -281,6 +285,11 @@ const EnhancedAIChat = ({
                 <span className="font-medium text-sm truncate flex-1">
                   {activeChatInfo?.title || 'AI Co-Pilot'}
                 </span>
+                {roleInfo.role && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                    {roleInfo.role.charAt(0).toUpperCase() + roleInfo.role.slice(1)} Mode
+                  </span>
+                )}
                 <Button size="sm" variant="ghost" onClick={handleStartRename} className="h-6 w-6 p-0">
                   <Edit3 className="h-3 w-3" />
                 </Button>

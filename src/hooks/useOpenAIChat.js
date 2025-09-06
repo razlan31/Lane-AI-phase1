@@ -61,7 +61,10 @@ export const useOpenAIChat = () => {
         sessionId: data.sessionId,
         message: data.message,
         model: data.model,
-        usage: data.usage
+        usage: data.usage,
+        selectedRole: data.selectedRole,
+        roleJustification: data.roleJustification,
+        proposedAction: data.proposedAction || null
       };
 
       // Save to client cache

@@ -420,22 +420,65 @@ When users request these actions, use the available functions to perform them im
 
     // Handle function calls
     const functionCall = result.choices?.[0]?.message?.function_call;
+    let proposedAction: any = null;
+    let selectedRole = 'assistant';
+    let roleJustification = '';
+
+    // Simple role detection heuristics
+    const lowerMsg = message.toLowerCase();
+    if (/(explain|what is|definition|glossary)/.test(lowerMsg)) {
+      selectedRole = 'explainer';
+      roleJustification = 'You asked for an explanation of a concept.';
+    } else if (/(idea|brainstorm|business|new product)/.test(lowerMsg)) {
+      selectedRole = 'strategist';
+      roleJustification = 'You asked about creating or refining a business idea.';
+    } else if (/(analyz|why|cause|insight|interpret)/.test(lowerMsg)) {
+      selectedRole = 'analyst';
+      roleJustification = 'You asked for analysis of your data.';
+    } else if (/(how to|steps|guide|onboarding|payment|publish)/.test(lowerMsg)) {
+      selectedRole = 'guide';
+      roleJustification = 'You asked for step-by-step guidance.';
+    } else if (/(journal|today i|reflect|goal)/.test(lowerMsg)) {
+      selectedRole = 'journal';
+      roleJustification = 'You wrote a personal entry; journal mode is appropriate.';
+    }
+
     if (functionCall) {
-      console.log('Function call detected:', functionCall);
-      
+      console.log('Function call detected (preview only):', functionCall);
       try {
-        const functionArgs = JSON.parse(functionCall.arguments);
-        functionCallResult = await handleFunctionCall(functionCall.name, functionArgs, userId, supabase);
-        
-        if (functionCallResult.success) {
-          assistantText = functionCallResult.message;
-        } else {
-          assistantText = `I apologize, but I couldn't complete that action: ${functionCallResult.error}`;
+        const functionArgs = JSON.parse(functionCall.arguments || '{}');
+        // Map function to action without applying
+        if (functionCall.name === 'create_venture') {
+          proposedAction = { action: 'update_venture', resourceType: 'ventures', payload: functionArgs };
+        } else if (functionCall.name === 'create_personal_entry') {
+          proposedAction = { action: 'journal_entry', resourceType: 'personal_journal', payload: functionArgs };
+          selectedRole = 'journal';
+        } else if (functionCall.name === 'modify_worksheet_fields') {
+          proposedAction = { action: 'create_worksheet', resourceType: 'worksheets', payload: functionArgs };
+          selectedRole = 'analyst';
+        } else if (functionCall.name === 'create_scratchpad_note') {
+          proposedAction = { action: 'create_note', resourceType: 'scratchpad_notes', payload: functionArgs };
+          selectedRole = selectedRole === 'assistant' ? 'guide' : selectedRole;
+        } else if (functionCall.name === 'update_onboarding_progress') {
+          proposedAction = { action: 'workflow_guide', resourceType: 'profiles', payload: functionArgs };
+          selectedRole = 'guide';
         }
-      } catch (error) {
-        console.error('Function call error:', error);
-        assistantText = "I apologize, but I encountered an error while trying to perform that action.";
+      } catch (e) {
+        console.error('Function call parse error:', e);
       }
+    }
+
+    // If we have a proposed action, validate against available_features registry
+    let validation: any = { allowed: false, reason: 'No action proposed' };
+    if (proposedAction?.action) {
+      const { data: feature } = await supabase
+        .from('available_features')
+        .select('name, is_active')
+        .eq('name', proposedAction.action)
+        .maybeSingle();
+      validation = feature && feature.is_active !== false
+        ? { allowed: true, reason: 'Feature allowed' }
+        : { allowed: false, reason: 'Feature not available or disabled' };
     }
 
     // Save assistant response
@@ -478,7 +521,10 @@ When users request these actions, use the available functions to perform them im
       sessionId: sid, 
       message: assistantText,
       model: model,
-      usage: result.usage
+      usage: result.usage,
+      selectedRole,
+      roleJustification,
+      proposedAction: proposedAction ? { ...proposedAction, validation } : null
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
